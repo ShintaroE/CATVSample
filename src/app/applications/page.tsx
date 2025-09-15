@@ -11,6 +11,12 @@ import {
 
 type Status = '受付' | '提出済' | '許可' | '取下げ'
 
+interface ApplicationDetail {
+  lineType?: string // 現状線の種別
+  mountHeight?: string // 取付高さ（m表記推奨）
+  photos?: string[] // dataURLをモック保存
+}
+
 interface ApplicationRecord {
   id: string
   serialNumber: number
@@ -23,6 +29,7 @@ interface ApplicationRecord {
   withdrawNeeded?: boolean
   withdrawCreated?: boolean
   notes?: string
+  detail?: ApplicationDetail
 }
 
 const initialData: ApplicationRecord[] = [
@@ -282,6 +289,7 @@ function EditDialog({
   onSubmit: (data: Partial<ApplicationRecord>) => void
 }) {
   const [form, setForm] = useState<Partial<ApplicationRecord>>(initial)
+  const [detailOpen, setDetailOpen] = useState(false)
 
   const set = (key: keyof ApplicationRecord) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value }))
@@ -292,7 +300,16 @@ function EditDialog({
       <div className="relative bg-white w-[min(880px,92vw)] max-h-[90vh] overflow-auto rounded-lg shadow-xl">
         <div className="px-5 py-4 border-b flex items-center justify-between">
           <h2 className="text-lg font-semibold">申請情報 {form.serialNumber ? `（整理番号: ${form.serialNumber}）` : ''}</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">×</button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setDetailOpen(true)}
+              className="px-3 py-1.5 rounded-md border text-sm text-gray-700 hover:bg-gray-50"
+            >
+              申請内容
+            </button>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">×</button>
+          </div>
         </div>
         <form
           onSubmit={(e) => {
@@ -380,6 +397,129 @@ function EditDialog({
             <button type="submit" className="px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700">保存</button>
           </div>
         </form>
+        {detailOpen && (
+          <DetailDialog
+            initial={form.detail}
+            onClose={() => setDetailOpen(false)}
+            onSave={(d) => {
+              setForm((f) => ({ ...f, detail: d }))
+              setDetailOpen(false)
+            }}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+function DetailDialog({
+  initial,
+  onClose,
+  onSave,
+}: {
+  initial?: ApplicationDetail
+  onClose: () => void
+  onSave: (d: ApplicationDetail) => void
+}) {
+  const [lineType, setLineType] = useState<string>(initial?.lineType || '')
+  const [mountHeight, setMountHeight] = useState<string>(initial?.mountHeight || '')
+  const [photos, setPhotos] = useState<string[]>(initial?.photos || [])
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files) return
+    const max = 3
+    const picks = Array.from(files).slice(0, max - photos.length)
+    const readers = picks.map(
+      (f) =>
+        new Promise<string>((resolve, reject) => {
+          const fr = new FileReader()
+          fr.onload = () => resolve(String(fr.result))
+          fr.onerror = () => reject(fr.error)
+          fr.readAsDataURL(f)
+        })
+    )
+    const urls = await Promise.all(readers)
+    setPhotos((p) => [...p, ...urls].slice(0, 3))
+  }
+
+  const removePhoto = (idx: number) => {
+    setPhotos((p) => p.filter((_, i) => i !== idx))
+  }
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative bg-white w-[min(760px,92vw)] max-h-[90vh] overflow-auto rounded-lg shadow-xl">
+        <div className="px-5 py-4 border-b flex items-center justify-between">
+          <h3 className="text-lg font-semibold">申請内容（現地情報）</h3>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">×</button>
+        </div>
+        <div className="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">現状線の種別</label>
+            <select
+              value={lineType}
+              onChange={(e) => setLineType(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
+            >
+              <option value="">未選択</option>
+              <option value="光ファイバ">光ファイバ</option>
+              <option value="同軸">同軸</option>
+              <option value="メタル">メタル</option>
+              <option value="その他">その他</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">取付高さ（m）</label>
+            <input
+              type="number"
+              step="0.1"
+              placeholder="例: 4.5"
+              value={mountHeight}
+              onChange={(e) => setMountHeight(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">写真（最大3枚）</label>
+            <div className="flex flex-wrap gap-3">
+              {photos.map((src, idx) => (
+                <div key={idx} className="relative w-32 h-24 border rounded overflow-hidden bg-gray-100">
+                  <img src={src} alt={`photo-${idx + 1}`} className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(idx)}
+                    className="absolute top-1 right-1 bg-black/50 text-white text-xs rounded px-1"
+                  >
+                    削除
+                  </button>
+                </div>
+              ))}
+              {photos.length < 3 && (
+                <label className="w-32 h-24 border-2 border-dashed rounded flex items-center justify-center text-sm text-gray-500 cursor-pointer bg-white">
+                  追加
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => handleFiles(e.target.files)}
+                  />
+                </label>
+              )}
+            </div>
+            <p className="mt-2 text-xs text-gray-500">※ ローカル保存のモック（ページ更新で消えます）</p>
+          </div>
+        </div>
+        <div className="px-5 py-4 border-t flex items-center justify-end gap-2">
+          <button onClick={onClose} className="px-3 py-2 rounded-md border bg-white text-gray-700 hover:bg-gray-50">キャンセル</button>
+          <button
+            onClick={() => onSave({ lineType, mountHeight, photos })}
+            className="px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
+          >
+            保存
+          </button>
+        </div>
       </div>
     </div>
   )
