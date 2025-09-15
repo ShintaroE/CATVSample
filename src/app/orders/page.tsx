@@ -9,6 +9,7 @@ interface OrderData {
   orderSource: string
   workContent: string
   customerCode: string
+  customerType: '新規' | '既存'
   customerName: string
   constructionDate?: string
   closureNumber?: string
@@ -31,6 +32,7 @@ const sampleOrders: OrderData[] = [
     orderSource: 'KCT本社',
     workContent: '個別対応',
     customerCode: '123456789',
+    customerType: '新規',
     customerName: '田中太郎',
     constructionDate: '2024-03-15',
     closureNumber: 'CL-001-A',
@@ -44,6 +46,7 @@ const sampleOrders: OrderData[] = [
     orderSource: 'KCT水島',
     workContent: 'HCNAー技術人工事',
     customerCode: '234567890',
+    customerType: '既存',
     customerName: '佐藤花子',
     constructionDate: '2024-03-16',
     closureNumber: 'CL-002-B',
@@ -57,6 +60,7 @@ const sampleOrders: OrderData[] = [
     orderSource: 'KCT玉島',
     workContent: 'G・6ch追加人工事',
     customerCode: '345678901',
+    customerType: '新規',
     customerName: '山田次郎',
     constructionDate: '2024-03-17',
     closureNumber: 'CL-003-C',
@@ -101,6 +105,7 @@ export default function OrdersPage() {
         orderSource: 'KCT本社',
         workContent: '個別対応',
         customerCode: `${Math.floor(Math.random() * 900000000) + 100000000}`,
+        customerType: '新規',
         customerName: '新規顧客',
         constructionDate: new Date().toISOString().split('T')[0],
         closureNumber: `CL-${String(orders.length + 1).padStart(3, '0')}-A`,
@@ -251,6 +256,9 @@ export default function OrdersPage() {
                       顧客コード
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      新規/既存
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       顧客名
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -282,6 +290,15 @@ export default function OrdersPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {order.customerCode}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          order.customerType === '新規'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {order.customerType}
+                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {order.customerName}
