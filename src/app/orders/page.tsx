@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeftIcon, DocumentArrowUpIcon, EyeIcon } from '@heroicons/react/24/outline'
-import Link from 'next/link'
+import { DocumentArrowUpIcon, EyeIcon } from '@heroicons/react/24/outline'
+import Layout from '@/components/Layout'
 
 interface OrderData {
   orderNumber: string
@@ -107,24 +107,20 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center">
-              <Link href="/" className="mr-4">
-                <ArrowLeftIcon className="h-6 w-6 text-gray-600 hover:text-gray-900" />
-              </Link>
+    <Layout>
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white shadow">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-6">
               <h1 className="text-3xl font-bold text-gray-900">
                 工事依頼管理
               </h1>
-            </div>
-            <div className="text-sm text-gray-600">
-              小川オーダー表形式
+              <div className="text-sm text-gray-600">
+                小川オーダー表形式
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* EXCELアップロード領域 */}
@@ -284,6 +280,7 @@ export default function OrdersPage() {
           </div>
         </div>
       )}
-    </div>
-  )
+      </div>
+    </Layout>
+  );
 }

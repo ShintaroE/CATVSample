@@ -1,0 +1,110 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import {
+  HomeIcon,
+  DocumentTextIcon,
+  CalendarDaysIcon,
+  DocumentCheckIcon,
+  ChatBubbleLeftRightIcon,
+  UserGroupIcon,
+} from '@heroicons/react/24/outline'
+
+interface MenuItem {
+  name: string
+  href: string
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
+}
+
+const menuItems: MenuItem[] = [
+  {
+    name: 'ダッシュボード',
+    href: '/',
+    icon: HomeIcon,
+  },
+  {
+    name: '工事依頼管理',
+    href: '/orders',
+    icon: DocumentTextIcon,
+  },
+  {
+    name: '工事日程調整',
+    href: '/schedule',
+    icon: CalendarDaysIcon,
+  },
+  {
+    name: '申請番号管理',
+    href: '/applications',
+    icon: DocumentCheckIcon,
+  },
+  {
+    name: 'アポイント記録',
+    href: '/appointments',
+    icon: ChatBubbleLeftRightIcon,
+  },
+  {
+    name: '工事業者管理',
+    href: '/contractors',
+    icon: UserGroupIcon,
+  },
+]
+
+export default function Sidebar() {
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null)
+  const pathname = usePathname()
+
+  return (
+    <div className="fixed left-0 top-0 h-full w-16 bg-gray-900 flex flex-col items-center py-4 z-50">
+      {/* ロゴ・タイトル */}
+      <div className="mb-8 flex items-center justify-center w-12 h-12 bg-blue-600 rounded-lg">
+        <span className="text-white font-bold text-lg">K</span>
+      </div>
+
+      {/* メニューアイテム */}
+      <nav className="flex flex-col space-y-2 w-full px-2">
+        {menuItems.map((item) => {
+          const Icon = item.icon
+          const isActive = pathname === item.href
+
+          return (
+            <div
+              key={item.name}
+              className="relative group"
+              onMouseEnter={() => setHoveredItem(item.name)}
+              onMouseLeave={() => setHoveredItem(null)}
+            >
+              <Link
+                href={item.href}
+                className={`
+                  flex items-center justify-center w-12 h-12 rounded-lg transition-colors duration-200
+                  ${isActive
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                  }
+                `}
+              >
+                <Icon className="h-6 w-6" />
+              </Link>
+
+              {/* ホバー時のツールチップ */}
+              {hoveredItem === item.name && (
+                <div className="absolute left-16 top-1/2 transform -translate-y-1/2 z-50">
+                  <div className="bg-gray-800 text-white px-3 py-2 rounded-md text-sm whitespace-nowrap shadow-lg">
+                    {item.name}
+                    {/* 矢印 */}
+                    <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1">
+                      <div className="w-2 h-2 bg-gray-800 rotate-45"></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </nav>
+
+    </div>
+  )
+}
