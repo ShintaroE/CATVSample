@@ -10,9 +10,6 @@ export default function Home() {
               <h1 className="text-3xl font-bold text-gray-900">
                 CATV工事管理システム
               </h1>
-              <div className="text-sm text-gray-600">
-                KCT（倉敷ケーブルテレビ）業務効率化
-              </div>
             </div>
           </div>
         </header>

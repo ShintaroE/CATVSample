@@ -10,6 +10,7 @@ import {
   DocumentCheckIcon,
   ChatBubbleLeftRightIcon,
   UserGroupIcon,
+  ComputerDesktopIcon,
 } from '@heroicons/react/24/outline'
 
 interface MenuItem {
@@ -52,14 +53,27 @@ const menuItems: MenuItem[] = [
 ]
 
 export default function Sidebar() {
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null)
+  const [isExpanded, setIsExpanded] = useState(false)
   const pathname = usePathname()
 
   return (
-    <div className="fixed left-0 top-0 h-full w-16 bg-gray-900 flex flex-col items-center py-4 z-50">
+    <div
+      className={`fixed left-0 top-0 h-full bg-gray-900 flex flex-col py-4 z-50 transition-all duration-300 ${
+        isExpanded ? 'w-64' : 'w-16'
+      }`}
+      onMouseEnter={() => setIsExpanded(true)}
+      onMouseLeave={() => setIsExpanded(false)}
+    >
       {/* ロゴ・タイトル */}
-      <div className="mb-8 flex items-center justify-center w-12 h-12 bg-blue-600 rounded-lg">
-        <span className="text-white font-bold text-lg">K</span>
+      <div className="mb-8 flex items-center px-4">
+        <div className="flex items-center justify-center w-12 h-12 bg-blue-600 rounded-lg">
+          <ComputerDesktopIcon className="h-6 w-6 text-white" />
+        </div>
+        {isExpanded && (
+          <span className="ml-3 text-white font-semibold text-lg whitespace-nowrap">
+            CATV管理システム
+          </span>
+        )}
       </div>
 
       {/* メニューアイテム */}
@@ -69,38 +83,26 @@ export default function Sidebar() {
           const isActive = pathname === item.href
 
           return (
-            <div
+            <Link
               key={item.name}
-              className="relative group"
-              onMouseEnter={() => setHoveredItem(item.name)}
-              onMouseLeave={() => setHoveredItem(null)}
+              href={item.href}
+              className={`
+                flex items-center px-2 py-3 rounded-lg transition-colors duration-200
+                ${isActive
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                }
+              `}
             >
-              <Link
-                href={item.href}
-                className={`
-                  flex items-center justify-center w-12 h-12 rounded-lg transition-colors duration-200
-                  ${isActive
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                  }
-                `}
-              >
+              <div className="flex items-center justify-center w-8 h-8">
                 <Icon className="h-6 w-6" />
-              </Link>
-
-              {/* ホバー時のツールチップ */}
-              {hoveredItem === item.name && (
-                <div className="absolute left-16 top-1/2 transform -translate-y-1/2 z-50">
-                  <div className="bg-gray-800 text-white px-3 py-2 rounded-md text-sm whitespace-nowrap shadow-lg">
-                    {item.name}
-                    {/* 矢印 */}
-                    <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1">
-                      <div className="w-2 h-2 bg-gray-800 rotate-45"></div>
-                    </div>
-                  </div>
-                </div>
+              </div>
+              {isExpanded && (
+                <span className="ml-3 text-sm font-medium whitespace-nowrap">
+                  {item.name}
+                </span>
               )}
-            </div>
+            </Link>
           )
         })}
       </nav>
