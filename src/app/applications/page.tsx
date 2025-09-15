@@ -14,8 +14,8 @@ type Status = '受付' | '提出済' | '許可' | '取下げ'
 interface ApplicationRecord {
   id: string
   serialNumber: number
+  orderNumber?: string
   contractNo?: string
-  applicationNo: string
   customerCode?: string
   submittedAt?: string // YYYY-MM-DD
   approvedAt?: string // YYYY-MM-DD
@@ -29,8 +29,8 @@ const initialData: ApplicationRecord[] = [
   {
     id: 'a1',
     serialNumber: 2164,
+    orderNumber: '2024031500001',
     contractNo: '101080601',
-    applicationNo: '24-2503A',
     customerCode: '123456789',
     submittedAt: '2025-02-07',
     approvedAt: '2025-03-10',
@@ -40,8 +40,8 @@ const initialData: ApplicationRecord[] = [
   {
     id: 'a2',
     serialNumber: 2165,
+    orderNumber: '2024031600002',
     contractNo: '101784701',
-    applicationNo: '24-2531A',
     customerCode: '223456789',
     submittedAt: '2025-02-07',
     approvedAt: '2025-02-13',
@@ -51,8 +51,8 @@ const initialData: ApplicationRecord[] = [
   {
     id: 'a3',
     serialNumber: 2166,
+    orderNumber: '2024031700003',
     contractNo: '101999501',
-    applicationNo: '24-2555A',
     customerCode: '345678901',
     submittedAt: '2025-02-07',
     approvedAt: '2025-04-30',
@@ -61,8 +61,8 @@ const initialData: ApplicationRecord[] = [
   {
     id: 'a4',
     serialNumber: 2167,
+    orderNumber: '2024031800004',
     contractNo: '102001201',
-    applicationNo: '24-2566A',
     customerCode: '456789012',
     submittedAt: '2025-02-07',
     approvedAt: '2025-05-14',
@@ -73,22 +73,20 @@ const initialData: ApplicationRecord[] = [
 
 export default function ApplicationsPage() {
   const [records, setRecords] = useState<ApplicationRecord[]>(initialData)
-  const [keyword, setKeyword] = useState('')
+  const [orderFilter, setOrderFilter] = useState('')
+  const [customerFilter, setCustomerFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState<'全て' | Status>('全て')
   const [isOpen, setIsOpen] = useState(false)
   const [editing, setEditing] = useState<ApplicationRecord | null>(null)
 
   const filtered = useMemo(() => {
     return records.filter((r) => {
-      const hit =
-        r.applicationNo.includes(keyword) ||
-        (r.contractNo || '').includes(keyword) ||
-        (r.customerCode || '').includes(keyword) ||
-        (r.notes || '').includes(keyword)
+      const orderOk = orderFilter ? (r.orderNumber || '').includes(orderFilter) : true
+      const customerOk = customerFilter ? (r.customerCode || '').includes(customerFilter) : true
       const statusOk = statusFilter === '全て' || r.status === statusFilter
-      return hit && statusOk
+      return orderOk && customerOk && statusOk
     })
-  }, [records, keyword, statusFilter])
+  }, [records, orderFilter, customerFilter, statusFilter])
 
   const nextSerial = useMemo(
     () => (records.length ? Math.max(...records.map((r) => r.serialNumber)) + 1 : 1),
@@ -105,7 +103,7 @@ export default function ApplicationsPage() {
     const newRec: ApplicationRecord = {
       id: String(Date.now()),
       serialNumber: nextSerial,
-      applicationNo: data.applicationNo || '',
+      orderNumber: data.orderNumber || '',
       contractNo: data.contractNo || '',
       customerCode: data.customerCode || '',
       submittedAt: data.submittedAt || undefined,
@@ -142,13 +140,22 @@ export default function ApplicationsPage() {
         </div>
 
         {/* フィルタ */}
-        <div className="mt-4 flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="relative">
             <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              placeholder="申請番号 / 契約No. / 顧客コード / 備考"
+              value={orderFilter}
+              onChange={(e) => setOrderFilter(e.target.value)}
+              placeholder="受注番号で絞り込み"
+              className="w-full pl-10 pr-3 py-2 rounded-md border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="relative">
+            <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              value={customerFilter}
+              onChange={(e) => setCustomerFilter(e.target.value)}
+              placeholder="顧客コードで絞り込み"
               className="w-full pl-10 pr-3 py-2 rounded-md border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -158,7 +165,7 @@ export default function ApplicationsPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as '全て' | Status)}
-                className="px-2 py-2 rounded-md border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-2 py-2 rounded-md border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="全て">全て</option>
                 <option value="受付">受付</option>
@@ -177,8 +184,8 @@ export default function ApplicationsPage() {
               <thead>
                 <tr className="bg-gray-100 text-left text-xs text-gray-600">
                   <th className="px-3 py-2 font-medium whitespace-nowrap">整理番号</th>
-                  <th className="px-3 py-2 font-medium whitespace-nowrap">申請番号</th>
                   <th className="px-3 py-2 font-medium whitespace-nowrap">受注番号</th>
+                  <th className="px-3 py-2 font-medium whitespace-nowrap">契約No.</th>
                   <th className="px-3 py-2 font-medium whitespace-nowrap">顧客コード</th>
                   <th className="px-3 py-2 font-medium whitespace-nowrap">提出日</th>
                   <th className="px-3 py-2 font-medium whitespace-nowrap">許可日</th>
@@ -192,7 +199,7 @@ export default function ApplicationsPage() {
                 {filtered.map((r) => (
                   <tr key={r.id} className="border-t text-sm odd:bg-white even:bg-gray-50">
                     <td className="px-3 py-2 tabular-nums text-gray-900">{r.serialNumber}</td>
-                    <td className="px-3 py-2 font-medium text-blue-700">{r.applicationNo}</td>
+                    <td className="px-3 py-2 font-medium text-gray-900">{r.orderNumber || '-'}</td>
                     <td className="px-3 py-2 text-gray-900">{r.contractNo}</td>
                     <td className="px-3 py-2 text-gray-900">{r.customerCode}</td>
                     <td className="px-3 py-2 text-gray-900">{r.submittedAt || '-'}</td>
@@ -252,7 +259,7 @@ export default function ApplicationsPage() {
         {/* モーダル */}
         {isOpen && (
           <EditDialog
-            initial={editing || { serialNumber: nextSerial, status: '受付', applicationNo: '' } as Partial<ApplicationRecord>}
+            initial={editing || { serialNumber: nextSerial, status: '受付' } as Partial<ApplicationRecord>}
             onClose={() => {
               setEditing(null)
               setIsOpen(false)
@@ -294,13 +301,12 @@ function EditDialog({
           }}
         >
           <div className="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormRow label="申請番号" required>
+            <FormRow label="受注番号">
               <input
-                value={form.applicationNo || ''}
-                onChange={set('applicationNo')}
+                value={form.orderNumber || ''}
+                onChange={set('orderNumber')}
                 className="w-full px-3 py-2 border rounded-md bg-white text-gray-900 placeholder:text-gray-400"
-                placeholder="例: 24-2503A"
-                required
+                placeholder="例: 2024031500001"
               />
             </FormRow>
             <FormRow label="契約No.">
