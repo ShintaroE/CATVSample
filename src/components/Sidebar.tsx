@@ -8,8 +8,6 @@ import {
   DocumentTextIcon,
   CalendarDaysIcon,
   DocumentCheckIcon,
-  ChatBubbleLeftRightIcon,
-  UserGroupIcon,
   ComputerDesktopIcon,
 } from '@heroicons/react/24/outline'
 
@@ -39,16 +37,6 @@ const menuItems: MenuItem[] = [
     name: '申請番号管理',
     href: '/applications',
     icon: DocumentCheckIcon,
-  },
-  {
-    name: 'アポイント記録',
-    href: '/appointments',
-    icon: ChatBubbleLeftRightIcon,
-  },
-  {
-    name: '工事業者管理',
-    href: '/contractors',
-    icon: UserGroupIcon,
   },
 ]
 

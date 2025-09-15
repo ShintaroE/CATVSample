@@ -1,8 +1,15 @@
 'use client'
 
 import React, { useState } from 'react'
-import { DocumentArrowUpIcon, EyeIcon } from '@heroicons/react/24/outline'
+import { DocumentArrowUpIcon, EyeIcon, MapIcon, ClockIcon, PlusIcon } from '@heroicons/react/24/outline'
 import Layout from '@/components/Layout'
+
+interface AppointmentHistory {
+  id: string
+  date: string
+  status: '工事決定' | '保留' | '不通'
+  content: string
+}
 
 interface OrderData {
   orderNumber: string
@@ -14,9 +21,12 @@ interface OrderData {
   constructionDate?: string
   closureNumber?: string
   address?: string
+  phoneNumber?: string
   surveyStatus?: 'pending' | 'in_progress' | 'completed'
   permissionStatus?: 'pending' | 'in_progress' | 'completed'
   constructionStatus?: 'pending' | 'in_progress' | 'completed'
+  mapPdfPath?: string
+  appointmentHistory?: AppointmentHistory[]
 }
 
 const workContentOptions = [
@@ -37,9 +47,24 @@ const sampleOrders: OrderData[] = [
     constructionDate: '2024-03-15',
     closureNumber: 'CL-001-A',
     address: '倉敷市水島青葉町1-1-1',
+    phoneNumber: '086-123-4567',
     surveyStatus: 'completed',
     permissionStatus: 'in_progress',
-    constructionStatus: 'pending'
+    constructionStatus: 'pending',
+    appointmentHistory: [
+      {
+        id: '1',
+        date: '2024-03-10T10:00',
+        status: '保留',
+        content: '詳細検討したい、後日連絡との事'
+      },
+      {
+        id: '2',
+        date: '2024-03-12T14:30',
+        status: '工事決定',
+        content: '工事内容に合意、3月15日で調整'
+      }
+    ]
   },
   {
     orderNumber: '2024031600002',
@@ -51,9 +76,18 @@ const sampleOrders: OrderData[] = [
     constructionDate: '2024-03-16',
     closureNumber: 'CL-002-B',
     address: '倉敷市児島駅前2-2-2',
+    phoneNumber: '086-234-5678',
     surveyStatus: 'completed',
     permissionStatus: 'completed',
-    constructionStatus: 'in_progress'
+    constructionStatus: 'in_progress',
+    appointmentHistory: [
+      {
+        id: '3',
+        date: '2024-03-14T09:00',
+        status: '工事決定',
+        content: '工事日程確定、立会い可能'
+      }
+    ]
   },
   {
     orderNumber: '2024031700003',
@@ -65,9 +99,18 @@ const sampleOrders: OrderData[] = [
     constructionDate: '2024-03-17',
     closureNumber: 'CL-003-C',
     address: '倉敷市玉島中央町3-3-3',
+    phoneNumber: '086-345-6789',
     surveyStatus: 'in_progress',
     permissionStatus: 'pending',
-    constructionStatus: 'pending'
+    constructionStatus: 'pending',
+    appointmentHistory: [
+      {
+        id: '4',
+        date: '2024-03-15T16:00',
+        status: '不通',
+        content: '電話に出ず、後日再連絡'
+      }
+    ]
   }
 ]
 
@@ -75,7 +118,12 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<OrderData[]>(sampleOrders)
   const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null)
   const [isDragOver, setIsDragOver] = useState(false)
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false)
+  const [appointmentOrder, setAppointmentOrder] = useState<OrderData | null>(null)
+  const [editingAppointment, setEditingAppointment] = useState<AppointmentHistory | null>(null)
+  const [isAddingAppointment, setIsAddingAppointment] = useState(false)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
+  const mapFileInputRef = React.useRef<HTMLInputElement>(null)
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -181,6 +229,137 @@ export default function OrdersPage() {
     }
   }
 
+  const handleMapUpload = () => {
+    mapFileInputRef.current?.click()
+  }
+
+  const handleMapFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0] && selectedOrder) {
+      const file = e.target.files[0]
+
+      if (file.type === 'application/pdf') {
+        // 実際の実装では、ファイルをサーバーにアップロードして URL を取得
+        // ここではサンプルとして地図.pdfのパスを設定
+        const mapPath = '/地図.pdf'
+
+        // 注文データを更新
+        setOrders(prev => prev.map(order =>
+          order.orderNumber === selectedOrder.orderNumber
+            ? { ...order, mapPdfPath: mapPath }
+            : order
+        ))
+
+        // selectedOrderも更新
+        setSelectedOrder(prev => prev ? { ...prev, mapPdfPath: mapPath } : null)
+
+        alert('地図PDFがアップロードされました')
+      } else {
+        alert('PDFファイルを選択してください')
+      }
+    }
+  }
+
+  const handleViewMap = (order: OrderData) => {
+    if (order.mapPdfPath) {
+      // PDFを新しいタブで開く（スマホ・PC両対応）
+      window.open(order.mapPdfPath, '_blank')
+    }
+  }
+
+  const handleViewAppointmentHistory = (order: OrderData) => {
+    setAppointmentOrder(order)
+    setShowAppointmentModal(true)
+  }
+
+  const handleCloseAppointmentModal = () => {
+    setShowAppointmentModal(false)
+    setAppointmentOrder(null)
+    setEditingAppointment(null)
+    setIsAddingAppointment(false)
+  }
+
+  const handleAddAppointment = () => {
+    setIsAddingAppointment(true)
+    setEditingAppointment({
+      id: '',
+      date: new Date().toISOString().slice(0, 16),
+      status: '保留',
+      content: ''
+    })
+  }
+
+  const handleEditAppointment = (appointment: AppointmentHistory) => {
+    setEditingAppointment(appointment)
+    setIsAddingAppointment(false)
+  }
+
+  const handleSaveAppointment = () => {
+    if (!appointmentOrder || !editingAppointment) return
+
+    const updatedOrders = orders.map(order => {
+      if (order.orderNumber === appointmentOrder.orderNumber) {
+        const history = order.appointmentHistory || []
+        if (isAddingAppointment) {
+          const newId = String(Date.now())
+          const newAppointment = { ...editingAppointment, id: newId }
+          return { ...order, appointmentHistory: [...history, newAppointment] }
+        } else {
+          return {
+            ...order,
+            appointmentHistory: history.map(h =>
+              h.id === editingAppointment.id ? editingAppointment : h
+            )
+          }
+        }
+      }
+      return order
+    })
+
+    setOrders(updatedOrders)
+    setAppointmentOrder(prev => {
+      if (!prev) return null
+      const updated = updatedOrders.find(o => o.orderNumber === prev.orderNumber)
+      return updated || null
+    })
+    setEditingAppointment(null)
+    setIsAddingAppointment(false)
+  }
+
+  const handleDeleteAppointment = (appointmentId: string) => {
+    if (!appointmentOrder) return
+
+    const updatedOrders = orders.map(order => {
+      if (order.orderNumber === appointmentOrder.orderNumber) {
+        return {
+          ...order,
+          appointmentHistory: (order.appointmentHistory || []).filter(h => h.id !== appointmentId)
+        }
+      }
+      return order
+    })
+
+    setOrders(updatedOrders)
+    setAppointmentOrder(prev => {
+      if (!prev) return null
+      const updated = updatedOrders.find(o => o.orderNumber === prev.orderNumber)
+      return updated || null
+    })
+  }
+
+  const getStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case '工事決定':
+        return 'bg-green-100 text-green-800'
+      case '保留':
+        return 'bg-yellow-100 text-yellow-800'
+      case '不通':
+        return 'bg-red-100 text-red-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+
   return (
     <Layout>
       <div className="min-h-screen bg-gray-50">
@@ -230,6 +409,13 @@ export default function OrdersPage() {
             className="hidden"
             multiple
           />
+          <input
+            ref={mapFileInputRef}
+            type="file"
+            accept=".pdf"
+            onChange={handleMapFileChange}
+            className="hidden"
+          />
         </div>
 
         {/* 工事依頼一覧 */}
@@ -263,6 +449,9 @@ export default function OrdersPage() {
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       アクション
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      アポイント履歴
                     </th>
                   </tr>
                 </thead>
@@ -312,6 +501,20 @@ export default function OrdersPage() {
                           詳細表示
                         </button>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => handleViewAppointmentHistory(order)}
+                            className="inline-flex items-center text-blue-600 hover:text-blue-900"
+                          >
+                            <ClockIcon className="h-4 w-4 mr-1" />
+                            履歴表示
+                          </button>
+                          <span className="text-xs text-gray-400">
+                            ({order.appointmentHistory?.length || 0}件)
+                          </span>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -360,6 +563,38 @@ export default function OrdersPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700">住所</label>
                 <p className="mt-1 text-sm text-gray-900">{selectedOrder.address}</p>
+              </div>
+
+              {/* 地図アップロード */}
+              <div className="border-t pt-4">
+                <h4 className="text-md font-medium text-gray-900 mb-2">工事場所地図</h4>
+                <div className="bg-gray-50 p-4 rounded-md">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={handleMapUpload}
+                        className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        <DocumentArrowUpIcon className="h-4 w-4 mr-2" />
+                        地図PDFをアップロード
+                      </button>
+                      {selectedOrder.mapPdfPath && (
+                        <button
+                          onClick={() => handleViewMap(selectedOrder)}
+                          className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                          <MapIcon className="h-4 w-4 mr-2" />
+                          地図を表示
+                        </button>
+                      )}
+                    </div>
+                    {selectedOrder.mapPdfPath && (
+                      <span className="text-sm text-green-600 font-medium">
+                        ✓ 地図PDF添付済み
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* 進捗表の追加情報 */}
@@ -419,6 +654,211 @@ export default function OrdersPage() {
           </div>
         </div>
       )}
+
+      {/* アポイント履歴モーダル */}
+      {showAppointmentModal && appointmentOrder && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                アポイント履歴 - {appointmentOrder.customerName}
+              </h3>
+              <button
+                onClick={handleCloseAppointmentModal}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <span className="sr-only">閉じる</span>
+                ✕
+              </button>
+            </div>
+
+            {/* 顧客情報 */}
+            <div className="bg-gray-50 p-4 rounded-md mb-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">顧客名</label>
+                  <p className="mt-1 text-sm text-gray-900">{appointmentOrder.customerName}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">住所</label>
+                  <p className="mt-1 text-sm text-gray-900">{appointmentOrder.address}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">電話番号</label>
+                  <p className="mt-1 text-sm text-gray-900">{appointmentOrder.phoneNumber}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* アポイント履歴 */}
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h4 className="text-md font-medium text-gray-900">アポイント履歴</h4>
+                <button
+                  onClick={handleAddAppointment}
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  <PlusIcon className="h-4 w-4 mr-1" />
+                  新規追加
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {(appointmentOrder.appointmentHistory || []).map((appointment) => (
+                  <div key={appointment.id} className="border rounded-lg p-4 bg-white">
+                    {editingAppointment?.id === appointment.id ? (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700">日時</label>
+                            <input
+                              type="datetime-local"
+                              value={editingAppointment.date}
+                              onChange={(e) => setEditingAppointment({...editingAppointment, date: e.target.value})}
+                              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700">ステータス</label>
+                            <select
+                              value={editingAppointment.status}
+                              onChange={(e) => setEditingAppointment({...editingAppointment, status: e.target.value as '工事決定' | '保留' | '不通'})}
+                              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                            >
+                              <option value="工事決定">工事決定</option>
+                              <option value="保留">保留</option>
+                              <option value="不通">不通</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">会話内容</label>
+                          <textarea
+                            value={editingAppointment.content}
+                            onChange={(e) => setEditingAppointment({...editingAppointment, content: e.target.value})}
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                            rows={3}
+                          />
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={handleSaveAppointment}
+                            className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                          >
+                            保存
+                          </button>
+                          <button
+                            onClick={() => setEditingAppointment(null)}
+                            className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400"
+                          >
+                            キャンセル
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex items-center space-x-3">
+                            <span className="text-sm font-medium text-gray-900">
+                              {new Date(appointment.date).toLocaleString('ja-JP')}
+                            </span>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(appointment.status)}`}>
+                              {appointment.status}
+                            </span>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleEditAppointment(appointment)}
+                              className="text-blue-600 hover:text-blue-900 text-sm"
+                            >
+                              編集
+                            </button>
+                            <button
+                              onClick={() => handleDeleteAppointment(appointment.id)}
+                              className="text-red-600 hover:text-red-900 text-sm"
+                            >
+                              削除
+                            </button>
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-700">{appointment.content}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* 新規追加フォーム */}
+                {isAddingAppointment && editingAppointment && (
+                  <div className="border rounded-lg p-4 bg-blue-50">
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">日時</label>
+                          <input
+                            type="datetime-local"
+                            value={editingAppointment.date}
+                            onChange={(e) => setEditingAppointment({...editingAppointment, date: e.target.value})}
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">ステータス</label>
+                          <select
+                            value={editingAppointment.status}
+                            onChange={(e) => setEditingAppointment({...editingAppointment, status: e.target.value as '工事決定' | '保留' | '不通'})}
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white"
+                          >
+                            <option value="工事決定">工事決定</option>
+                            <option value="保留">保留</option>
+                            <option value="不通">不通</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">会話内容</label>
+                        <textarea
+                          value={editingAppointment.content}
+                          onChange={(e) => setEditingAppointment({...editingAppointment, content: e.target.value})}
+                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white"
+                          rows={3}
+                          placeholder="アポイント内容を入力してください"
+                        />
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={handleSaveAppointment}
+                          className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                        >
+                          追加
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingAppointment(null)
+                            setIsAddingAppointment(false)
+                          }}
+                          className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400"
+                        >
+                          キャンセル
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={handleCloseAppointmentModal}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+              >
+                閉じる
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       </div>
     </Layout>
   );

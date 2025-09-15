@@ -67,7 +67,7 @@ export default function Home() {
               </div>
               <div className="bg-gray-50 px-5 py-3">
                 <div className="text-sm">
-                  <a href="#" className="font-medium text-purple-600 hover:text-purple-500">
+                  <a href="/schedule" className="font-medium text-purple-600 hover:text-purple-500">
                     スケジュール画面へ
                   </a>
                 </div>
@@ -103,148 +103,61 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold">4</span>
-                    </div>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
-                        アポイント記録
-                      </dt>
-                      <dd className="text-lg font-medium text-gray-900">
-                        顧客対応履歴
-                      </dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gray-50 px-5 py-3">
-                <div className="text-sm">
-                  <a href="#" className="font-medium text-red-600 hover:text-red-500">
-                    履歴管理画面へ
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold">5</span>
-                    </div>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
-                        工事業者管理
-                      </dt>
-                      <dd className="text-lg font-medium text-gray-900">
-                        業者別進捗確認
-                      </dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gray-50 px-5 py-3">
-                <div className="text-sm">
-                  <a href="#" className="font-medium text-gray-600 hover:text-gray-500">
-                    業者管理画面へ
-                  </a>
-                </div>
-              </div>
-            </div>
           </div>
 
-          {/* 宅内引込進捗サマリ */}
+          {/* 工事進捗サマリ */}
           <div className="mt-8">
             <div className="bg-white shadow rounded-lg">
               <div className="px-4 py-5 sm:p-6">
                 <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                  宅内引込進捗サマリ
+                  工事進捗サマリ
                 </h3>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 border">
-                    <thead className="bg-blue-50">
-                      <tr>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase border">
-                          項目
-                        </th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase border">
-                          調査中
-                        </th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase border">
-                          許可申請中
-                        </th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase border">
-                          工事予定
-                        </th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase border">
-                          工事中
-                        </th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase border">
-                          完了
-                        </th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase border">
-                          保留
-                        </th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase border">
-                          合計
-                        </th>
+                  <table className="min-w-full border-collapse border border-gray-400">
+                    <thead>
+                      <tr className="bg-yellow-200">
+                        <th className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-center">工事内容(全体)</th>
+                        <th className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-center">工事許可(元工事)</th>
+                        <th className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-center">工事許可(その他工事)</th>
+                        <th className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-center">工事許可(ネット通り)</th>
+                        <th className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-center">工事作業</th>
+                        <th className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-center">宅内作業/サービス</th>
+                        <th className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-center">完工準備対応</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      <tr className="bg-gray-50">
-                        <td className="px-3 py-2 text-sm font-medium text-gray-900 border">共架工事</td>
-                        <td className="px-3 py-2 text-sm text-center text-gray-900 border">2</td>
-                        <td className="px-3 py-2 text-sm text-center text-yellow-600 border">5</td>
-                        <td className="px-3 py-2 text-sm text-center text-blue-600 border">8</td>
-                        <td className="px-3 py-2 text-sm text-center text-orange-600 border">3</td>
-                        <td className="px-3 py-2 text-sm text-center text-green-600 border">12</td>
-                        <td className="px-3 py-2 text-sm text-center text-red-600 border">1</td>
-                        <td className="px-3 py-2 text-sm text-center font-medium text-gray-900 border">31</td>
+                    <tbody>
+                      <tr className="bg-blue-100">
+                        <td className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-center">193</td>
+                        <td className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-center">175</td>
+                        <td className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-center">18</td>
+                        <td className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-center">131</td>
+                        <td className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-center">232</td>
+                        <td className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-center">1</td>
+                        <td className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-center">5</td>
                       </tr>
-                      <tr>
-                        <td className="px-3 py-2 text-sm font-medium text-gray-900 border">宅内引込</td>
-                        <td className="px-3 py-2 text-sm text-center text-gray-900 border">4</td>
-                        <td className="px-3 py-2 text-sm text-center text-yellow-600 border">7</td>
-                        <td className="px-3 py-2 text-sm text-center text-blue-600 border">15</td>
-                        <td className="px-3 py-2 text-sm text-center text-orange-600 border">6</td>
-                        <td className="px-3 py-2 text-sm text-center text-green-600 border">18</td>
-                        <td className="px-3 py-2 text-sm text-center text-red-600 border">2</td>
-                        <td className="px-3 py-2 text-sm text-center font-medium text-gray-900 border">52</td>
+                      <tr className="bg-white">
+                        <th className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-left">工事予定数</th>
+                        <th className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-left">工事許可(元工事)</th>
+                        <th className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-left">工事許可適格等候</th>
+                        <th className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-left">未調停許可(ネット通り)</th>
+                        <th className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-left">工事総数領域</th>
+                        <th className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-left">宅内領域(サービス)</th>
+                        <th className="px-2 py-1 text-xs font-bold text-black border border-gray-400 text-left">その他(全体解除)</th>
                       </tr>
-                      <tr className="bg-gray-50">
-                        <td className="px-3 py-2 text-sm font-medium text-gray-900 border">撤去工事</td>
-                        <td className="px-3 py-2 text-sm text-center text-gray-900 border">1</td>
-                        <td className="px-3 py-2 text-sm text-center text-yellow-600 border">2</td>
-                        <td className="px-3 py-2 text-sm text-center text-blue-600 border">3</td>
-                        <td className="px-3 py-2 text-sm text-center text-orange-600 border">1</td>
-                        <td className="px-3 py-2 text-sm text-center text-green-600 border">8</td>
-                        <td className="px-3 py-2 text-sm text-center text-red-600 border">0</td>
-                        <td className="px-3 py-2 text-sm text-center font-medium text-gray-900 border">15</td>
-                      </tr>
-                      <tr className="bg-blue-50 font-semibold">
-                        <td className="px-3 py-2 text-sm font-bold text-gray-900 border">合計</td>
-                        <td className="px-3 py-2 text-sm text-center font-bold text-gray-900 border">7</td>
-                        <td className="px-3 py-2 text-sm text-center font-bold text-yellow-700 border">14</td>
-                        <td className="px-3 py-2 text-sm text-center font-bold text-blue-700 border">26</td>
-                        <td className="px-3 py-2 text-sm text-center font-bold text-orange-700 border">10</td>
-                        <td className="px-3 py-2 text-sm text-center font-bold text-green-700 border">38</td>
-                        <td className="px-3 py-2 text-sm text-center font-bold text-red-700 border">3</td>
-                        <td className="px-3 py-2 text-sm text-center font-bold text-gray-900 border">98</td>
+                      <tr className="bg-gray-100">
+                        <td className="px-2 py-1 text-xs text-black border border-gray-400 text-center">15</td>
+                        <td className="px-2 py-1 text-xs text-black border border-gray-400 text-center">12</td>
+                        <td className="px-2 py-1 text-xs text-black border border-gray-400 text-center">8</td>
+                        <td className="px-2 py-1 text-xs text-black border border-gray-400 text-center">5</td>
+                        <td className="px-2 py-1 text-xs text-black border border-gray-400 text-center">18</td>
+                        <td className="px-2 py-1 text-xs text-black border border-gray-400 text-center">22</td>
+                        <td className="px-2 py-1 text-xs text-black border border-gray-400 text-center">14</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
                 <div className="mt-2 text-xs text-gray-500">
-                  ※ リアルタイムで進捗状況が更新されます（A1:H4 サマリ）
+                  ※ リアルタイムで進捗状況が更新されます
                 </div>
               </div>
             </div>
