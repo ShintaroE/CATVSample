@@ -18,7 +18,6 @@ interface ScheduleItem {
 }
 
 const contractors = ['直営班', '栄光電気', 'スライヴ'] as const
-const timeSlots = ['09:00-12:00', '13:00-17:00', '終日'] as const
 const statuses = ['予定', '作業中', '完了', '延期'] as const
 
 const sampleSchedules: ScheduleItem[] = [
@@ -126,6 +125,9 @@ export default function SchedulePage() {
       newDate.setDate(newDate.getDate() + (direction === 'next' ? 1 : -1))
     }
     setCurrentDate(newDate)
+    if (viewMode === 'day') {
+      setSelectedDate(formatDateString(newDate))
+    }
   }
 
   // 月表示用の日付配列を生成
@@ -133,7 +135,6 @@ export default function SchedulePage() {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
     const firstDay = new Date(year, month, 1)
-    const lastDay = new Date(year, month + 1, 0)
     const startDate = new Date(firstDay)
     startDate.setDate(startDate.getDate() - firstDay.getDay()) // 日曜日から開始
 
@@ -160,9 +161,17 @@ export default function SchedulePage() {
     return days
   }
 
+  // 日付をYYYY-MM-DD形式の文字列に変換（タイムゾーン考慮）
+  const formatDateString = (date: Date) => {
+    const year = date.getFullYear()
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const day = date.getDate().toString().padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
   // 特定の日付のスケジュールを取得
   const getSchedulesForDate = (date: Date) => {
-    const dateStr = date.toISOString().slice(0, 10)
+    const dateStr = formatDateString(date)
     return schedules.filter(schedule =>
       schedule.assignedDate === dateStr &&
       (selectedContractor === '全て' || schedule.contractor === selectedContractor)
@@ -171,19 +180,19 @@ export default function SchedulePage() {
 
   // 日付をクリックした時の処理
   const handleDateClick = (date: Date) => {
-    const dateStr = date.toISOString().slice(0, 10)
+    const dateStr = formatDateString(date)
     setSelectedDate(dateStr)
+    setCurrentDate(date)
     if (viewMode === 'month') {
       setViewMode('day')
     }
-    setCurrentDate(date)
   }
 
   // 今日に戻る
   const goToToday = () => {
     const today = new Date()
     setCurrentDate(today)
-    setSelectedDate(today.toISOString().slice(0, 10))
+    setSelectedDate(formatDateString(today))
   }
 
   // 1時間ごとの時間軸を生成（9:00-18:00）
@@ -213,6 +222,47 @@ export default function SchedulePage() {
       top: `${startPosition}rem`,
       height: `${height}rem`
     }
+  }
+
+  // 時間範囲が重複しているかチェック
+  const isTimeOverlapping = (timeSlot1: string, timeSlot2: string) => {
+    if (timeSlot1 === '終日' || timeSlot2 === '終日') {
+      return true
+    }
+
+    const [start1, end1] = timeSlot1.split('-').map(t => parseInt(t.split(':')[0]))
+    const [start2, end2] = timeSlot2.split('-').map(t => parseInt(t.split(':')[0]))
+
+    return start1 < end2 && start2 < end1
+  }
+
+  // 重複する予定の位置とサイズを計算
+  const calculateOverlappingLayout = (schedules: ScheduleItem[]) => {
+    const result = schedules.map((schedule, index) => {
+      const overlapping: ScheduleItem[] = []
+      let position = 0
+
+      // この予定と重複する他の予定を検索
+      for (let i = 0; i < schedules.length; i++) {
+        if (i !== index && isTimeOverlapping(schedule.timeSlot, schedules[i].timeSlot)) {
+          overlapping.push(schedules[i])
+          if (i < index) position++
+        }
+      }
+
+      const totalOverlapping = overlapping.length + 1
+      const width = totalOverlapping > 1 ? `${100 / totalOverlapping}%` : '100%'
+      const left = totalOverlapping > 1 ? `${(position * 100) / totalOverlapping}%` : '0%'
+
+      return {
+        schedule,
+        width,
+        left,
+        zIndex: 10 + position
+      }
+    })
+
+    return result
   }
 
   const handleEditSchedule = (schedule: ScheduleItem) => {
@@ -566,16 +616,19 @@ export default function SchedulePage() {
 
                       {/* 予定バー */}
                       <div className="absolute inset-0 pointer-events-none">
-                        {getSchedulesForDate(date).map((schedule, index) => {
+                        {calculateOverlappingLayout(getSchedulesForDate(date)).map((layoutItem) => {
+                          const { schedule, width, left, zIndex } = layoutItem
                           const position = getSchedulePosition(schedule.timeSlot)
                           return (
                             <div
                               key={schedule.id}
-                              className={`absolute left-1 right-1 rounded-md border shadow-sm cursor-pointer pointer-events-auto ${getContractorBarColor(schedule.contractor)}`}
+                              className={`absolute rounded-md border shadow-sm cursor-pointer pointer-events-auto ${getContractorBarColor(schedule.contractor)}`}
                               style={{
                                 top: position.top,
                                 height: position.height,
-                                zIndex: 10 + index
+                                left: `calc(0.25rem + ${left})`,
+                                width: `calc(${width} - 0.5rem)`,
+                                zIndex: zIndex
                               }}
                               onClick={(e) => {
                                 e.stopPropagation()
@@ -585,6 +638,7 @@ export default function SchedulePage() {
                               <div className="p-1 text-xs">
                                 <div className="font-medium truncate">{schedule.customerName}</div>
                                 <div className="truncate opacity-90">{schedule.workType}</div>
+                                <div className="truncate opacity-75">{schedule.address}</div>
                                 <div className="truncate opacity-75">{schedule.timeSlot}</div>
                               </div>
                             </div>
@@ -604,7 +658,7 @@ export default function SchedulePage() {
               {/* ヘッダー */}
               <div className="p-4 bg-gray-50 border-b">
                 <h3 className="text-lg font-medium text-gray-900">
-                  {formatDate(selectedDate)} の詳細スケジュール
+                  {formatDate(currentDate)} の詳細スケジュール
                 </h3>
               </div>
 
@@ -632,22 +686,26 @@ export default function SchedulePage() {
 
                     {/* 予定バー */}
                     <div className="absolute inset-0">
-                      {getSchedulesForDate(new Date(selectedDate)).map((schedule, index) => {
+                      {calculateOverlappingLayout(getSchedulesForDate(currentDate)).map((layoutItem) => {
+                        const { schedule, width, left, zIndex } = layoutItem
                         const position = getSchedulePosition(schedule.timeSlot)
                         return (
                           <div
                             key={schedule.id}
-                            className={`absolute left-2 right-2 rounded-lg border shadow-md cursor-pointer ${getContractorBarColor(schedule.contractor)}`}
+                            className={`absolute rounded-lg border shadow-md cursor-pointer ${getContractorBarColor(schedule.contractor)}`}
                             style={{
                               top: position.top,
                               height: position.height,
-                              zIndex: 10 + index
+                              left: `calc(0.5rem + ${left})`,
+                              width: `calc(${width} - 1rem)`,
+                              zIndex: zIndex
                             }}
                             onClick={() => handleEditSchedule(schedule)}
                           >
                             <div className="p-3">
                               <div className="font-bold text-sm mb-1">{schedule.customerName}</div>
                               <div className="text-sm opacity-90 mb-1">{schedule.workType}</div>
+                              <div className="text-xs opacity-75 mb-1">{schedule.address}</div>
                               <div className="text-xs opacity-75 mb-1">{schedule.contractor}</div>
                               <div className="text-xs opacity-75">{schedule.timeSlot}</div>
                               {schedule.memo && (
@@ -831,7 +889,7 @@ export default function SchedulePage() {
                     <option value="放送波人工事">放送波人工事</option>
                   </select>
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">工事日</label>
                     <input
@@ -842,16 +900,22 @@ export default function SchedulePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">時間帯</label>
-                    <select
-                      value={newSchedule.timeSlot}
-                      onChange={(e) => setNewSchedule({...newSchedule, timeSlot: e.target.value as typeof timeSlots[number]})}
+                    <label className="block text-sm font-medium text-gray-700">開始時刻</label>
+                    <input
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
                       className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white"
-                    >
-                      {timeSlots.map(slot => (
-                        <option key={slot} value={slot}>{slot}</option>
-                      ))}
-                    </select>
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">終了時刻</label>
+                    <input
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white"
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">担当業者</label>
