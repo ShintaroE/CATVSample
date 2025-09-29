@@ -1,12 +1,14 @@
 'use client'
 
 import React, { useState } from 'react'
-import { DocumentArrowUpIcon, EyeIcon, MapIcon, ClockIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { DocumentArrowUpIcon, EyeIcon, MapIcon, ClockIcon, PlusIcon, CalendarDaysIcon } from '@heroicons/react/24/outline'
 import Layout from '@/components/Layout'
+import CalendarPicker from '@/components/CalendarPicker'
 
 interface AppointmentHistory {
   id: string
   date: string
+  endTime?: string
   status: '工事決定' | '保留' | '不通'
   content: string
 }
@@ -36,15 +38,82 @@ const workContentOptions = [
   '放送波人工事'
 ]
 
+// サンプルスケジュールデータ（実際にはAPIから取得）
+const sampleSchedules = [
+  {
+    assignedDate: '2025-09-29',
+    timeSlot: '09:00-12:00',
+    contractor: '直営班',
+    status: '予定',
+    customerName: '田中太郎',
+    address: '倉敷市水島青葉町1-1-1',
+    workType: '個別対応'
+  },
+  {
+    assignedDate: '2025-09-29',
+    timeSlot: '13:00-17:00',
+    contractor: '栄光電気',
+    status: '作業中',
+    customerName: '山田花子',
+    address: '倉敷市中央2-5-8',
+    workType: 'HCNA技術人工事'
+  },
+  {
+    assignedDate: '2025-09-30',
+    timeSlot: '09:00-12:00',
+    contractor: 'スライヴ',
+    status: '予定',
+    customerName: '佐藤花子',
+    address: '倉敷市児島駅前2-2-2',
+    workType: 'HCNA技術人工事'
+  },
+  {
+    assignedDate: '2025-10-01',
+    timeSlot: '10:00-15:00',
+    contractor: '直営班',
+    status: '予定',
+    customerName: '山田次郎',
+    address: '倉敷市玉島中央町3-3-3',
+    workType: 'G・6ch追加人工事'
+  },
+  {
+    assignedDate: '2025-10-02',
+    timeSlot: '09:00-11:00',
+    contractor: '栄光電気',
+    status: '予定',
+    customerName: '鈴木一郎',
+    address: '倉敷市連島町1-4-7',
+    workType: '放送波人工事'
+  },
+  {
+    assignedDate: '2025-10-02',
+    timeSlot: '14:00-16:00',
+    contractor: 'スライヴ',
+    status: '予定',
+    customerName: '高橋美咲',
+    address: '倉敷市老松町2-8-15',
+    workType: '個別対応'
+  },
+  {
+    assignedDate: '2025-10-03',
+    timeSlot: '終日',
+    contractor: '直営班',
+    status: '作業中',
+    customerName: '渡辺健一',
+    address: '倉敷市水島工業地帯',
+    workType: '大規模回線工事'
+  }
+]
+
 const sampleOrders: OrderData[] = [
   {
-    orderNumber: '2024031500001',
+    orderNumber: '2025092900001',
     orderSource: 'KCT本社',
     workContent: '個別対応',
     customerCode: '123456789',
     customerType: '新規',
     customerName: '田中太郎',
-    constructionDate: '2024-03-15',
+    constructionDate: '2025-09-29',
     closureNumber: 'CL-001-A',
     address: '倉敷市水島青葉町1-1-1',
     phoneNumber: '086-123-4567',
@@ -54,26 +123,28 @@ const sampleOrders: OrderData[] = [
     appointmentHistory: [
       {
         id: '1',
-        date: '2024-03-10T10:00',
+        date: '2025-09-25T10:00',
+        endTime: '11:00',
         status: '保留',
         content: '詳細検討したい、後日連絡との事'
       },
       {
         id: '2',
-        date: '2024-03-12T14:30',
+        date: '2025-09-27T14:30',
+        endTime: '15:30',
         status: '工事決定',
-        content: '工事内容に合意、3月15日で調整'
+        content: '工事内容に合意、9月29日で調整'
       }
     ]
   },
   {
-    orderNumber: '2024031600002',
+    orderNumber: '2025093000002',
     orderSource: 'KCT水島',
     workContent: 'HCNAー技術人工事',
     customerCode: '234567890',
     customerType: '既存',
     customerName: '佐藤花子',
-    constructionDate: '2024-03-16',
+    constructionDate: '2025-09-30',
     closureNumber: 'CL-002-B',
     address: '倉敷市児島駅前2-2-2',
     phoneNumber: '086-234-5678',
@@ -83,20 +154,21 @@ const sampleOrders: OrderData[] = [
     appointmentHistory: [
       {
         id: '3',
-        date: '2024-03-14T09:00',
+        date: '2025-09-28T09:00',
+        endTime: '10:00',
         status: '工事決定',
         content: '工事日程確定、立会い可能'
       }
     ]
   },
   {
-    orderNumber: '2024031700003',
+    orderNumber: '2025100100003',
     orderSource: 'KCT玉島',
     workContent: 'G・6ch追加人工事',
     customerCode: '345678901',
     customerType: '新規',
     customerName: '山田次郎',
-    constructionDate: '2024-03-17',
+    constructionDate: '2025-10-01',
     closureNumber: 'CL-003-C',
     address: '倉敷市玉島中央町3-3-3',
     phoneNumber: '086-345-6789',
@@ -106,7 +178,8 @@ const sampleOrders: OrderData[] = [
     appointmentHistory: [
       {
         id: '4',
-        date: '2024-03-15T16:00',
+        date: '2025-09-26T16:00',
+        endTime: '16:30',
         status: '不通',
         content: '電話に出ず、後日再連絡'
       }
@@ -122,6 +195,12 @@ export default function OrdersPage() {
   const [appointmentOrder, setAppointmentOrder] = useState<OrderData | null>(null)
   const [editingAppointment, setEditingAppointment] = useState<AppointmentHistory | null>(null)
   const [isAddingAppointment, setIsAddingAppointment] = useState(false)
+  const [showCalendarPicker, setShowCalendarPicker] = useState(false)
+  const [appointmentDate, setAppointmentDate] = useState<string>('')
+  const [appointmentTime, setAppointmentTime] = useState<string>('')
+  const [appointmentEndTime, setAppointmentEndTime] = useState<string>('')
+  const [showScheduleModal, setShowScheduleModal] = useState(false)
+  const [selectedScheduleDate, setSelectedScheduleDate] = useState<string | null>(null)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const mapFileInputRef = React.useRef<HTMLInputElement>(null)
 
@@ -280,9 +359,14 @@ export default function OrdersPage() {
 
   const handleAddAppointment = () => {
     setIsAddingAppointment(true)
+    const today = new Date()
+    setAppointmentDate(today.toISOString().slice(0, 10))
+    setAppointmentTime('10:00')
+    setAppointmentEndTime('11:00')
     setEditingAppointment({
       id: '',
-      date: new Date().toISOString().slice(0, 16),
+      date: `${today.toISOString().slice(0, 10)}T10:00`,
+      endTime: '11:00',
       status: '保留',
       content: ''
     })
@@ -291,23 +375,32 @@ export default function OrdersPage() {
   const handleEditAppointment = (appointment: AppointmentHistory) => {
     setEditingAppointment(appointment)
     setIsAddingAppointment(false)
+    // 既存の日時を分離
+    const appointmentDateTime = new Date(appointment.date)
+    setAppointmentDate(appointmentDateTime.toISOString().slice(0, 10))
+    setAppointmentTime(appointmentDateTime.toISOString().slice(11, 16))
+    setAppointmentEndTime(appointment.endTime || '11:00')
   }
 
   const handleSaveAppointment = () => {
     if (!appointmentOrder || !editingAppointment) return
+
+    // 日付と時刻を結合
+    const combinedDateTime = `${appointmentDate}T${appointmentTime}`
+    const updatedAppointment = { ...editingAppointment, date: combinedDateTime, endTime: appointmentEndTime }
 
     const updatedOrders = orders.map(order => {
       if (order.orderNumber === appointmentOrder.orderNumber) {
         const history = order.appointmentHistory || []
         if (isAddingAppointment) {
           const newId = String(Date.now())
-          const newAppointment = { ...editingAppointment, id: newId }
+          const newAppointment = { ...updatedAppointment, id: newId }
           return { ...order, appointmentHistory: [...history, newAppointment] }
         } else {
           return {
             ...order,
             appointmentHistory: history.map(h =>
-              h.id === editingAppointment.id ? editingAppointment : h
+              h.id === editingAppointment.id ? updatedAppointment : h
             )
           }
         }
@@ -356,6 +449,69 @@ export default function OrdersPage() {
         return 'bg-red-100 text-red-800'
       default:
         return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  // カレンダーピッカーを開く
+  const handleOpenCalendarPicker = () => {
+    setShowCalendarPicker(true)
+  }
+
+  // カレンダーから日付を選択
+  const handleDateSelectFromCalendar = (selectedDate: string) => {
+    setAppointmentDate(selectedDate)
+    if (editingAppointment) {
+      const combinedDateTime = `${selectedDate}T${appointmentTime}`
+      setEditingAppointment({
+        ...editingAppointment,
+        date: combinedDateTime
+      })
+    }
+    setShowCalendarPicker(false)
+  }
+
+  // カレンダーピッカーを閉じる
+  const handleCloseCalendarPicker = () => {
+    setShowCalendarPicker(false)
+  }
+
+  // スケジュール確認モーダルを開く
+  const handleOpenScheduleModal = () => {
+    setShowScheduleModal(true)
+  }
+
+  // スケジュール確認モーダルを閉じる
+  const handleCloseScheduleModal = () => {
+    setShowScheduleModal(false)
+    setSelectedScheduleDate(null)
+  }
+
+  // スケジュール日付選択
+  const handleScheduleDateClick = (date: Date) => {
+    const dateStr = date.toISOString().slice(0, 10)
+    setSelectedScheduleDate(dateStr)
+  }
+
+  // 開始時刻を変更
+  const handleStartTimeChange = (newTime: string) => {
+    setAppointmentTime(newTime)
+    if (editingAppointment) {
+      const combinedDateTime = `${appointmentDate}T${newTime}`
+      setEditingAppointment({
+        ...editingAppointment,
+        date: combinedDateTime
+      })
+    }
+  }
+
+  // 終了時刻を変更
+  const handleEndTimeChange = (newTime: string) => {
+    setAppointmentEndTime(newTime)
+    if (editingAppointment) {
+      setEditingAppointment({
+        ...editingAppointment,
+        endTime: newTime
+      })
     }
   }
 
@@ -663,13 +819,21 @@ export default function OrdersPage() {
               <h3 className="text-lg font-medium text-gray-900">
                 アポイント履歴 - {appointmentOrder.customerName}
               </h3>
-              <button
-                onClick={handleCloseAppointmentModal}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <span className="sr-only">閉じる</span>
-                ✕
-              </button>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={handleOpenScheduleModal}
+                  className="inline-flex items-center px-3 py-2 border border-green-300 shadow-sm text-sm leading-4 font-medium rounded-md text-green-700 bg-green-50 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                >
+                  📅 スケジュール確認
+                </button>
+                <button
+                  onClick={handleCloseAppointmentModal}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <span className="sr-only">閉じる</span>
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* 顧客情報 */}
@@ -708,28 +872,46 @@ export default function OrdersPage() {
                   <div key={appointment.id} className="border rounded-lg p-4 bg-white">
                     {editingAppointment?.id === appointment.id ? (
                       <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-3 gap-3">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700">日時</label>
+                            <label className="block text-sm font-medium text-gray-700">日付</label>
                             <input
-                              type="datetime-local"
-                              value={editingAppointment.date}
-                              onChange={(e) => setEditingAppointment({...editingAppointment, date: e.target.value})}
+                              type="date"
+                              value={appointmentDate}
+                              onChange={(e) => setAppointmentDate(e.target.value)}
                               className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700">ステータス</label>
-                            <select
-                              value={editingAppointment.status}
-                              onChange={(e) => setEditingAppointment({...editingAppointment, status: e.target.value as '工事決定' | '保留' | '不通'})}
+                            <label className="block text-sm font-medium text-gray-700">開始時刻</label>
+                            <input
+                              type="time"
+                              value={appointmentTime}
+                              onChange={(e) => handleStartTimeChange(e.target.value)}
                               className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                            >
-                              <option value="工事決定">工事決定</option>
-                              <option value="保留">保留</option>
-                              <option value="不通">不通</option>
-                            </select>
+                            />
                           </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700">終了時刻</label>
+                            <input
+                              type="time"
+                              value={appointmentEndTime}
+                              onChange={(e) => handleEndTimeChange(e.target.value)}
+                              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">ステータス</label>
+                          <select
+                            value={editingAppointment.status}
+                            onChange={(e) => setEditingAppointment({...editingAppointment, status: e.target.value as '工事決定' | '保留' | '不通'})}
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                          >
+                            <option value="工事決定">工事決定</option>
+                            <option value="保留">保留</option>
+                            <option value="不通">不通</option>
+                          </select>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700">会話内容</label>
@@ -760,7 +942,11 @@ export default function OrdersPage() {
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex items-center space-x-3">
                             <span className="text-sm font-medium text-gray-900">
-                              {new Date(appointment.date).toLocaleString('ja-JP')}
+                              {new Date(appointment.date).toLocaleDateString('ja-JP')}
+                            </span>
+                            <span className="text-sm text-blue-600 font-medium">
+                              {new Date(appointment.date).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
+                              {appointment.endTime && ` - ${appointment.endTime}`}
                             </span>
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(appointment.status)}`}>
                               {appointment.status}
@@ -791,28 +977,46 @@ export default function OrdersPage() {
                 {isAddingAppointment && editingAppointment && (
                   <div className="border rounded-lg p-4 bg-blue-50">
                     <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-3 gap-3">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">日時</label>
+                          <label className="block text-sm font-medium text-gray-700">日付</label>
                           <input
-                            type="datetime-local"
-                            value={editingAppointment.date}
-                            onChange={(e) => setEditingAppointment({...editingAppointment, date: e.target.value})}
+                            type="date"
+                            value={appointmentDate}
+                            onChange={(e) => setAppointmentDate(e.target.value)}
                             className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">ステータス</label>
-                          <select
-                            value={editingAppointment.status}
-                            onChange={(e) => setEditingAppointment({...editingAppointment, status: e.target.value as '工事決定' | '保留' | '不通'})}
+                          <label className="block text-sm font-medium text-gray-700">開始時刻</label>
+                          <input
+                            type="time"
+                            value={appointmentTime}
+                            onChange={(e) => handleStartTimeChange(e.target.value)}
                             className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white"
-                          >
-                            <option value="工事決定">工事決定</option>
-                            <option value="保留">保留</option>
-                            <option value="不通">不通</option>
-                          </select>
+                          />
                         </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">終了時刻</label>
+                          <input
+                            type="time"
+                            value={appointmentEndTime}
+                            onChange={(e) => handleEndTimeChange(e.target.value)}
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">ステータス</label>
+                        <select
+                          value={editingAppointment.status}
+                          onChange={(e) => setEditingAppointment({...editingAppointment, status: e.target.value as '工事決定' | '保留' | '不通'})}
+                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white"
+                        >
+                          <option value="工事決定">工事決定</option>
+                          <option value="保留">保留</option>
+                          <option value="不通">不通</option>
+                        </select>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700">会話内容</label>
@@ -850,6 +1054,182 @@ export default function OrdersPage() {
             <div className="mt-6 flex justify-end">
               <button
                 onClick={handleCloseAppointmentModal}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+              >
+                閉じる
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* カレンダーピッカーモーダル */}
+      {showCalendarPicker && (
+        <CalendarPicker
+          selectedDate={appointmentDate}
+          onDateSelect={handleDateSelectFromCalendar}
+          onClose={handleCloseCalendarPicker}
+          existingSchedules={sampleSchedules}
+        />
+      )}
+
+      {/* スケジュール表示モーダル */}
+      {showScheduleModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 shadow-lg rounded-md bg-white">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                <CalendarDaysIcon className="h-5 w-5 mr-2" />
+                スケジュール確認
+              </h3>
+              <button
+                onClick={() => setShowScheduleModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <span className="sr-only">閉じる</span>
+                ✕
+              </button>
+            </div>
+
+            {/* 既存スケジュール表示エリア */}
+            <div className="bg-white border rounded-lg overflow-hidden">
+              <div className="grid grid-cols-7 gap-0 border-b border-gray-200">
+                {['日', '月', '火', '水', '木', '金', '土'].map((day, index) => (
+                  <div key={day} className={`p-3 text-center text-sm font-medium ${
+                    index === 0 ? 'text-red-600' : index === 6 ? 'text-blue-600' : 'text-gray-700'
+                  } bg-gray-50 border-r border-gray-200 last:border-r-0`}>
+                    {day}
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-7 gap-0">
+                {(() => {
+                  const today = new Date()
+                  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
+                  const startDate = new Date(firstDay)
+                  startDate.setDate(startDate.getDate() - firstDay.getDay())
+
+                  const days = []
+                  for (let i = 0; i < 42; i++) {
+                    const date = new Date(startDate)
+                    date.setDate(startDate.getDate() + i)
+                    days.push(date)
+                  }
+
+                  return days.map((date, index) => {
+                    const dateStr = date.toISOString().slice(0, 10)
+                    const daySchedules = sampleSchedules.filter(schedule => schedule.assignedDate === dateStr)
+                    const isCurrentMonth = date.getMonth() === today.getMonth()
+                    const isToday = date.toDateString() === today.toDateString()
+
+                    return (
+                      <div
+                        key={index}
+                        className={`min-h-24 p-2 border-r border-b border-gray-200 last:border-r-0 cursor-pointer hover:bg-blue-50 ${
+                          !isCurrentMonth ? 'bg-gray-50' : 'bg-white'
+                        } ${selectedScheduleDate === dateStr ? 'bg-blue-100 border-blue-300' : ''} ${
+                          isToday ? 'ring-2 ring-blue-500' : ''
+                        }`}
+                        onClick={() => handleScheduleDateClick(date)}
+                      >
+                        <div className={`text-sm font-medium mb-1 ${
+                          !isCurrentMonth ? 'text-gray-400' :
+                          isToday ? 'text-blue-600' : 'text-gray-900'
+                        }`}>
+                          {date.getDate()}
+                        </div>
+
+                        {/* スケジュール詳細表示 */}
+                        <div className="space-y-1">
+                          {daySchedules.slice(0, 2).map((schedule, idx) => (
+                            <div
+                              key={idx}
+                              className={`text-xs p-1 rounded truncate ${
+                                schedule.contractor === '直営班' ? 'bg-blue-100 text-blue-800' :
+                                schedule.contractor === '栄光電気' ? 'bg-green-100 text-green-800' :
+                                'bg-purple-100 text-purple-800'
+                              }`}
+                            >
+                              <div className="font-medium">{schedule.timeSlot}</div>
+                              <div className="truncate">{schedule.contractor}</div>
+                            </div>
+                          ))}
+                          {daySchedules.length > 2 && (
+                            <div className="text-xs text-gray-500 text-center font-medium">
+                              +{daySchedules.length - 2}件
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })
+                })()}
+              </div>
+            </div>
+
+            {/* 説明文 */}
+            <div className="mt-4 p-3 bg-blue-50 rounded-md">
+              <div className="text-sm text-blue-800">
+                <p>📅 日付をクリックして詳細スケジュールを確認できます</p>
+                <p>🔴 各日の既存工事予定が色分けで表示されています</p>
+              </div>
+            </div>
+
+            {/* 選択日の詳細スケジュール表示 */}
+            {selectedScheduleDate && (
+              <div className="mt-4 border-t pt-4">
+                <h5 className="text-sm font-medium text-gray-900 mb-3">
+                  📅 {selectedScheduleDate} の詳細スケジュール
+                </h5>
+                <div className="space-y-2">
+                  {sampleSchedules
+                    .filter(schedule => schedule.assignedDate === selectedScheduleDate)
+                    .map((schedule, index) => (
+                      <div key={index} className={`p-3 rounded-lg border ${
+                        schedule.contractor === '直営班' ? 'bg-blue-50 border-blue-200' :
+                        schedule.contractor === '栄光電気' ? 'bg-green-50 border-green-200' :
+                        'bg-purple-50 border-purple-200'
+                      }`}>
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="font-medium text-sm">{schedule.timeSlot}</span>
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            schedule.contractor === '直営班' ? 'bg-blue-100 text-blue-800' :
+                            schedule.contractor === '栄光電気' ? 'bg-green-100 text-green-800' :
+                            'bg-purple-100 text-purple-800'
+                          }`}>
+                            {schedule.contractor}
+                          </span>
+                        </div>
+                        {schedule.customerName && (
+                          <div className="text-xs text-gray-700 mb-1">
+                            👤 {schedule.customerName}
+                          </div>
+                        )}
+                        {schedule.address && (
+                          <div className="text-xs text-gray-600 mb-1">
+                            📍 {schedule.address}
+                          </div>
+                        )}
+                        {schedule.workType && (
+                          <div className="text-xs text-gray-600">
+                            🔧 {schedule.workType}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  {sampleSchedules.filter(schedule => schedule.assignedDate === selectedScheduleDate).length === 0 && (
+                    <div className="text-center py-4">
+                      <p className="text-sm text-gray-500">✅ この日は予定がありません</p>
+                      <p className="text-xs text-gray-400 mt-1">アポイント設定に最適です</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setShowScheduleModal(false)}
                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
               >
                 閉じる
