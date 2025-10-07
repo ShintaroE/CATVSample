@@ -17,8 +17,45 @@ interface ScheduleItem {
   memo?: string
 }
 
+interface ExclusionEntry {
+  id: string
+  date: string
+  reason: string
+  contractor: string
+  timeType: 'all_day' | 'am' | 'pm' | 'custom'
+  startTime?: string
+  endTime?: string
+}
+
 const contractors = ['直営班', '栄光電気', 'スライヴ'] as const
 const statuses = ['予定', '作業中', '完了', '延期'] as const
+
+// サンプル除外日データ
+const sampleExclusions: ExclusionEntry[] = [
+  {
+    id: 'e1',
+    date: '2025-09-10',
+    reason: '社員研修',
+    contractor: '栄光電気',
+    timeType: 'all_day',
+  },
+  {
+    id: 'e2',
+    date: '2025-09-11',
+    reason: '定期メンテナンス',
+    contractor: 'スライヴ',
+    timeType: 'am',
+  },
+  {
+    id: 'e3',
+    date: '2025-09-15',
+    reason: '車両点検',
+    contractor: '直営班',
+    timeType: 'custom',
+    startTime: '13:00',
+    endTime: '17:00',
+  },
+]
 
 const sampleSchedules: ScheduleItem[] = [
   {
@@ -93,11 +130,27 @@ const sampleSchedules: ScheduleItem[] = [
 
 export default function SchedulePage() {
   const [schedules, setSchedules] = useState<ScheduleItem[]>(sampleSchedules)
+  const [exclusions, setExclusions] = useState<ExclusionEntry[]>(sampleExclusions)
   const [currentDate, setCurrentDate] = useState<Date>(new Date(2025, 8, 15)) // 2025年9月15日
   const [selectedDate, setSelectedDate] = useState<string>('2025-09-15')
   const [selectedContractor, setSelectedContractor] = useState<string>('全て')
   const [editingSchedule, setEditingSchedule] = useState<ScheduleItem | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
+
+  const getTimeLabel = (entry: ExclusionEntry): string => {
+    switch (entry.timeType) {
+      case 'all_day':
+        return '終日'
+      case 'am':
+        return '午前'
+      case 'pm':
+        return '午後'
+      case 'custom':
+        return `${entry.startTime}-${entry.endTime}`
+      default:
+        return '終日'
+    }
+  }
   const [showAddModal, setShowAddModal] = useState(false)
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month')
   const [newSchedule, setNewSchedule] = useState<Partial<ScheduleItem>>({
@@ -204,6 +257,36 @@ export default function SchedulePage() {
     return hours
   }
 
+  // 除外日の時間範囲を解析してポジションを計算
+  const getExclusionPosition = (exclusion: ExclusionEntry) => {
+    if (exclusion.timeType === 'all_day') {
+      return { top: 0, height: '100%' }
+    }
+
+    if (exclusion.timeType === 'am') {
+      return { top: 0, height: '50%' }
+    }
+
+    if (exclusion.timeType === 'pm') {
+      return { top: '50%', height: '50%' }
+    }
+
+    if (exclusion.timeType === 'custom' && exclusion.startTime && exclusion.endTime) {
+      const startHour = parseInt(exclusion.startTime.split(':')[0])
+      const startMinute = parseInt(exclusion.startTime.split(':')[1])
+      const endHour = parseInt(exclusion.endTime.split(':')[0])
+      const endMinute = parseInt(exclusion.endTime.split(':')[1])
+
+      const startPosition = (startHour - 9) * 4 + (startMinute / 60) * 4 // 1時間 = 4rem
+      const endPosition = (endHour - 9) * 4 + (endMinute / 60) * 4
+      const height = endPosition - startPosition
+
+      return { top: `${startPosition}rem`, height: `${height}rem` }
+    }
+
+    return { top: 0, height: '100%' }
+  }
+
   // 予定の時間範囲を解析してポジションを計算
   const getSchedulePosition = (timeSlot: string) => {
     if (timeSlot === '終日') {
@@ -224,6 +307,23 @@ export default function SchedulePage() {
     }
   }
 
+  // 除外日の時間範囲を文字列化
+  const getExclusionTimeSlot = (exclusion: ExclusionEntry): string => {
+    if (exclusion.timeType === 'all_day') {
+      return '終日'
+    }
+    if (exclusion.timeType === 'am') {
+      return '09:00-13:00'
+    }
+    if (exclusion.timeType === 'pm') {
+      return '13:00-18:00'
+    }
+    if (exclusion.timeType === 'custom' && exclusion.startTime && exclusion.endTime) {
+      return `${exclusion.startTime}-${exclusion.endTime}`
+    }
+    return '終日'
+  }
+
   // 時間範囲が重複しているかチェック
   const isTimeOverlapping = (timeSlot1: string, timeSlot2: string) => {
     if (timeSlot1 === '終日' || timeSlot2 === '終日') {
@@ -236,7 +336,47 @@ export default function SchedulePage() {
     return start1 < end2 && start2 < end1
   }
 
-  // 重複する予定の位置とサイズを計算
+  // 予定と除外日を統合した型
+  type CalendarItem =
+    | { type: 'schedule'; data: ScheduleItem; timeSlot: string }
+    | { type: 'exclusion'; data: ExclusionEntry; timeSlot: string }
+
+  // 重複する予定・除外日の位置とサイズを計算（統合版）
+  const calculateOverlappingLayoutWithExclusions = (schedules: ScheduleItem[], exclusions: ExclusionEntry[]) => {
+    // 予定と除外日を統合
+    const items: CalendarItem[] = [
+      ...schedules.map(s => ({ type: 'schedule' as const, data: s, timeSlot: s.timeSlot })),
+      ...exclusions.map(e => ({ type: 'exclusion' as const, data: e, timeSlot: getExclusionTimeSlot(e) }))
+    ]
+
+    const result = items.map((item, index) => {
+      const overlapping: CalendarItem[] = []
+      let position = 0
+
+      // このアイテムと重複する他のアイテムを検索
+      for (let i = 0; i < items.length; i++) {
+        if (i !== index && isTimeOverlapping(item.timeSlot, items[i].timeSlot)) {
+          overlapping.push(items[i])
+          if (i < index) position++
+        }
+      }
+
+      const totalOverlapping = overlapping.length + 1
+      const width = totalOverlapping > 1 ? `${100 / totalOverlapping}%` : '100%'
+      const left = totalOverlapping > 1 ? `${(position * 100) / totalOverlapping}%` : '0%'
+
+      return {
+        item,
+        width,
+        left,
+        zIndex: totalOverlapping - position
+      }
+    })
+
+    return result
+  }
+
+  // 重複する予定の位置とサイズを計算（互換性のため残す）
   const calculateOverlappingLayout = (schedules: ScheduleItem[]) => {
     const result = schedules.map((schedule, index) => {
       const overlapping: ScheduleItem[] = []
@@ -524,7 +664,9 @@ export default function SchedulePage() {
               </div>
               <div className="grid grid-cols-7 gap-0">
                 {getMonthDays().map((date, index) => {
+                  const dateStr = date.toISOString().split('T')[0]
                   const daySchedules = getSchedulesForDate(date)
+                  const dayExclusions = exclusions.filter(ex => ex.date === dateStr)
                   return (
                     <div
                       key={index}
@@ -542,7 +684,24 @@ export default function SchedulePage() {
                         {date.getDate()}
                       </div>
                       <div className="space-y-1">
-                        {daySchedules.slice(0, 3).map(schedule => (
+                        {/* 除外日表示（最優先） */}
+                        {dayExclusions.map(exclusion => (
+                          <div
+                            key={exclusion.id}
+                            className="text-xs p-1 rounded border-2 border-dashed border-red-400 bg-red-50"
+                            title={`除外日: ${exclusion.contractor} - ${exclusion.reason}`}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span className="text-red-700 font-bold">🚫</span>
+                              <span className="font-medium text-red-800 truncate">{exclusion.contractor}</span>
+                            </div>
+                            <div className="text-[10px] text-red-700 truncate">{getTimeLabel(exclusion)}</div>
+                            <div className="text-[10px] text-red-600 truncate italic">{exclusion.reason}</div>
+                          </div>
+                        ))}
+
+                        {/* 通常のスケジュール */}
+                        {daySchedules.slice(0, dayExclusions.length > 0 ? 2 : 3).map(schedule => (
                           <div
                             key={schedule.id}
                             className={`text-xs p-1 rounded truncate cursor-pointer ${getContractorColor(schedule.contractor)}`}
@@ -558,9 +717,9 @@ export default function SchedulePage() {
                             <div className="truncate">{schedule.customerName}</div>
                           </div>
                         ))}
-                        {daySchedules.length > 3 && (
+                        {daySchedules.length > (dayExclusions.length > 0 ? 2 : 3) && (
                           <div className="text-xs text-gray-500 text-center">
-                            +{daySchedules.length - 3}件
+                            +{daySchedules.length - (dayExclusions.length > 0 ? 2 : 3)}件
                           </div>
                         )}
                       </div>
@@ -601,52 +760,89 @@ export default function SchedulePage() {
                   </div>
 
                   {/* 各日のカラム */}
-                  {getWeekDays().map((date) => (
-                    <div key={date.toISOString()} className="relative border-r border-gray-200 last:border-r-0">
-                      {/* 時間グリッド */}
-                      {getHourlyTimeSlots().map((hour) => (
-                        <div
-                          key={hour}
-                          className={`h-16 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                            isSelected(date) ? 'bg-blue-25' : 'bg-white'
-                          }`}
-                          onClick={() => handleDateClick(date)}
-                        />
-                      ))}
+                  {getWeekDays().map((date) => {
+                    const dateStr = date.toISOString().split('T')[0]
+                    const daySchedules = getSchedulesForDate(date)
+                    const dayExclusions = exclusions.filter(ex => ex.date === dateStr)
+                    const layoutItems = calculateOverlappingLayoutWithExclusions(daySchedules, dayExclusions)
 
-                      {/* 予定バー */}
-                      <div className="absolute inset-0 pointer-events-none">
-                        {calculateOverlappingLayout(getSchedulesForDate(date)).map((layoutItem) => {
-                          const { schedule, width, left, zIndex } = layoutItem
-                          const position = getSchedulePosition(schedule.timeSlot)
-                          return (
-                            <div
-                              key={schedule.id}
-                              className={`absolute rounded-md border shadow-sm cursor-pointer pointer-events-auto ${getContractorBarColor(schedule.contractor)}`}
-                              style={{
-                                top: position.top,
-                                height: position.height,
-                                left: `calc(0.25rem + ${left})`,
-                                width: `calc(${width} - 0.5rem)`,
-                                zIndex: zIndex
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleEditSchedule(schedule)
-                              }}
-                            >
-                              <div className="p-1 text-xs">
-                                <div className="font-medium truncate">{schedule.customerName}</div>
-                                <div className="truncate opacity-90">{schedule.workType}</div>
-                                <div className="truncate opacity-75">{schedule.address}</div>
-                                <div className="truncate opacity-75">{schedule.timeSlot}</div>
-                              </div>
-                            </div>
-                          )
-                        })}
+                    return (
+                      <div key={date.toISOString()} className="relative border-r border-gray-200 last:border-r-0">
+                        {/* 時間グリッド */}
+                        {getHourlyTimeSlots().map((hour) => (
+                          <div
+                            key={hour}
+                            className={`h-16 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
+                              isSelected(date) ? 'bg-blue-25' : 'bg-white'
+                            }`}
+                            onClick={() => handleDateClick(date)}
+                          />
+                        ))}
+
+                        {/* 予定と除外日のバー */}
+                        <div className="absolute inset-0 pointer-events-none">
+                          {layoutItems.map((layoutItem) => {
+                            const { item, width, left, zIndex } = layoutItem
+
+                            if (item.type === 'exclusion') {
+                              const exclusion = item.data
+                              const position = getExclusionPosition(exclusion)
+                              return (
+                                <div
+                                  key={`exclusion-${exclusion.id}`}
+                                  className="absolute rounded-md border-2 border-dashed border-red-500 bg-red-50 shadow-sm pointer-events-auto"
+                                  style={{
+                                    top: position.top,
+                                    height: position.height,
+                                    left: `calc(0.25rem + ${left})`,
+                                    width: `calc(${width} - 0.5rem)`,
+                                    zIndex: zIndex
+                                  }}
+                                  title={`除外日: ${exclusion.contractor} - ${exclusion.reason}`}
+                                >
+                                  <div className="p-1 text-xs">
+                                    <div className="flex items-center space-x-1">
+                                      <span className="text-red-700 font-bold">🚫</span>
+                                      <span className="font-bold text-red-800 truncate">{exclusion.contractor}</span>
+                                    </div>
+                                    <div className="text-red-700 font-medium truncate">{getTimeLabel(exclusion)}</div>
+                                    <div className="text-red-600 truncate italic">{exclusion.reason}</div>
+                                  </div>
+                                </div>
+                              )
+                            } else {
+                              const schedule = item.data
+                              const position = getSchedulePosition(schedule.timeSlot)
+                              return (
+                                <div
+                                  key={schedule.id}
+                                  className={`absolute rounded-md border shadow-sm cursor-pointer pointer-events-auto ${getContractorBarColor(schedule.contractor)}`}
+                                  style={{
+                                    top: position.top,
+                                    height: position.height,
+                                    left: `calc(0.25rem + ${left})`,
+                                    width: `calc(${width} - 0.5rem)`,
+                                    zIndex: zIndex
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleEditSchedule(schedule)
+                                  }}
+                                >
+                                  <div className="p-1 text-xs">
+                                    <div className="font-medium truncate">{schedule.customerName}</div>
+                                    <div className="truncate opacity-90">{schedule.workType}</div>
+                                    <div className="truncate opacity-75">{schedule.address}</div>
+                                    <div className="truncate opacity-75">{schedule.timeSlot}</div>
+                                  </div>
+                                </div>
+                              )
+                            }
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             </div>
@@ -684,39 +880,77 @@ export default function SchedulePage() {
                       />
                     ))}
 
-                    {/* 予定バー */}
+                    {/* 予定と除外日のバー */}
                     <div className="absolute inset-0">
-                      {calculateOverlappingLayout(getSchedulesForDate(currentDate)).map((layoutItem) => {
-                        const { schedule, width, left, zIndex } = layoutItem
-                        const position = getSchedulePosition(schedule.timeSlot)
-                        return (
-                          <div
-                            key={schedule.id}
-                            className={`absolute rounded-lg border shadow-md cursor-pointer ${getContractorBarColor(schedule.contractor)}`}
-                            style={{
-                              top: position.top,
-                              height: position.height,
-                              left: `calc(0.5rem + ${left})`,
-                              width: `calc(${width} - 1rem)`,
-                              zIndex: zIndex
-                            }}
-                            onClick={() => handleEditSchedule(schedule)}
-                          >
-                            <div className="p-3">
-                              <div className="font-bold text-sm mb-1">{schedule.customerName}</div>
-                              <div className="text-sm opacity-90 mb-1">{schedule.workType}</div>
-                              <div className="text-xs opacity-75 mb-1">{schedule.address}</div>
-                              <div className="text-xs opacity-75 mb-1">{schedule.contractor}</div>
-                              <div className="text-xs opacity-75">{schedule.timeSlot}</div>
-                              {schedule.memo && (
-                                <div className="text-xs opacity-75 mt-1 border-t border-white/20 pt-1">
-                                  {schedule.memo}
+                      {(() => {
+                        const dateStr = currentDate.toISOString().split('T')[0]
+                        const daySchedules = getSchedulesForDate(currentDate)
+                        const dayExclusions = exclusions.filter(ex => ex.date === dateStr)
+                        const layoutItems = calculateOverlappingLayoutWithExclusions(daySchedules, dayExclusions)
+
+                        return layoutItems.map((layoutItem) => {
+                          const { item, width, left, zIndex } = layoutItem
+
+                          if (item.type === 'exclusion') {
+                            const exclusion = item.data
+                            const position = getExclusionPosition(exclusion)
+                            return (
+                              <div
+                                key={`exclusion-${exclusion.id}`}
+                                className="absolute rounded-lg border-2 border-dashed border-red-500 bg-red-50 shadow-md"
+                                style={{
+                                  top: position.top,
+                                  height: position.height,
+                                  left: `calc(0.5rem + ${left})`,
+                                  width: `calc(${width} - 1rem)`,
+                                  zIndex: zIndex
+                                }}
+                                title={`除外日: ${exclusion.contractor} - ${exclusion.reason}`}
+                              >
+                                <div className="p-3">
+                                  <div className="flex items-center space-x-2 mb-2">
+                                    <span className="text-red-700 font-bold text-lg">🚫</span>
+                                    <span className="font-bold text-red-800 text-sm">除外日</span>
+                                  </div>
+                                  <div className="font-bold text-sm text-red-800 mb-1">{exclusion.contractor}</div>
+                                  <div className="text-sm text-red-700 mb-1 font-medium">{getTimeLabel(exclusion)}</div>
+                                  <div className="text-sm text-red-600 italic">{exclusion.reason}</div>
                                 </div>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      })}
+                              </div>
+                            )
+                          } else {
+                            const schedule = item.data
+                            const position = getSchedulePosition(schedule.timeSlot)
+                            return (
+                              <div
+                                key={schedule.id}
+                                className={`absolute rounded-lg border shadow-md cursor-pointer ${getContractorBarColor(schedule.contractor)}`}
+                                style={{
+                                  top: position.top,
+                                  height: position.height,
+                                  left: `calc(0.5rem + ${left})`,
+                                  width: `calc(${width} - 1rem)`,
+                                  zIndex: zIndex
+                                }}
+                                onClick={() => handleEditSchedule(schedule)}
+                              >
+                                <div className="p-3">
+                                  <div className="font-bold text-sm mb-1">{schedule.customerName}</div>
+                                  <div className="text-sm opacity-90 mb-1">{schedule.workType}</div>
+                                  <div className="text-xs opacity-75 mb-1">{schedule.address}</div>
+                                  <div className="text-xs opacity-75 mb-1">{schedule.contractor}</div>
+                                  <div className="text-xs opacity-75">{schedule.timeSlot}</div>
+                                  {schedule.memo && (
+                                    <div className="text-xs opacity-75 mt-1 border-t border-white/20 pt-1">
+                                      {schedule.memo}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          }
+                        })
+                      })()}
                     </div>
                   </div>
                 </div>

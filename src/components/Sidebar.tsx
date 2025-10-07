@@ -2,13 +2,16 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
 import {
   HomeIcon,
   DocumentTextIcon,
   CalendarDaysIcon,
   DocumentCheckIcon,
   ComputerDesktopIcon,
+  ArrowRightOnRectangleIcon,
+  UserCircleIcon,
 } from '@heroicons/react/24/outline'
 
 interface MenuItem {
@@ -17,7 +20,7 @@ interface MenuItem {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
 }
 
-const menuItems: MenuItem[] = [
+const adminMenuItems: MenuItem[] = [
   {
     name: 'ダッシュボード',
     href: '/',
@@ -40,9 +43,26 @@ const menuItems: MenuItem[] = [
   },
 ]
 
+const contractorMenuItems: MenuItem[] = [
+  {
+    name: '除外日管理',
+    href: '/my-exclusions',
+    icon: CalendarDaysIcon,
+  },
+]
+
 export default function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
+  const { user, logout } = useAuth()
+
+  const menuItems = user?.role === 'admin' ? adminMenuItems : contractorMenuItems
+
+  const handleLogout = () => {
+    logout()
+    router.push('/login')
+  }
 
   return (
     <div
@@ -65,7 +85,7 @@ export default function Sidebar() {
       </div>
 
       {/* メニューアイテム */}
-      <nav className="flex flex-col space-y-2 w-full px-2">
+      <nav className="flex flex-col space-y-2 w-full px-2 flex-1">
         {menuItems.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href
@@ -95,6 +115,43 @@ export default function Sidebar() {
         })}
       </nav>
 
+      {/* ユーザー情報とログアウト */}
+      {user && (
+        <div className="mt-auto px-2 pt-4 border-t border-gray-700 space-y-2">
+          {/* ユーザー情報 */}
+          <div className="flex items-center px-2 py-3 bg-gray-800 rounded-lg">
+            <div className="flex items-center justify-center w-8 h-8">
+              <UserCircleIcon className="h-6 w-6 text-blue-400" />
+            </div>
+            {isExpanded && (
+              <div className="ml-3">
+                <p className="text-sm font-medium text-white whitespace-nowrap">
+                  {user.name}
+                </p>
+                <p className="text-xs text-gray-400">
+                  {user.role === 'admin' ? '管理者アカウント' : '協力会社アカウント'}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* ログアウトボタン */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center px-2 py-3 rounded-lg text-red-400 hover:bg-red-900 hover:bg-opacity-20 hover:text-red-300 transition-colors duration-200"
+            title="ログアウト"
+          >
+            <div className="flex items-center justify-center w-8 h-8">
+              <ArrowRightOnRectangleIcon className="h-6 w-6" />
+            </div>
+            {isExpanded && (
+              <span className="ml-3 text-sm font-medium whitespace-nowrap">
+                ログアウト
+              </span>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   )
 }

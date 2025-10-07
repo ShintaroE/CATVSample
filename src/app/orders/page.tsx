@@ -199,7 +199,6 @@ export default function OrdersPage() {
   const [appointmentDate, setAppointmentDate] = useState<string>('')
   const [appointmentTime, setAppointmentTime] = useState<string>('')
   const [appointmentEndTime, setAppointmentEndTime] = useState<string>('')
-  const [showScheduleModal, setShowScheduleModal] = useState(false)
   const [selectedScheduleDate, setSelectedScheduleDate] = useState<string | null>(null)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const mapFileInputRef = React.useRef<HTMLInputElement>(null)
@@ -355,6 +354,7 @@ export default function OrdersPage() {
     setAppointmentOrder(null)
     setEditingAppointment(null)
     setIsAddingAppointment(false)
+    setSelectedScheduleDate(null)
   }
 
   const handleAddAppointment = () => {
@@ -473,17 +473,6 @@ export default function OrdersPage() {
   // カレンダーピッカーを閉じる
   const handleCloseCalendarPicker = () => {
     setShowCalendarPicker(false)
-  }
-
-  // スケジュール確認モーダルを開く
-  const handleOpenScheduleModal = () => {
-    setShowScheduleModal(true)
-  }
-
-  // スケジュール確認モーダルを閉じる
-  const handleCloseScheduleModal = () => {
-    setShowScheduleModal(false)
-    setSelectedScheduleDate(null)
   }
 
   // スケジュール日付選択
@@ -814,26 +803,160 @@ export default function OrdersPage() {
       {/* アポイント履歴モーダル */}
       {showAppointmentModal && appointmentOrder && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
+          <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900">
                 アポイント履歴 - {appointmentOrder.customerName}
               </h3>
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={handleOpenScheduleModal}
-                  className="inline-flex items-center px-3 py-2 border border-green-300 shadow-sm text-sm leading-4 font-medium rounded-md text-green-700 bg-green-50 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                >
-                  📅 スケジュール確認
-                </button>
-                <button
-                  onClick={handleCloseAppointmentModal}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <span className="sr-only">閉じる</span>
-                  ✕
-                </button>
+              <button
+                onClick={handleCloseAppointmentModal}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <span className="sr-only">閉じる</span>
+                ✕
+              </button>
+            </div>
+
+            {/* スケジュール確認エリア */}
+            <div className="mb-6 bg-white border rounded-lg p-4">
+              <h4 className="text-md font-medium text-gray-900 mb-3 flex items-center">
+                <CalendarDaysIcon className="h-5 w-5 mr-2" />
+                スケジュール確認
+              </h4>
+
+              {/* カレンダー表示 */}
+              <div className="bg-white border rounded-lg overflow-hidden mb-3">
+                <div className="grid grid-cols-7 gap-0 border-b border-gray-200">
+                  {['日', '月', '火', '水', '木', '金', '土'].map((day, index) => (
+                    <div key={day} className={`p-2 text-center text-xs font-medium ${
+                      index === 0 ? 'text-red-600' : index === 6 ? 'text-blue-600' : 'text-gray-700'
+                    } bg-gray-50 border-r border-gray-200 last:border-r-0`}>
+                      {day}
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-7 gap-0">
+                  {(() => {
+                    const today = new Date()
+                    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
+                    const startDate = new Date(firstDay)
+                    startDate.setDate(startDate.getDate() - firstDay.getDay())
+
+                    const days = []
+                    for (let i = 0; i < 42; i++) {
+                      const date = new Date(startDate)
+                      date.setDate(startDate.getDate() + i)
+                      days.push(date)
+                    }
+
+                    return days.map((date, index) => {
+                      const dateStr = date.toISOString().slice(0, 10)
+                      const daySchedules = sampleSchedules.filter(schedule => schedule.assignedDate === dateStr)
+                      const isCurrentMonth = date.getMonth() === today.getMonth()
+                      const isToday = date.toDateString() === today.toDateString()
+
+                      return (
+                        <div
+                          key={index}
+                          className={`min-h-20 p-1 border-r border-b border-gray-200 last:border-r-0 cursor-pointer hover:bg-blue-50 ${
+                            !isCurrentMonth ? 'bg-gray-50' : 'bg-white'
+                          } ${selectedScheduleDate === dateStr ? 'bg-blue-100 border-blue-300' : ''} ${
+                            isToday ? 'ring-2 ring-blue-500' : ''
+                          }`}
+                          onClick={() => handleScheduleDateClick(date)}
+                        >
+                          <div className={`text-xs font-medium mb-1 ${
+                            !isCurrentMonth ? 'text-gray-400' :
+                            isToday ? 'text-blue-600' : 'text-gray-900'
+                          }`}>
+                            {date.getDate()}
+                          </div>
+
+                          {/* スケジュール詳細表示 */}
+                          <div className="space-y-0.5">
+                            {daySchedules.slice(0, 1).map((schedule, idx) => (
+                              <div
+                                key={idx}
+                                className={`text-[10px] p-0.5 rounded truncate ${
+                                  schedule.contractor === '直営班' ? 'bg-blue-100 text-blue-800' :
+                                  schedule.contractor === '栄光電気' ? 'bg-green-100 text-green-800' :
+                                  'bg-purple-100 text-purple-800'
+                                }`}
+                              >
+                                <div className="truncate">{schedule.contractor}</div>
+                              </div>
+                            ))}
+                            {daySchedules.length > 1 && (
+                              <div className="text-[10px] text-gray-500 text-center">
+                                +{daySchedules.length - 1}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })
+                  })()}
+                </div>
               </div>
+
+              {/* 説明文 */}
+              <div className="p-2 bg-blue-50 rounded-md mb-3">
+                <div className="text-xs text-blue-800">
+                  <p>📅 日付をクリックして詳細スケジュールを確認できます</p>
+                </div>
+              </div>
+
+              {/* 選択日の詳細スケジュール表示 */}
+              {selectedScheduleDate && (
+                <div className="border-t pt-3">
+                  <h5 className="text-sm font-medium text-gray-900 mb-2">
+                    📅 {selectedScheduleDate} の詳細スケジュール
+                  </h5>
+                  <div className="space-y-2">
+                    {sampleSchedules
+                      .filter(schedule => schedule.assignedDate === selectedScheduleDate)
+                      .map((schedule, index) => (
+                        <div key={index} className={`p-2 rounded-lg border ${
+                          schedule.contractor === '直営班' ? 'bg-blue-50 border-blue-200' :
+                          schedule.contractor === '栄光電気' ? 'bg-green-50 border-green-200' :
+                          'bg-purple-50 border-purple-200'
+                        }`}>
+                          <div className="flex justify-between items-start mb-1">
+                            <span className="font-medium text-xs">{schedule.timeSlot}</span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                              schedule.contractor === '直営班' ? 'bg-blue-100 text-blue-800' :
+                              schedule.contractor === '栄光電気' ? 'bg-green-100 text-green-800' :
+                              'bg-purple-100 text-purple-800'
+                            }`}>
+                              {schedule.contractor}
+                            </span>
+                          </div>
+                          {schedule.customerName && (
+                            <div className="text-[10px] text-gray-700 mb-1">
+                              👤 {schedule.customerName}
+                            </div>
+                          )}
+                          {schedule.address && (
+                            <div className="text-[10px] text-gray-600 mb-1">
+                              📍 {schedule.address}
+                            </div>
+                          )}
+                          {schedule.workType && (
+                            <div className="text-[10px] text-gray-600">
+                              🔧 {schedule.workType}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    {sampleSchedules.filter(schedule => schedule.assignedDate === selectedScheduleDate).length === 0 && (
+                      <div className="text-center py-3">
+                        <p className="text-xs text-gray-500">✅ この日は予定がありません</p>
+                        <p className="text-[10px] text-gray-400 mt-1">アポイント設定に最適です</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 顧客情報 */}
@@ -1071,172 +1194,6 @@ export default function OrdersPage() {
           onClose={handleCloseCalendarPicker}
           existingSchedules={sampleSchedules}
         />
-      )}
-
-      {/* スケジュール表示モーダル */}
-      {showScheduleModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 shadow-lg rounded-md bg-white">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900 flex items-center">
-                <CalendarDaysIcon className="h-5 w-5 mr-2" />
-                スケジュール確認
-              </h3>
-              <button
-                onClick={() => setShowScheduleModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <span className="sr-only">閉じる</span>
-                ✕
-              </button>
-            </div>
-
-            {/* 既存スケジュール表示エリア */}
-            <div className="bg-white border rounded-lg overflow-hidden">
-              <div className="grid grid-cols-7 gap-0 border-b border-gray-200">
-                {['日', '月', '火', '水', '木', '金', '土'].map((day, index) => (
-                  <div key={day} className={`p-3 text-center text-sm font-medium ${
-                    index === 0 ? 'text-red-600' : index === 6 ? 'text-blue-600' : 'text-gray-700'
-                  } bg-gray-50 border-r border-gray-200 last:border-r-0`}>
-                    {day}
-                  </div>
-                ))}
-              </div>
-              <div className="grid grid-cols-7 gap-0">
-                {(() => {
-                  const today = new Date()
-                  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
-                  const startDate = new Date(firstDay)
-                  startDate.setDate(startDate.getDate() - firstDay.getDay())
-
-                  const days = []
-                  for (let i = 0; i < 42; i++) {
-                    const date = new Date(startDate)
-                    date.setDate(startDate.getDate() + i)
-                    days.push(date)
-                  }
-
-                  return days.map((date, index) => {
-                    const dateStr = date.toISOString().slice(0, 10)
-                    const daySchedules = sampleSchedules.filter(schedule => schedule.assignedDate === dateStr)
-                    const isCurrentMonth = date.getMonth() === today.getMonth()
-                    const isToday = date.toDateString() === today.toDateString()
-
-                    return (
-                      <div
-                        key={index}
-                        className={`min-h-24 p-2 border-r border-b border-gray-200 last:border-r-0 cursor-pointer hover:bg-blue-50 ${
-                          !isCurrentMonth ? 'bg-gray-50' : 'bg-white'
-                        } ${selectedScheduleDate === dateStr ? 'bg-blue-100 border-blue-300' : ''} ${
-                          isToday ? 'ring-2 ring-blue-500' : ''
-                        }`}
-                        onClick={() => handleScheduleDateClick(date)}
-                      >
-                        <div className={`text-sm font-medium mb-1 ${
-                          !isCurrentMonth ? 'text-gray-400' :
-                          isToday ? 'text-blue-600' : 'text-gray-900'
-                        }`}>
-                          {date.getDate()}
-                        </div>
-
-                        {/* スケジュール詳細表示 */}
-                        <div className="space-y-1">
-                          {daySchedules.slice(0, 2).map((schedule, idx) => (
-                            <div
-                              key={idx}
-                              className={`text-xs p-1 rounded truncate ${
-                                schedule.contractor === '直営班' ? 'bg-blue-100 text-blue-800' :
-                                schedule.contractor === '栄光電気' ? 'bg-green-100 text-green-800' :
-                                'bg-purple-100 text-purple-800'
-                              }`}
-                            >
-                              <div className="font-medium">{schedule.timeSlot}</div>
-                              <div className="truncate">{schedule.contractor}</div>
-                            </div>
-                          ))}
-                          {daySchedules.length > 2 && (
-                            <div className="text-xs text-gray-500 text-center font-medium">
-                              +{daySchedules.length - 2}件
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })
-                })()}
-              </div>
-            </div>
-
-            {/* 説明文 */}
-            <div className="mt-4 p-3 bg-blue-50 rounded-md">
-              <div className="text-sm text-blue-800">
-                <p>📅 日付をクリックして詳細スケジュールを確認できます</p>
-                <p>🔴 各日の既存工事予定が色分けで表示されています</p>
-              </div>
-            </div>
-
-            {/* 選択日の詳細スケジュール表示 */}
-            {selectedScheduleDate && (
-              <div className="mt-4 border-t pt-4">
-                <h5 className="text-sm font-medium text-gray-900 mb-3">
-                  📅 {selectedScheduleDate} の詳細スケジュール
-                </h5>
-                <div className="space-y-2">
-                  {sampleSchedules
-                    .filter(schedule => schedule.assignedDate === selectedScheduleDate)
-                    .map((schedule, index) => (
-                      <div key={index} className={`p-3 rounded-lg border ${
-                        schedule.contractor === '直営班' ? 'bg-blue-50 border-blue-200' :
-                        schedule.contractor === '栄光電気' ? 'bg-green-50 border-green-200' :
-                        'bg-purple-50 border-purple-200'
-                      }`}>
-                        <div className="flex justify-between items-start mb-2">
-                          <span className="font-medium text-sm">{schedule.timeSlot}</span>
-                          <span className={`text-xs px-2 py-1 rounded-full ${
-                            schedule.contractor === '直営班' ? 'bg-blue-100 text-blue-800' :
-                            schedule.contractor === '栄光電気' ? 'bg-green-100 text-green-800' :
-                            'bg-purple-100 text-purple-800'
-                          }`}>
-                            {schedule.contractor}
-                          </span>
-                        </div>
-                        {schedule.customerName && (
-                          <div className="text-xs text-gray-700 mb-1">
-                            👤 {schedule.customerName}
-                          </div>
-                        )}
-                        {schedule.address && (
-                          <div className="text-xs text-gray-600 mb-1">
-                            📍 {schedule.address}
-                          </div>
-                        )}
-                        {schedule.workType && (
-                          <div className="text-xs text-gray-600">
-                            🔧 {schedule.workType}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  {sampleSchedules.filter(schedule => schedule.assignedDate === selectedScheduleDate).length === 0 && (
-                    <div className="text-center py-4">
-                      <p className="text-sm text-gray-500">✅ この日は予定がありません</p>
-                      <p className="text-xs text-gray-400 mt-1">アポイント設定に最適です</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setShowScheduleModal(false)}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-              >
-                閉じる
-              </button>
-            </div>
-          </div>
-        </div>
       )}
 
       </div>
