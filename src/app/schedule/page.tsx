@@ -977,6 +977,38 @@ export default function SchedulePage() {
               </div>
 
               <div className="space-y-4">
+                {/* 詳細情報セクション */}
+                <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">詳細情報</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">顧客コード</label>
+                      <div className="text-sm text-gray-900">{editingSchedule.orderNumber}</div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">名前</label>
+                      <div className="text-sm text-gray-900">{editingSchedule.customerName}</div>
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">場所</label>
+                      <div className="text-sm text-gray-900">{editingSchedule.address}</div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">工事班</label>
+                      <div className="text-sm text-gray-900">{editingSchedule.contractor}</div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">工事内容</label>
+                      <div className="text-sm text-gray-900">{editingSchedule.workType}</div>
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">時間</label>
+                      <div className="text-sm text-gray-900">{editingSchedule.timeSlot}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 編集セクション */}
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">工事日</label>

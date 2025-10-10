@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { DocumentArrowUpIcon, EyeIcon, MapIcon, ClockIcon, PlusIcon, CalendarDaysIcon } from '@heroicons/react/24/outline'
+import { DocumentArrowUpIcon, EyeIcon, MapIcon, ClockIcon, PlusIcon, CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import Layout from '@/components/Layout'
 import CalendarPicker from '@/components/CalendarPicker'
 
@@ -11,6 +11,16 @@ interface AppointmentHistory {
   endTime?: string
   status: '工事決定' | '保留' | '不通'
   content: string
+}
+
+interface ExclusionEntry {
+  id: string
+  date: string
+  reason: string
+  contractor: string
+  timeType: 'all_day' | 'am' | 'pm' | 'custom'
+  startTime?: string
+  endTime?: string
 }
 
 interface OrderData {
@@ -38,6 +48,33 @@ const workContentOptions = [
   '放送波人工事'
 ]
 
+// サンプル除外日データ
+const sampleExclusions: ExclusionEntry[] = [
+  {
+    id: 'e1',
+    date: '2025-09-30',
+    reason: '社員研修',
+    contractor: '栄光電気',
+    timeType: 'all_day',
+  },
+  {
+    id: 'e2',
+    date: '2025-10-01',
+    reason: '定期メンテナンス',
+    contractor: 'スライヴ',
+    timeType: 'am',
+  },
+  {
+    id: 'e3',
+    date: '2025-10-02',
+    reason: '車両点検',
+    contractor: '直営班',
+    timeType: 'custom',
+    startTime: '13:00',
+    endTime: '17:00',
+  },
+]
+
 // サンプルスケジュールデータ（実際にはAPIから取得）
 const sampleSchedules = [
   {
@@ -45,6 +82,7 @@ const sampleSchedules = [
     timeSlot: '09:00-12:00',
     contractor: '直営班',
     status: '予定',
+    customerCode: '2025091000001',
     customerName: '田中太郎',
     address: '倉敷市水島青葉町1-1-1',
     workType: '個別対応'
@@ -54,6 +92,7 @@ const sampleSchedules = [
     timeSlot: '13:00-17:00',
     contractor: '栄光電気',
     status: '作業中',
+    customerCode: '2025091000002',
     customerName: '山田花子',
     address: '倉敷市中央2-5-8',
     workType: 'HCNA技術人工事'
@@ -63,6 +102,7 @@ const sampleSchedules = [
     timeSlot: '09:00-12:00',
     contractor: 'スライヴ',
     status: '予定',
+    customerCode: '2025091000003',
     customerName: '佐藤花子',
     address: '倉敷市児島駅前2-2-2',
     workType: 'HCNA技術人工事'
@@ -72,6 +112,7 @@ const sampleSchedules = [
     timeSlot: '10:00-15:00',
     contractor: '直営班',
     status: '予定',
+    customerCode: '2025091000004',
     customerName: '山田次郎',
     address: '倉敷市玉島中央町3-3-3',
     workType: 'G・6ch追加人工事'
@@ -81,6 +122,7 @@ const sampleSchedules = [
     timeSlot: '09:00-11:00',
     contractor: '栄光電気',
     status: '予定',
+    customerCode: '2025091000005',
     customerName: '鈴木一郎',
     address: '倉敷市連島町1-4-7',
     workType: '放送波人工事'
@@ -90,6 +132,7 @@ const sampleSchedules = [
     timeSlot: '14:00-16:00',
     contractor: 'スライヴ',
     status: '予定',
+    customerCode: '2025091000006',
     customerName: '高橋美咲',
     address: '倉敷市老松町2-8-15',
     workType: '個別対応'
@@ -99,6 +142,7 @@ const sampleSchedules = [
     timeSlot: '終日',
     contractor: '直営班',
     status: '作業中',
+    customerCode: '2025091000007',
     customerName: '渡辺健一',
     address: '倉敷市水島工業地帯',
     workType: '大規模回線工事'
@@ -200,6 +244,7 @@ export default function OrdersPage() {
   const [appointmentTime, setAppointmentTime] = useState<string>('')
   const [appointmentEndTime, setAppointmentEndTime] = useState<string>('')
   const [selectedScheduleDate, setSelectedScheduleDate] = useState<string | null>(null)
+  const [scheduleCalendarDate, setScheduleCalendarDate] = useState<Date>(new Date())
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const mapFileInputRef = React.useRef<HTMLInputElement>(null)
 
@@ -501,6 +546,29 @@ export default function OrdersPage() {
         ...editingAppointment,
         endTime: newTime
       })
+    }
+  }
+
+  // スケジュールカレンダーの月移動
+  const navigateScheduleMonth = (direction: 'prev' | 'next') => {
+    const newDate = new Date(scheduleCalendarDate)
+    newDate.setMonth(newDate.getMonth() + (direction === 'next' ? 1 : -1))
+    setScheduleCalendarDate(newDate)
+  }
+
+  // 除外日の時間タイプを表示用テキストに変換
+  const getExclusionTimeText = (exclusion: ExclusionEntry) => {
+    switch (exclusion.timeType) {
+      case 'all_day':
+        return '終日'
+      case 'am':
+        return '午前'
+      case 'pm':
+        return '午後'
+      case 'custom':
+        return `${exclusion.startTime}-${exclusion.endTime}`
+      default:
+        return ''
     }
   }
 
@@ -824,6 +892,25 @@ export default function OrdersPage() {
                 スケジュール確認
               </h4>
 
+              {/* カレンダーナビゲーション */}
+              <div className="flex items-center justify-between mb-3">
+                <button
+                  onClick={() => navigateScheduleMonth('prev')}
+                  className="p-2 hover:bg-gray-100 rounded-md"
+                >
+                  <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
+                </button>
+                <h4 className="text-lg font-semibold text-gray-900">
+                  {scheduleCalendarDate.getFullYear()}年{scheduleCalendarDate.getMonth() + 1}月
+                </h4>
+                <button
+                  onClick={() => navigateScheduleMonth('next')}
+                  className="p-2 hover:bg-gray-100 rounded-md"
+                >
+                  <ChevronRightIcon className="h-5 w-5 text-gray-600" />
+                </button>
+              </div>
+
               {/* カレンダー表示 */}
               <div className="bg-white border rounded-lg overflow-hidden mb-3">
                 <div className="grid grid-cols-7 gap-0 border-b border-gray-200">
@@ -838,7 +925,7 @@ export default function OrdersPage() {
                 <div className="grid grid-cols-7 gap-0">
                   {(() => {
                     const today = new Date()
-                    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
+                    const firstDay = new Date(scheduleCalendarDate.getFullYear(), scheduleCalendarDate.getMonth(), 1)
                     const startDate = new Date(firstDay)
                     startDate.setDate(startDate.getDate() - firstDay.getDay())
 
@@ -852,7 +939,8 @@ export default function OrdersPage() {
                     return days.map((date, index) => {
                       const dateStr = date.toISOString().slice(0, 10)
                       const daySchedules = sampleSchedules.filter(schedule => schedule.assignedDate === dateStr)
-                      const isCurrentMonth = date.getMonth() === today.getMonth()
+                      const dayExclusions = sampleExclusions.filter(exclusion => exclusion.date === dateStr)
+                      const isCurrentMonth = date.getMonth() === scheduleCalendarDate.getMonth()
                       const isToday = date.toDateString() === today.toDateString()
 
                       return (
@@ -874,7 +962,7 @@ export default function OrdersPage() {
 
                           {/* スケジュール詳細表示 */}
                           <div className="space-y-0.5">
-                            {daySchedules.slice(0, 1).map((schedule, idx) => (
+                            {daySchedules.slice(0, 2).map((schedule, idx) => (
                               <div
                                 key={idx}
                                 className={`text-[10px] p-0.5 rounded truncate ${
@@ -886,9 +974,20 @@ export default function OrdersPage() {
                                 <div className="truncate">{schedule.contractor}</div>
                               </div>
                             ))}
-                            {daySchedules.length > 1 && (
+
+                            {/* 除外日表示 */}
+                            {dayExclusions.slice(0, 2 - Math.min(daySchedules.length, 2)).map((exclusion, idx) => (
+                              <div
+                                key={`exclusion-${idx}`}
+                                className="text-[10px] p-0.5 rounded truncate bg-red-50 border border-red-200"
+                              >
+                                <div className="truncate text-red-700 font-medium">🚫 {exclusion.contractor}</div>
+                              </div>
+                            ))}
+
+                            {(daySchedules.length + dayExclusions.length) > 2 && (
                               <div className="text-[10px] text-gray-500 text-center">
-                                +{daySchedules.length - 1}
+                                +{(daySchedules.length + dayExclusions.length) - 2}
                               </div>
                             )}
                           </div>
@@ -916,12 +1015,12 @@ export default function OrdersPage() {
                     {sampleSchedules
                       .filter(schedule => schedule.assignedDate === selectedScheduleDate)
                       .map((schedule, index) => (
-                        <div key={index} className={`p-2 rounded-lg border ${
+                        <div key={index} className={`p-3 rounded-lg border ${
                           schedule.contractor === '直営班' ? 'bg-blue-50 border-blue-200' :
                           schedule.contractor === '栄光電気' ? 'bg-green-50 border-green-200' :
                           'bg-purple-50 border-purple-200'
                         }`}>
-                          <div className="flex justify-between items-start mb-1">
+                          <div className="flex justify-between items-start mb-2">
                             <span className="font-medium text-xs">{schedule.timeSlot}</span>
                             <span className={`text-[10px] px-2 py-0.5 rounded-full ${
                               schedule.contractor === '直営班' ? 'bg-blue-100 text-blue-800' :
@@ -931,24 +1030,50 @@ export default function OrdersPage() {
                               {schedule.contractor}
                             </span>
                           </div>
-                          {schedule.customerName && (
-                            <div className="text-[10px] text-gray-700 mb-1">
-                              👤 {schedule.customerName}
-                            </div>
-                          )}
-                          {schedule.address && (
-                            <div className="text-[10px] text-gray-600 mb-1">
-                              📍 {schedule.address}
-                            </div>
-                          )}
-                          {schedule.workType && (
-                            <div className="text-[10px] text-gray-600">
-                              🔧 {schedule.workType}
-                            </div>
-                          )}
+                          <div className="space-y-1">
+                            {schedule.customerCode && (
+                              <div className="text-[10px] text-gray-700">
+                                <span className="font-medium">顧客コード:</span> {schedule.customerCode}
+                              </div>
+                            )}
+                            {schedule.customerName && (
+                              <div className="text-[10px] text-gray-700">
+                                <span className="font-medium">名前:</span> {schedule.customerName}
+                              </div>
+                            )}
+                            {schedule.address && (
+                              <div className="text-[10px] text-gray-600">
+                                <span className="font-medium">場所:</span> {schedule.address}
+                              </div>
+                            )}
+                            {schedule.workType && (
+                              <div className="text-[10px] text-gray-600">
+                                <span className="font-medium">工事内容:</span> {schedule.workType}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       ))}
-                    {sampleSchedules.filter(schedule => schedule.assignedDate === selectedScheduleDate).length === 0 && (
+
+                    {/* 除外日の詳細表示 */}
+                    {sampleExclusions
+                      .filter(exclusion => exclusion.date === selectedScheduleDate)
+                      .map((exclusion, index) => (
+                        <div key={`exclusion-detail-${index}`} className="p-3 rounded-lg border-2 border-dashed border-red-300 bg-red-50">
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="font-medium text-xs text-red-700">🚫 {getExclusionTimeText(exclusion)}</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-800">
+                              {exclusion.contractor}
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-red-600 italic">
+                            除外理由: {exclusion.reason}
+                          </div>
+                        </div>
+                      ))}
+
+                    {sampleSchedules.filter(schedule => schedule.assignedDate === selectedScheduleDate).length === 0 &&
+                     sampleExclusions.filter(exclusion => exclusion.date === selectedScheduleDate).length === 0 && (
                       <div className="text-center py-3">
                         <p className="text-xs text-gray-500">✅ この日は予定がありません</p>
                         <p className="text-[10px] text-gray-400 mt-1">アポイント設定に最適です</p>
@@ -1193,6 +1318,7 @@ export default function OrdersPage() {
           onDateSelect={handleDateSelectFromCalendar}
           onClose={handleCloseCalendarPicker}
           existingSchedules={sampleSchedules}
+          exclusions={sampleExclusions}
         />
       )}
 

@@ -98,8 +98,8 @@ This system is built for KCT (倉敷ケーブルテレビ) CATV construction man
 - Sample/mock data initialized in each page component
 - Excel file parsing expected but not yet implemented (orders page has upload UI)
 - PDF uploads stored as data URLs in state
-- Authentication data persisted in localStorage (client-side only)
-- Exclusion data stored in localStorage with contractor-specific keys
+- Authentication data persisted in localStorage (key: 'user', client-side only)
+- **Exclusion data**: Currently stored only in component state (not persisted to localStorage yet)
 
 ### Development Notes
 - Development indicators are disabled (devIndicators: false in next.config.ts)
@@ -180,9 +180,9 @@ interface ExclusionEntry {
 - **カスタム (custom)**: User-specified time range with startTime/endTime
 
 ### Storage
-- localStorage key pattern: `exclusions_${contractor}`
-- Each contractor has separate storage namespace
-- Data persists across sessions
+- **Not yet implemented**: Exclusion data is currently stored only in component state (useState)
+- Refreshing the page will lose all exclusion entries
+- Future implementation will use localStorage with pattern: `exclusions_${contractor}`
 
 ### UI Components
 
@@ -200,6 +200,7 @@ interface ExclusionEntry {
 - **Icon**: 🚫 emoji for quick identification
 - **Italic text**: Exclusion text displayed in italic style
 - **Hover info**: Shows contractor, time, and reason on hover
+- **Data loading**: Loads exclusions from localStorage on mount (future implementation)
 
 ### Position Calculation
 ```typescript
@@ -333,5 +334,27 @@ Maintain this strict hierarchy to prevent visual layering issues:
 Each view (month/week/day) maintains:
 - `selectedDate`: Date object for current view focus
 - `schedules`: Array of ScheduleItem (mock data)
-- `exclusions`: Loaded from localStorage on mount
+- `exclusions`: Array of ExclusionEntry (sample data, not persisted)
 - `isModalOpen`: Boolean for new schedule creation modal
+
+## Schedule Page: Data Flow & Integration
+
+### Exclusion Data Loading (src/app/schedule/page.tsx)
+Currently uses sample data (`sampleExclusions`) in component state. Future implementation will load from localStorage:
+
+```typescript
+// Current: Sample data
+const [exclusions] = useState<ExclusionEntry[]>(sampleExclusions)
+
+// Future: Load from all contractors
+useEffect(() => {
+  const allExclusions = contractors.flatMap(contractor => {
+    const data = localStorage.getItem(`exclusions_${contractor}`)
+    return data ? JSON.parse(data) : []
+  })
+  setExclusions(allExclusions)
+}, [])
+```
+
+### Schedule and Exclusion Rendering
+Both are rendered using `calculateOverlappingLayoutWithExclusions` for Outlook-style side-by-side layout when time slots overlap.

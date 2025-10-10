@@ -3,6 +3,16 @@
 import React, { useState } from 'react'
 import { ChevronLeftIcon, ChevronRightIcon, CalendarDaysIcon } from '@heroicons/react/24/outline'
 
+interface ExclusionEntry {
+  id: string
+  date: string
+  reason: string
+  contractor: string
+  timeType: 'all_day' | 'am' | 'pm' | 'custom'
+  startTime?: string
+  endTime?: string
+}
+
 interface CalendarPickerProps {
   selectedDate?: string
   onDateSelect: (date: string) => void
@@ -16,13 +26,15 @@ interface CalendarPickerProps {
     address?: string
     workType?: string
   }>
+  exclusions?: ExclusionEntry[]
 }
 
 export default function CalendarPicker({
   selectedDate,
   onDateSelect,
   onClose,
-  existingSchedules = []
+  existingSchedules = [],
+  exclusions = []
 }: CalendarPickerProps) {
   const [currentDate, setCurrentDate] = useState<Date>(
     selectedDate ? new Date(selectedDate) : new Date()
@@ -65,6 +77,22 @@ export default function CalendarPicker({
   const getScheduleCount = (date: Date) => {
     const dateStr = formatDateString(date)
     return existingSchedules.filter(schedule => schedule.assignedDate === dateStr).length
+  }
+
+  // 除外日の時間タイプを表示用テキストに変換
+  const getExclusionTimeText = (exclusion: ExclusionEntry) => {
+    switch (exclusion.timeType) {
+      case 'all_day':
+        return '終日'
+      case 'am':
+        return '午前'
+      case 'pm':
+        return '午後'
+      case 'custom':
+        return `${exclusion.startTime}-${exclusion.endTime}`
+      default:
+        return ''
+    }
   }
 
   // 日付をクリックした時の処理
@@ -149,6 +177,7 @@ export default function CalendarPicker({
             {getMonthDays().map((date, index) => {
               const dateStr = formatDateString(date)
               const daySchedules = existingSchedules.filter(schedule => schedule.assignedDate === dateStr)
+              const dayExclusions = exclusions.filter(exclusion => exclusion.date === dateStr)
               return (
                 <div
                   key={index}
@@ -181,9 +210,21 @@ export default function CalendarPicker({
                         <div className="truncate">{schedule.contractor}</div>
                       </div>
                     ))}
-                    {daySchedules.length > 2 && (
+
+                    {/* 除外日表示 */}
+                    {dayExclusions.slice(0, 2 - Math.min(daySchedules.length, 2)).map((exclusion, idx) => (
+                      <div
+                        key={`exclusion-${idx}`}
+                        className="text-xs p-1 rounded truncate bg-red-50 border border-red-200"
+                      >
+                        <div className="font-medium text-red-700">🚫 {getExclusionTimeText(exclusion)}</div>
+                        <div className="truncate text-red-600">{exclusion.contractor}</div>
+                      </div>
+                    ))}
+
+                    {(daySchedules.length + dayExclusions.length) > 2 && (
                       <div className="text-xs text-gray-500 text-center font-medium">
-                        +{daySchedules.length - 2}件
+                        +{(daySchedules.length + dayExclusions.length) - 2}件
                       </div>
                     )}
                   </div>
@@ -243,7 +284,26 @@ export default function CalendarPicker({
                     )}
                   </div>
                 ))}
-              {existingSchedules.filter(schedule => schedule.assignedDate === internalSelectedDate).length === 0 && (
+
+              {/* 除外日の詳細表示 */}
+              {exclusions
+                .filter(exclusion => exclusion.date === internalSelectedDate)
+                .map((exclusion, index) => (
+                  <div key={`exclusion-detail-${index}`} className="p-3 rounded-lg border-2 border-dashed border-red-300 bg-red-50">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="font-medium text-sm text-red-700">🚫 {getExclusionTimeText(exclusion)}</span>
+                      <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-800">
+                        {exclusion.contractor}
+                      </span>
+                    </div>
+                    <div className="text-xs text-red-600 italic">
+                      除外理由: {exclusion.reason}
+                    </div>
+                  </div>
+                ))}
+
+              {existingSchedules.filter(schedule => schedule.assignedDate === internalSelectedDate).length === 0 &&
+               exclusions.filter(exclusion => exclusion.date === internalSelectedDate).length === 0 && (
                 <div className="text-center py-4">
                   <p className="text-sm text-gray-500">✅ この日は予定がありません</p>
                   <p className="text-xs text-gray-400 mt-1">アポイント設定に最適です</p>
