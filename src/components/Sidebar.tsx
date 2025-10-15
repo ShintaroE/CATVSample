@@ -12,6 +12,7 @@ import {
   ComputerDesktopIcon,
   ArrowRightOnRectangleIcon,
   UserCircleIcon,
+  UserGroupIcon,
 } from '@heroicons/react/24/outline'
 
 interface MenuItem {
@@ -40,6 +41,11 @@ const adminMenuItems: MenuItem[] = [
     name: '申請番号管理',
     href: '/applications',
     icon: DocumentCheckIcon,
+  },
+  {
+    name: '協力会社管理',
+    href: '/contractor-management',
+    icon: UserGroupIcon,
   },
 ]
 

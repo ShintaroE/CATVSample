@@ -11,6 +11,9 @@ interface ScheduleItem {
   address: string
   workType: string
   contractor: '直営班' | '栄光電気' | 'スライヴ'
+  contractorId: string
+  teamId?: string
+  teamName?: string
   assignedDate: string
   timeSlot: string
   status: '予定' | '作業中' | '完了' | '延期'
@@ -22,6 +25,9 @@ interface ExclusionEntry {
   date: string
   reason: string
   contractor: string
+  contractorId: string
+  teamId: string
+  teamName: string
   timeType: 'all_day' | 'am' | 'pm' | 'custom'
   startTime?: string
   endTime?: string
@@ -37,6 +43,9 @@ const sampleExclusions: ExclusionEntry[] = [
     date: '2025-09-10',
     reason: '社員研修',
     contractor: '栄光電気',
+    contractorId: 'contractor-2',
+    teamId: 'team-3',
+    teamName: '1班',
     timeType: 'all_day',
   },
   {
@@ -44,6 +53,9 @@ const sampleExclusions: ExclusionEntry[] = [
     date: '2025-09-11',
     reason: '定期メンテナンス',
     contractor: 'スライヴ',
+    contractorId: 'contractor-3',
+    teamId: 'team-4',
+    teamName: '第1班',
     timeType: 'am',
   },
   {
@@ -51,6 +63,9 @@ const sampleExclusions: ExclusionEntry[] = [
     date: '2025-09-15',
     reason: '車両点検',
     contractor: '直営班',
+    contractorId: 'contractor-1',
+    teamId: 'team-1',
+    teamName: 'A班',
     timeType: 'custom',
     startTime: '13:00',
     endTime: '17:00',
@@ -65,6 +80,9 @@ const sampleSchedules: ScheduleItem[] = [
     address: '倉敷市水島青葉町1-1-1',
     workType: '個別対応',
     contractor: '直営班',
+    contractorId: 'contractor-1',
+    teamId: 'team-1',
+    teamName: 'A班',
     assignedDate: '2025-09-10',
     timeSlot: '09:00-12:00',
     status: '予定',
@@ -77,6 +95,9 @@ const sampleSchedules: ScheduleItem[] = [
     address: '倉敷市児島駅前2-2-2',
     workType: 'HCNA技術人工事',
     contractor: '栄光電気',
+    contractorId: 'contractor-2',
+    teamId: 'team-3',
+    teamName: '1班',
     assignedDate: '2025-09-11',
     timeSlot: '13:00-17:00',
     status: '作業中'
@@ -88,6 +109,9 @@ const sampleSchedules: ScheduleItem[] = [
     address: '倉敷市玉島中央町3-3-3',
     workType: 'G・6ch追加人工事',
     contractor: 'スライヴ',
+    contractorId: 'contractor-3',
+    teamId: 'team-4',
+    teamName: '第1班',
     assignedDate: '2025-09-12',
     timeSlot: '09:00-12:00',
     status: '予定'
@@ -99,6 +123,9 @@ const sampleSchedules: ScheduleItem[] = [
     address: '倉敷市中央1-4-5',
     workType: '放送波人工事',
     contractor: '直営班',
+    contractorId: 'contractor-1',
+    teamId: 'team-2',
+    teamName: 'B班',
     assignedDate: '2025-09-13',
     timeSlot: '13:00-17:00',
     status: '完了'
@@ -110,6 +137,9 @@ const sampleSchedules: ScheduleItem[] = [
     address: '倉敷市老松町2-8-15',
     workType: '個別対応',
     contractor: '栄光電気',
+    contractorId: 'contractor-2',
+    teamId: 'team-3',
+    teamName: '1班',
     assignedDate: '2025-09-15',
     timeSlot: '終日',
     status: '予定',
@@ -122,6 +152,9 @@ const sampleSchedules: ScheduleItem[] = [
     address: '倉敷市連島町鶴新田1-10-3',
     workType: 'G・6ch追加人工事',
     contractor: 'スライヴ',
+    contractorId: 'contractor-3',
+    teamId: 'team-4',
+    teamName: '第1班',
     assignedDate: '2025-09-16',
     timeSlot: '09:00-12:00',
     status: '延期'
@@ -629,7 +662,7 @@ export default function SchedulePage() {
                 <select
                   value={selectedContractor}
                   onChange={(e) => setSelectedContractor(e.target.value)}
-                  className="border border-gray-300 rounded-md px-3 py-2 text-sm text-green-600 font-medium focus:ring-2 focus:ring-green-500"
+                  className="border border-gray-300 rounded-md px-3 py-2 text-sm text-green-600 font-medium focus:ring-2 focus:ring-green-500 bg-white"
                 >
                   <option value="全て">全ての業者</option>
                   {contractors.map(contractor => (
@@ -689,11 +722,11 @@ export default function SchedulePage() {
                           <div
                             key={exclusion.id}
                             className="text-xs p-1 rounded border-2 border-dashed border-red-400 bg-red-50"
-                            title={`除外日: ${exclusion.contractor} - ${exclusion.reason}`}
+                            title={`除外日: ${exclusion.contractor} - ${exclusion.teamName} - ${exclusion.reason}`}
                           >
                             <div className="flex items-center space-x-1">
                               <span className="text-red-700 font-bold">🚫</span>
-                              <span className="font-medium text-red-800 truncate">{exclusion.contractor}</span>
+                              <span className="font-medium text-red-800 truncate">{exclusion.contractor} - {exclusion.teamName}</span>
                             </div>
                             <div className="text-[10px] text-red-700 truncate">{getTimeLabel(exclusion)}</div>
                             <div className="text-[10px] text-red-600 truncate italic">{exclusion.reason}</div>
@@ -715,6 +748,9 @@ export default function SchedulePage() {
                               <span className={`w-2 h-2 rounded-full ${getStatusColor(schedule.status).split(' ')[0]}`} />
                             </div>
                             <div className="truncate">{schedule.customerName}</div>
+                            {schedule.teamName && (
+                              <div className="text-xs opacity-75 truncate">{schedule.teamName}</div>
+                            )}
                           </div>
                         ))}
                         {daySchedules.length > (dayExclusions.length > 0 ? 2 : 3) && (
@@ -798,12 +834,12 @@ export default function SchedulePage() {
                                     width: `calc(${width} - 0.5rem)`,
                                     zIndex: zIndex
                                   }}
-                                  title={`除外日: ${exclusion.contractor} - ${exclusion.reason}`}
+                                  title={`除外日: ${exclusion.contractor} - ${exclusion.teamName} - ${exclusion.reason}`}
                                 >
                                   <div className="p-1 text-xs">
                                     <div className="flex items-center space-x-1">
                                       <span className="text-red-700 font-bold">🚫</span>
-                                      <span className="font-bold text-red-800 truncate">{exclusion.contractor}</span>
+                                      <span className="font-bold text-red-800 truncate">{exclusion.contractor} - {exclusion.teamName}</span>
                                     </div>
                                     <div className="text-red-700 font-medium truncate">{getTimeLabel(exclusion)}</div>
                                     <div className="text-red-600 truncate italic">{exclusion.reason}</div>
@@ -905,14 +941,14 @@ export default function SchedulePage() {
                                   width: `calc(${width} - 1rem)`,
                                   zIndex: zIndex
                                 }}
-                                title={`除外日: ${exclusion.contractor} - ${exclusion.reason}`}
+                                title={`除外日: ${exclusion.contractor} - ${exclusion.teamName} - ${exclusion.reason}`}
                               >
                                 <div className="p-3">
                                   <div className="flex items-center space-x-2 mb-2">
                                     <span className="text-red-700 font-bold text-lg">🚫</span>
                                     <span className="font-bold text-red-800 text-sm">除外日</span>
                                   </div>
-                                  <div className="font-bold text-sm text-red-800 mb-1">{exclusion.contractor}</div>
+                                  <div className="font-bold text-sm text-red-800 mb-1">{exclusion.contractor} - {exclusion.teamName}</div>
                                   <div className="text-sm text-red-700 mb-1 font-medium">{getTimeLabel(exclusion)}</div>
                                   <div className="text-sm text-red-600 italic">{exclusion.reason}</div>
                                 </div>
@@ -938,7 +974,9 @@ export default function SchedulePage() {
                                   <div className="font-bold text-sm mb-1">{schedule.customerName}</div>
                                   <div className="text-sm opacity-90 mb-1">{schedule.workType}</div>
                                   <div className="text-xs opacity-75 mb-1">{schedule.address}</div>
-                                  <div className="text-xs opacity-75 mb-1">{schedule.contractor}</div>
+                                  <div className="text-xs opacity-75 mb-1">
+                                    {schedule.contractor}{schedule.teamName ? ` - ${schedule.teamName}` : ''}
+                                  </div>
                                   <div className="text-xs opacity-75">{schedule.timeSlot}</div>
                                   {schedule.memo && (
                                     <div className="text-xs opacity-75 mt-1 border-t border-white/20 pt-1">
@@ -1016,7 +1054,7 @@ export default function SchedulePage() {
                       type="date"
                       value={editingSchedule.assignedDate}
                       onChange={(e) => setEditingSchedule({...editingSchedule, assignedDate: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
                     />
                   </div>
                   <div>
@@ -1025,7 +1063,7 @@ export default function SchedulePage() {
                       type="time"
                       value={startTime}
                       onChange={(e) => setStartTime(e.target.value)}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
                     />
                   </div>
                   <div>
@@ -1034,7 +1072,7 @@ export default function SchedulePage() {
                       type="time"
                       value={endTime}
                       onChange={(e) => setEndTime(e.target.value)}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
                     />
                   </div>
                 </div>
@@ -1044,7 +1082,7 @@ export default function SchedulePage() {
                     <select
                       value={editingSchedule.contractor}
                       onChange={(e) => setEditingSchedule({...editingSchedule, contractor: e.target.value as typeof contractors[number]})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
                     >
                       {contractors.map(contractor => (
                         <option key={contractor} value={contractor}>{contractor}</option>
@@ -1056,7 +1094,7 @@ export default function SchedulePage() {
                     <select
                       value={editingSchedule.status}
                       onChange={(e) => setEditingSchedule({...editingSchedule, status: e.target.value as typeof statuses[number]})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
                     >
                       {statuses.map(status => (
                         <option key={status} value={status}>{status}</option>
@@ -1069,7 +1107,7 @@ export default function SchedulePage() {
                   <textarea
                     value={editingSchedule.memo || ''}
                     onChange={(e) => setEditingSchedule({...editingSchedule, memo: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
                     rows={3}
                   />
                 </div>

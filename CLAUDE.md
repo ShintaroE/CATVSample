@@ -91,7 +91,7 @@ This system is built for KCT (倉敷ケーブルテレビ) CATV construction man
 - Icon system uses Heroicons (@heroicons/react/24/outline) for UI
 - Modal-based detail editing patterns (using Headless UI Dialog)
 - Drag & drop file upload components for Excel/PDF uploads
-- CalendarPicker: Reusable date picker with schedule visualization (used in orders page)
+- CalendarPicker: Reusable date picker with schedule visualization and exclusion display (used in orders page appointment modal)
 
 ### Data Management & State
 - All data is stored in component state (useState) - no backend/database yet
@@ -358,3 +358,127 @@ useEffect(() => {
 
 ### Schedule and Exclusion Rendering
 Both are rendered using `calculateOverlappingLayoutWithExclusions` for Outlook-style side-by-side layout when time slots overlap.
+
+## Order Management: Appointment History System
+
+### Overview (src/app/orders/page.tsx)
+The Order Management page includes a comprehensive appointment history tracking system that integrates schedule visibility directly into the appointment modal.
+
+### Appointment History Data Structure
+```typescript
+interface AppointmentHistory {
+  id: string
+  date: string                    // ISO 8601 format (YYYY-MM-DDTHH:MM)
+  endTime?: string                // HH:MM format for appointment end time
+  status: '工事決定' | '保留' | '不通'
+  content: string                 // Conversation details/notes
+}
+```
+
+### Key Features
+1. **Appointment List Display**: Shows all appointments with date, time, status, and content
+2. **CRUD Operations**: Add, edit, and delete appointment entries
+3. **Status Management**: Three status types with color-coded badges
+   - 工事決定 (Confirmed): Green badge
+   - 保留 (Pending): Yellow badge
+   - 不通 (Unreachable): Red badge
+4. **Integrated Schedule View**: Calendar showing existing schedules and exclusions to avoid conflicts
+5. **Time Range Selection**: Start time and end time pickers for appointment duration
+
+### Appointment Modal Components
+
+#### Customer Information Section
+Displays read-only customer details (name, address, phone number) from the selected order.
+
+#### Schedule Calendar Integration
+- **Month view calendar**: Shows all scheduled work and exclusions for the selected month
+- **Navigation**: Previous/next month buttons
+- **Date selection**: Click any date to view detailed schedules for that day
+- **Visual indicators**:
+  - Schedules: Colored boxes by contractor (blue/green/purple)
+  - Exclusions: Red border with 🚫 icon
+  - Today's date: Blue ring border
+  - Selected date: Blue background
+- **Detailed view**: When date is clicked, shows all schedules and exclusions for that date with:
+  - Time slots
+  - Contractor names
+  - Customer information (for schedules)
+  - Exclusion reasons (for exclusions)
+
+#### Appointment History List
+- Displays all past appointments in chronological order
+- Each entry shows:
+  - Date and time range (start-end)
+  - Status badge (color-coded)
+  - Conversation content
+  - Edit and delete buttons
+- Inline editing: Click "編集" to edit appointment in place
+- New appointment form: Click "新規追加" to add new appointment
+
+#### Form Fields
+- **Date picker**: Select appointment date (type="date")
+- **Start time**: Select appointment start time (type="time")
+- **End time**: Select appointment end time (type="time")
+- **Status dropdown**: Choose from 工事決定/保留/不通
+- **Content textarea**: Enter conversation notes/details
+
+### Sample Data
+The page includes sample schedules (`sampleSchedules`) and exclusions (`sampleExclusions`) for demonstration. These are displayed in the appointment modal calendar to help users avoid scheduling conflicts.
+
+### State Management
+```typescript
+const [appointmentOrder, setAppointmentOrder] = useState<OrderData | null>(null)
+const [showAppointmentModal, setShowAppointmentModal] = useState(false)
+const [editingAppointment, setEditingAppointment] = useState<AppointmentHistory | null>(null)
+const [isAddingAppointment, setIsAddingAppointment] = useState(false)
+const [appointmentDate, setAppointmentDate] = useState<string>('')
+const [appointmentTime, setAppointmentTime] = useState<string>('')
+const [appointmentEndTime, setAppointmentEndTime] = useState<string>('')
+const [selectedScheduleDate, setSelectedScheduleDate] = useState<string | null>(null)
+const [scheduleCalendarDate, setScheduleCalendarDate] = useState<Date>(new Date())
+```
+
+### Key Functions
+- `handleViewAppointmentHistory(order)`: Opens appointment modal for selected order
+- `handleAddAppointment()`: Initiates new appointment entry
+- `handleEditAppointment(appointment)`: Loads existing appointment for editing
+- `handleSaveAppointment()`: Saves new or edited appointment to order's appointmentHistory
+- `handleDeleteAppointment(appointmentId)`: Removes appointment from history
+- `handleScheduleDateClick(date)`: Selects date in calendar to view details
+- `navigateScheduleMonth(direction)`: Moves calendar to previous/next month
+
+## CalendarPicker Component
+
+### Overview (src/components/CalendarPicker.tsx)
+Reusable calendar component used in the appointment history modal for date selection with integrated schedule and exclusion visibility.
+
+### Props Interface
+```typescript
+interface CalendarPickerProps {
+  selectedDate: string                    // Current selected date (YYYY-MM-DD)
+  onDateSelect: (date: string) => void    // Callback when date is selected
+  onClose: () => void                     // Callback to close picker
+  existingSchedules: ScheduleItem[]       // Schedules to display
+  exclusions: ExclusionEntry[]            // Exclusions to display
+}
+```
+
+### Features
+- Month view calendar with day-of-week headers (日月火水木金土)
+- Displays existing schedules and exclusions on each date
+- Color-coded schedule indicators by contractor
+- Exclusion indicators with 🚫 emoji
+- Today's date highlighting
+- Navigation between months
+- Selected date highlighting
+- Overflow indicator (+N) when multiple items exist
+
+### Visual Design
+- **Current month dates**: Full opacity, white background
+- **Other month dates**: Gray background, reduced opacity
+- **Today**: Blue ring border
+- **Selected date**: Blue background
+- **Hover effect**: Blue-tinted background on hover
+- **Schedule boxes**: Small colored boxes (10px text) with contractor name
+- **Exclusion boxes**: Red border with 🚫 icon and contractor name
+- **Overflow**: Shows "+N" when more than 2 items on a date

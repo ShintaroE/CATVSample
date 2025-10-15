@@ -1,15 +1,8 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
-
-type Contractor = '直営班' | '栄光電気通信' | 'スライヴ' | 'KCT管理者'
-
-interface User {
-  id: string
-  name: string
-  contractor: Contractor
-  role: 'admin' | 'contractor'
-}
+import { User } from '@/types/contractor'
+import { getContractorByUsername } from '@/lib/contractors'
 
 interface AuthContextType {
   user: User | null
@@ -20,55 +13,16 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// サンプルユーザーデータ
-const users: { username: string; password: string; user: User }[] = [
-  {
-    username: 'admin',
-    password: 'admin',
-    user: {
-      id: '1',
-      name: 'KCT管理者',
-      contractor: 'KCT管理者',
-      role: 'admin',
-    },
-  },
-  {
-    username: 'chokueihan',
-    password: 'password',
-    user: {
-      id: '2',
-      name: '直営班',
-      contractor: '直営班',
-      role: 'contractor',
-    },
-  },
-  {
-    username: 'eiko',
-    password: 'password',
-    user: {
-      id: '3',
-      name: '栄光電気通信',
-      contractor: '栄光電気通信',
-      role: 'contractor',
-    },
-  },
-  {
-    username: 'thrive',
-    password: 'password',
-    user: {
-      id: '4',
-      name: 'スライヴ',
-      contractor: 'スライヴ',
-      role: 'contractor',
-    },
-  },
-]
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    // 初期データのセットアップ
+    import('@/lib/contractors').then(({ initializeDefaultData }) => {
+      initializeDefaultData()
+    })
+
     // ローカルストレージからユーザー情報を復元
     try {
       const savedUser = localStorage.getItem('user')
@@ -83,26 +37,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const login = (username: string, password: string): boolean => {
-    const foundUser = users.find(
-      (u) => u.username === username && u.password === password
-    )
-
-    if (foundUser) {
-      setUser(foundUser.user)
-      localStorage.setItem('user', JSON.stringify(foundUser.user))
+    // 管理者アカウント
+    if (username === 'admin' && password === 'admin') {
+      const adminUser: User = {
+        id: 'admin',
+        name: 'KCT管理者',
+        contractor: 'KCT管理者',
+        contractorId: 'admin',
+        role: 'admin',
+      }
+      setUser(adminUser)
+      localStorage.setItem('user', JSON.stringify(adminUser))
       return true
     }
-    return false
+
+    // 協力会社アカウント
+    const contractor = getContractorByUsername(username)
+    if (!contractor || contractor.password !== password) {
+      return false
+    }
+
+    if (!contractor.isActive) {
+      return false
+    }
+
+    // 協力会社としてログイン（班選択はログイン後に除外日登録時に行う）
+    const contractorUser: User = {
+      id: contractor.id,
+      name: contractor.name,
+      contractor: contractor.name,
+      contractorId: contractor.id,
+      role: 'contractor',
+    }
+    setUser(contractorUser)
+    localStorage.setItem('user', JSON.stringify(contractorUser))
+    return true
   }
 
   const logout = () => {
     setUser(null)
     localStorage.removeItem('user')
-  }
-
-  // ローディング中は何も表示しない
-  if (isLoading) {
-    return null
   }
 
   return (
@@ -114,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: !!user,
       }}
     >
-      {children}
+      {isLoading ? null : children}
     </AuthContext.Provider>
   )
 }

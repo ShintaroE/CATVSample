@@ -55,6 +55,9 @@ const sampleExclusions: ExclusionEntry[] = [
     date: '2025-09-30',
     reason: '社員研修',
     contractor: '栄光電気',
+    contractorId: 'contractor-2',
+    teamId: 'team-3',
+    teamName: '1班',
     timeType: 'all_day',
   },
   {
@@ -62,6 +65,9 @@ const sampleExclusions: ExclusionEntry[] = [
     date: '2025-10-01',
     reason: '定期メンテナンス',
     contractor: 'スライヴ',
+    contractorId: 'contractor-3',
+    teamId: 'team-4',
+    teamName: '第1班',
     timeType: 'am',
   },
   {
@@ -69,6 +75,9 @@ const sampleExclusions: ExclusionEntry[] = [
     date: '2025-10-02',
     reason: '車両点検',
     contractor: '直営班',
+    contractorId: 'contractor-1',
+    teamId: 'team-1',
+    teamName: 'A班',
     timeType: 'custom',
     startTime: '13:00',
     endTime: '17:00',
@@ -81,6 +90,9 @@ const sampleSchedules = [
     assignedDate: '2025-09-29',
     timeSlot: '09:00-12:00',
     contractor: '直営班',
+    contractorId: 'contractor-1',
+    teamId: 'team-1',
+    teamName: 'A班',
     status: '予定',
     customerCode: '2025091000001',
     customerName: '田中太郎',
@@ -91,6 +103,9 @@ const sampleSchedules = [
     assignedDate: '2025-09-29',
     timeSlot: '13:00-17:00',
     contractor: '栄光電気',
+    contractorId: 'contractor-2',
+    teamId: 'team-3',
+    teamName: '1班',
     status: '作業中',
     customerCode: '2025091000002',
     customerName: '山田花子',
@@ -101,6 +116,9 @@ const sampleSchedules = [
     assignedDate: '2025-09-30',
     timeSlot: '09:00-12:00',
     contractor: 'スライヴ',
+    contractorId: 'contractor-3',
+    teamId: 'team-4',
+    teamName: '第1班',
     status: '予定',
     customerCode: '2025091000003',
     customerName: '佐藤花子',
@@ -111,6 +129,9 @@ const sampleSchedules = [
     assignedDate: '2025-10-01',
     timeSlot: '10:00-15:00',
     contractor: '直営班',
+    contractorId: 'contractor-1',
+    teamId: 'team-2',
+    teamName: 'B班',
     status: '予定',
     customerCode: '2025091000004',
     customerName: '山田次郎',
@@ -681,7 +702,7 @@ export default function OrdersPage() {
                         <select
                           value={order.workContent}
                           onChange={(e) => handleWorkContentChange(order.orderNumber, e.target.value)}
-                          className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                         >
                           {workContentOptions.map(option => (
                             <option key={option} value={option}>
@@ -820,7 +841,7 @@ export default function OrdersPage() {
                       <select
                         value={selectedOrder.surveyStatus || 'pending'}
                         onChange={(e) => handleStatusChange(selectedOrder.orderNumber, 'surveyStatus', e.target.value as 'pending' | 'in_progress' | 'completed')}
-                        className={`rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 ${getSelectColor(selectedOrder.surveyStatus || 'pending')}`}
+                        className={`rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 ${getSelectColor(selectedOrder.surveyStatus || 'pending')}`}
                       >
                         <option value="pending" className="text-gray-600">未着手</option>
                         <option value="in_progress" className="text-blue-600">調査中</option>
@@ -832,7 +853,7 @@ export default function OrdersPage() {
                       <select
                         value={selectedOrder.permissionStatus || 'pending'}
                         onChange={(e) => handleStatusChange(selectedOrder.orderNumber, 'permissionStatus', e.target.value as 'pending' | 'in_progress' | 'completed')}
-                        className={`rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 ${getSelectColor(selectedOrder.permissionStatus || 'pending')}`}
+                        className={`rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 ${getSelectColor(selectedOrder.permissionStatus || 'pending')}`}
                       >
                         <option value="pending" className="text-gray-600">未申請</option>
                         <option value="in_progress" className="text-blue-600">申請中</option>
@@ -844,7 +865,7 @@ export default function OrdersPage() {
                       <select
                         value={selectedOrder.constructionStatus || 'pending'}
                         onChange={(e) => handleStatusChange(selectedOrder.orderNumber, 'constructionStatus', e.target.value as 'pending' | 'in_progress' | 'completed')}
-                        className={`rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 ${getSelectColor(selectedOrder.constructionStatus || 'pending')}`}
+                        className={`rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 ${getSelectColor(selectedOrder.constructionStatus || 'pending')}`}
                       >
                         <option value="pending" className="text-gray-600">未着手</option>
                         <option value="in_progress" className="text-blue-600">工事中</option>
@@ -971,7 +992,7 @@ export default function OrdersPage() {
                                   'bg-purple-100 text-purple-800'
                                 }`}
                               >
-                                <div className="truncate">{schedule.contractor}</div>
+                                <div className="truncate">{schedule.contractor}{schedule.teamName ? ` - ${schedule.teamName}` : ''}</div>
                               </div>
                             ))}
 
@@ -981,7 +1002,7 @@ export default function OrdersPage() {
                                 key={`exclusion-${idx}`}
                                 className="text-[10px] p-0.5 rounded truncate bg-red-50 border border-red-200"
                               >
-                                <div className="truncate text-red-700 font-medium">🚫 {exclusion.contractor}</div>
+                                <div className="truncate text-red-700 font-medium">🚫 {exclusion.contractor} - {exclusion.teamName}</div>
                               </div>
                             ))}
 
@@ -1027,7 +1048,7 @@ export default function OrdersPage() {
                               schedule.contractor === '栄光電気' ? 'bg-green-100 text-green-800' :
                               'bg-purple-100 text-purple-800'
                             }`}>
-                              {schedule.contractor}
+                              {schedule.contractor}{schedule.teamName ? ` - ${schedule.teamName}` : ''}
                             </span>
                           </div>
                           <div className="space-y-1">
@@ -1063,7 +1084,7 @@ export default function OrdersPage() {
                           <div className="flex justify-between items-start mb-2">
                             <span className="font-medium text-xs text-red-700">🚫 {getExclusionTimeText(exclusion)}</span>
                             <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-800">
-                              {exclusion.contractor}
+                              {exclusion.contractor} - {exclusion.teamName}
                             </span>
                           </div>
                           <div className="text-[10px] text-red-600 italic">
@@ -1127,7 +1148,7 @@ export default function OrdersPage() {
                               type="date"
                               value={appointmentDate}
                               onChange={(e) => setAppointmentDate(e.target.value)}
-                              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
                             />
                           </div>
                           <div>
@@ -1136,7 +1157,7 @@ export default function OrdersPage() {
                               type="time"
                               value={appointmentTime}
                               onChange={(e) => handleStartTimeChange(e.target.value)}
-                              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
                             />
                           </div>
                           <div>
@@ -1145,7 +1166,7 @@ export default function OrdersPage() {
                               type="time"
                               value={appointmentEndTime}
                               onChange={(e) => handleEndTimeChange(e.target.value)}
-                              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
                             />
                           </div>
                         </div>
@@ -1154,7 +1175,7 @@ export default function OrdersPage() {
                           <select
                             value={editingAppointment.status}
                             onChange={(e) => setEditingAppointment({...editingAppointment, status: e.target.value as '工事決定' | '保留' | '不通'})}
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
                           >
                             <option value="工事決定">工事決定</option>
                             <option value="保留">保留</option>
@@ -1166,7 +1187,7 @@ export default function OrdersPage() {
                           <textarea
                             value={editingAppointment.content}
                             onChange={(e) => setEditingAppointment({...editingAppointment, content: e.target.value})}
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
                             rows={3}
                           />
                         </div>
