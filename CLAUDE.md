@@ -33,6 +33,7 @@ src/
 │   ├── orders/             # 工事依頼管理ページ（小川オーダー表形式）
 │   ├── schedule/           # 工事日程調整ページ（Outlookライクカレンダー）
 │   ├── my-exclusions/      # 協力会社用除外日管理ページ（認証済みユーザー）
+│   ├── contractor-management/ # 協力会社・班管理ページ（管理者専用）
 │   ├── login/              # ログインページ
 │   ├── layout.tsx          # Root layout with AuthProvider
 │   ├── page.tsx            # ダッシュボードページ（KPI表示）
@@ -41,8 +42,13 @@ src/
 │   ├── Layout.tsx          # Main layout wrapper with sidebar & auth check
 │   ├── Sidebar.tsx         # Navigation sidebar with role-based menus
 │   └── CalendarPicker.tsx  # Reusable calendar component
-└── contexts/
-    └── AuthContext.tsx     # Authentication context provider
+├── contexts/
+│   └── AuthContext.tsx     # Authentication context provider
+├── lib/
+│   ├── contractors.ts      # Contractor & team CRUD operations (localStorage)
+│   └── password-generator.ts # Password generation utility
+└── types/
+    └── contractor.ts       # TypeScript interfaces for contractor system
 ```
 
 ### Key Features
@@ -54,6 +60,7 @@ src/
   - 工事日程調整 (Schedule Management) - Outlookライクなカレンダー + 協力会社除外日表示
   - 申請番号管理 (Application Number Management) - 中電/NTT申請の受付〜許可管理
   - 除外日管理 (My Exclusions) - 協力会社専用の作業不可日時登録
+  - アカウント管理 (Account Management) - 管理者・協力会社・班アカウント管理（管理者専用）
 - **Exclusion Date Management**: Time-specific exclusions (終日/午前/午後/カスタム時間指定)
 - **Outlook-style overlapping layout** for schedules and exclusions with collision detection
 - TypeScript path aliases configured (@/* maps to ./src/*)
@@ -69,10 +76,15 @@ This system is built for KCT (倉敷ケーブルテレビ) CATV construction man
 - **現状線の種別**: Existing line types (fiber optic, coaxial, metal)
 - **小川オーダー表**: Excel-based order management format
 
-#### Contractor Management
+#### Contractor & Team Management
 - **直営班**: In-house construction team (パワーケーブル)
+  - A班, B班
 - **栄光電気通信**: External contractor
+  - 1班
 - **スライヴ**: External contractor
+  - 第1班
+- **Team-based operations**: Contractors are divided into teams (班) for work assignment and exclusion management
+- **Login flow**: Login at contractor level, team selection occurs during exclusion registration
 
 #### Workflow Features
 - Excel file upload (.xlsx/.xls) for order import
@@ -99,6 +111,9 @@ This system is built for KCT (倉敷ケーブルテレビ) CATV construction man
 - Excel file parsing expected but not yet implemented (orders page has upload UI)
 - PDF uploads stored as data URLs in state
 - Authentication data persisted in localStorage (key: 'user', client-side only)
+- **Contractor & Team data**: Persisted to localStorage (keys: 'contractors', 'teams')
+  - Initialized with default data on first load via `initializeDefaultData()`
+  - Full CRUD operations available through `src/lib/contractors.ts`
 - **Exclusion data**: Currently stored only in component state (not persisted to localStorage yet)
 
 ### Development Notes
@@ -133,17 +148,19 @@ contractor: '直営班' | '栄光電気通信' | 'スライヴ'
 ```
 
 ### Role-Based Access Control
-- **Admin role**: Access to all management pages (ダッシュボード, 工事依頼管理, 工事日程調整, 申請番号管理)
+- **Admin role**: Access to all management pages (ダッシュボード, 工事依頼管理, 工事日程調整, 申請番号管理, 協力会社管理)
 - **Contractor role**: Access only to 除外日管理 (my-exclusions page)
 - **Sidebar**: Dynamically renders menu items based on user.role
 - **Schedule page**: Admin can view exclusions but cannot edit them
+- **Contractor Management page**: Admin-only access for managing contractor accounts and teams
 
 ### User Context API
 ```typescript
 interface User {
   id: string
   name: string
-  contractor: Contractor
+  contractor: string      // Contractor name
+  contractorId: string    // Contractor ID for data filtering
   role: 'admin' | 'contractor'
 }
 
@@ -154,6 +171,209 @@ interface AuthContextType {
   isAuthenticated: boolean
 }
 ```
+
+### Authentication Flow
+1. User enters username and password
+2. System checks if admin (username='admin', password='admin')
+3. If not admin, lookup contractor by username using `getContractorByUsername()`
+4. Verify password and active status
+5. Create User object with contractor information (no team selection at login)
+6. Save to localStorage and set in AuthContext
+7. Team selection happens later during exclusion registration
+
+## Account Management System
+
+### Overview (src/app/contractor-management/page.tsx)
+Admin-only page with tabbed interface for managing:
+1. **管理者アカウント (Admin Accounts)** - System administrators who can access all features
+2. **協力会社・班管理 (Contractors & Teams)** - External contractors and their team divisions
+
+This is the foundation of the role-based access control and team-based work assignment system.
+
+### Data Model
+
+#### Admin Interface
+```typescript
+interface Admin {
+  id: string              // Unique ID (e.g., "admin-1")
+  name: string            // Display name (e.g., "KCT管理者")
+  username: string        // Login username (e.g., "admin")
+  password: string        // Plain text password (generated or manual)
+  createdAt: string       // ISO 8601 timestamp
+  isActive: boolean       // Enable/disable admin account
+}
+```
+
+#### Contractor Interface
+```typescript
+interface Contractor {
+  id: string              // Unique ID (e.g., "contractor-1")
+  name: string            // Display name (e.g., "直営班")
+  username: string        // Login username (e.g., "chokueihan")
+  password: string        // Plain text password (generated or manual)
+  createdAt: string       // ISO 8601 timestamp
+  isActive: boolean       // Enable/disable contractor account
+}
+```
+
+#### Team Interface
+```typescript
+interface Team {
+  id: string              // Unique ID (e.g., "team-1")
+  contractorId: string    // Parent contractor ID
+  teamName: string        // Team name (e.g., "A班", "1班")
+  members?: string[]      // Optional: list of team members
+  createdAt: string       // ISO 8601 timestamp
+  isActive: boolean       // Enable/disable team
+}
+```
+
+### Key Features
+
+#### Admin Account Management
+- **Add new admin**: Create new admin accounts with manual or auto-generated passwords
+- **Password mode toggle**: Choose between auto-generated or manual password entry
+  - Auto-generate mode: Displays read-only password with regenerate button
+  - Manual mode: Text input for custom password
+- **Edit admin**: Update name and username (password change via regenerate button)
+- **Password management**:
+  - Show/hide password toggle in table view
+  - Regenerate password button (updates password immediately)
+  - Passwords displayed to admin for sharing
+- **Activate/deactivate**: Toggle `isActive` flag without deleting
+- **Delete admin**: Remove admin account from system
+
+#### Contractor Management
+- **Add new contractor**: Generates unique username and password automatically
+- **Edit contractor**: Update name, username, password
+- **Password management**:
+  - Auto-generate secure password using `generateSimplePassword()` (10 chars, mixed case + numbers)
+  - Show/hide password toggle
+  - Regenerate password button
+  - Passwords displayed to admin for sharing with contractors
+- **Activate/deactivate**: Toggle `isActive` flag without deleting
+- **Delete contractor**: Cascades to delete all associated teams
+
+#### Team Management
+- **Nested display**: Teams shown under their parent contractor (accordion style)
+- **Add team**: Create new team under specific contractor
+- **Edit team**: Update team name
+- **Activate/deactivate**: Toggle `isActive` flag
+- **Delete team**: Remove team from contractor
+
+### UI Components
+
+#### Contractor List
+- Accordion-style expandable sections per contractor
+- Displays: Name, Username, Password (with show/hide), Created date, Active status
+- Actions: Edit, Regenerate Password, Toggle Active, Delete
+- Color-coded active status: Green (active), Red (inactive)
+
+#### Team List (nested under contractor)
+- Table layout with: Team Name, Created Date, Active Status
+- Actions: Edit, Toggle Active, Delete
+- Empty state message when contractor has no teams
+
+#### Modal Forms
+1. **Add Contractor Modal**: Name input (username/password auto-generated)
+2. **Edit Contractor Modal**: Name, Username, Password inputs
+3. **Add Team Modal**: Team name input, contractor pre-selected
+4. **Edit Team Modal**: Team name input
+
+### localStorage Operations (src/lib/contractors.ts)
+
+```typescript
+// Admin CRUD
+getAdmins(): Admin[]
+saveAdmins(admins: Admin[]): void
+addAdmin(admin: Admin): void
+updateAdmin(id: string, updates: Partial<Admin>): void
+deleteAdmin(id: string): void
+getAdminById(id: string): Admin | undefined
+getAdminByUsername(username: string): Admin | undefined
+
+// Contractor CRUD
+getContractors(): Contractor[]
+saveContractors(contractors: Contractor[]): void
+addContractor(contractor: Contractor): void
+updateContractor(id: string, updates: Partial<Contractor>): void
+deleteContractor(id: string): void  // Also deletes associated teams
+getContractorById(id: string): Contractor | undefined
+getContractorByUsername(username: string): Contractor | undefined
+
+// Team CRUD
+getTeams(): Team[]
+saveTeams(teams: Team[]): void
+addTeam(team: Team): void
+updateTeam(id: string, updates: Partial<Team>): void
+deleteTeam(id: string): void
+getTeamsByContractorId(contractorId: string): Team[]
+getTeamById(id: string): Team | undefined
+
+// Initialization
+initializeDefaultData(): void  // Creates default admins/contractors/teams if none exist
+```
+
+### Password Generation (src/lib/password-generator.ts)
+
+```typescript
+generateSimplePassword(length: number = 10): string
+```
+
+**Algorithm**:
+1. Ensures at least 1 uppercase letter
+2. Ensures at least 1 lowercase letter
+3. Ensures at least 1 number
+4. Fills remaining characters randomly from all three character sets
+5. Shuffles the result using Fisher-Yates algorithm
+6. Returns 10-character password (e.g., "aB3xYz7Qm1")
+
+### Default Data
+
+Initialized on first load by `AuthContext` calling `initializeDefaultData()`:
+
+```typescript
+Admins:
+- KCT管理者 (username: admin, password: admin)
+
+Contractors:
+- 直営班 (username: chokueihan, password: password)
+- 栄光電気通信 (username: eiko, password: password)
+- スライヴ (username: thrive, password: password)
+
+Teams:
+- 直営班 → A班, B班
+- 栄光電気通信 → 1班
+- スライヴ → 第1班
+```
+
+### localStorage Keys
+- `admins` - Admin account data
+- `contractors` - Contractor account data
+- `teams` - Team data
+- `user` - Currently logged in user session
+
+### Integration with Other Systems
+
+#### Exclusion Registration (src/app/my-exclusions/page.tsx)
+- Contractor logs in → `user.contractorId` set
+- On exclusion page load → `getTeamsByContractorId(user.contractorId)` fetches available teams
+- User selects team from dropdown when registering exclusion
+- Exclusion saved with both `contractorId` and `teamId`
+
+#### Schedule Display
+- Schedules and exclusions show: "Contractor Name - Team Name"
+- Example: "直営班 - A班", "栄光電気通信 - 1班"
+- Team information helps identify which specific crew is working/unavailable
+
+### Important Notes
+
+1. **Login Level**: Authentication happens at contractor level, NOT team level
+2. **Team Selection**: Teams are selected when registering exclusions, not at login
+3. **Data Persistence**: All contractor/team data stored in localStorage (keys: 'contractors', 'teams')
+4. **Cascade Delete**: Deleting a contractor removes all its teams
+5. **Password Security**: Passwords stored in plain text (suitable for demo, not production)
+6. **Form Styling**: All input/select elements MUST include `bg-white text-gray-900` classes
 
 ## Exclusion Date Management
 
@@ -167,6 +387,9 @@ interface ExclusionEntry {
   date: string              // YYYY-MM-DD format
   reason: string            // 理由 (e.g., "他現場対応", "休暇")
   contractor: string        // Contractor name (直営班, 栄光電気通信, スライヴ)
+  contractorId: string      // Contractor ID for filtering
+  teamId: string            // Team ID
+  teamName: string          // Team name (A班, 1班, etc.)
   timeType: 'all_day' | 'am' | 'pm' | 'custom'
   startTime?: string        // HH:MM format (for custom type)
   endTime?: string          // HH:MM format (for custom type)
@@ -187,19 +410,23 @@ interface ExclusionEntry {
 ### UI Components
 
 #### My Exclusions Page (src/app/my-exclusions/page.tsx)
-- **Calendar view**: Month view with existing exclusions displayed
-- **Registration form**: Date picker + time type selector + reason input
+- **Team loading**: On page load, fetches teams for logged-in contractor using `getTeamsByContractorId()`
+- **Team selection**: Dropdown to select which team the exclusion applies to
+- **Calendar view**: Month view with existing exclusions displayed (shows team name)
+- **Registration form**: Team selector + date picker + time type selector + reason input
 - **Time type selector**: Radio buttons for 終日/午前/午後/カスタム
 - **Custom time picker**: Two time inputs (startTime, endTime) when custom is selected
-- **Exclusion list**: Table with date, time, reason, and delete action
-- **Validation**: Prevents past date registration, ensures startTime < endTime
+- **Exclusion list**: Table with team name, date, time, reason, and delete action
+- **Validation**: Prevents past date registration, ensures startTime < endTime, requires team selection
+- **Data filtering**: Only shows exclusions for the logged-in contractor (filters by `contractorId`)
 
 #### Schedule Page Integration (src/app/schedule/page.tsx)
 - **Read-only display**: Exclusions shown in all calendar views (月/週/日)
 - **Visual distinction**: Red dashed border (border-2 border-dashed border-red-500)
 - **Icon**: 🚫 emoji for quick identification
 - **Italic text**: Exclusion text displayed in italic style
-- **Hover info**: Shows contractor, time, and reason on hover
+- **Team display**: Shows "Contractor - Team" format (e.g., "直営班 - A班")
+- **Hover info**: Shows contractor, team, time, and reason on hover
 - **Data loading**: Loads exclusions from localStorage on mount (future implementation)
 
 ### Position Calculation
@@ -358,6 +585,42 @@ useEffect(() => {
 
 ### Schedule and Exclusion Rendering
 Both are rendered using `calculateOverlappingLayoutWithExclusions` for Outlook-style side-by-side layout when time slots overlap.
+
+### Date Selection UX (Month & Week Views)
+
+**Important**: The schedule page uses a two-step selection process to prevent accidental view changes:
+
+1. **Single Click**: Selects the date (highlighted with blue background `bg-blue-100 ring-2 ring-blue-500`)
+   - Selected date is stored in `selectedDateForAdd` state
+   - Does NOT change the view mode
+   - New registration button shows selected date: "新規登録 (9/15)"
+   - Selection can be cleared with "選択解除" button
+
+2. **Double Click**: Navigates to day view for the clicked date
+   - Sets `selectedDate` and `currentDate`
+   - Changes `viewMode` to 'day'
+
+**Critical**: Always use `formatDateString(date)` instead of `date.toISOString().split('T')[0]` to avoid timezone-related date shifts. The `formatDateString` function ensures correct local date formatting:
+
+```typescript
+const formatDateString = (date: Date) => {
+  const year = date.getFullYear()
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const day = date.getDate().toString().padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+```
+
+**New Registration Flow**:
+1. User clicks a date in month/week view → Date highlighted
+2. User clicks "新規登録" button → Modal opens with selected date pre-filled
+3. After saving/canceling → Selection state cleared automatically
+
+**Visual Indicators**:
+- **Selected date**: Blue background (`bg-blue-100`) with blue ring (`ring-2 ring-blue-500`)
+- **Today's date**: Green ring (`ring-green-400`)
+- **Week view selected column**: Entire column highlighted with `bg-blue-50`
+- **Week view selected header**: Dark blue background (`bg-blue-200`)
 
 ## Order Management: Appointment History System
 

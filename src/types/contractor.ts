@@ -1,3 +1,13 @@
+// 管理者の基本情報
+export interface Admin {
+  id: string
+  name: string
+  username: string
+  password: string
+  createdAt: string
+  isActive: boolean
+}
+
 // 協力会社の基本情報
 export interface Contractor {
   id: string

@@ -1,8 +1,71 @@
-import { Contractor, Team } from '@/types/contractor'
+import { Admin, Contractor, Team } from '@/types/contractor'
 
 // ローカルストレージのキー
+const ADMINS_KEY = 'admins'
 const CONTRACTORS_KEY = 'contractors'
 const TEAMS_KEY = 'teams'
+
+// ========== 管理者関連の操作 ==========
+
+// 管理者の取得
+export const getAdmins = (): Admin[] => {
+  if (typeof window === 'undefined') return []
+  try {
+    const data = localStorage.getItem(ADMINS_KEY)
+    return data ? JSON.parse(data) : []
+  } catch (error) {
+    console.error('Failed to load admins:', error)
+    return []
+  }
+}
+
+// 管理者の保存
+export const saveAdmins = (admins: Admin[]): void => {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(ADMINS_KEY, JSON.stringify(admins))
+  } catch (error) {
+    console.error('Failed to save admins:', error)
+  }
+}
+
+// 管理者の追加
+export const addAdmin = (admin: Admin): void => {
+  const admins = getAdmins()
+  admins.push(admin)
+  saveAdmins(admins)
+}
+
+// 管理者の更新
+export const updateAdmin = (id: string, updates: Partial<Admin>): void => {
+  const admins = getAdmins()
+  const index = admins.findIndex(a => a.id === id)
+  if (index !== -1) {
+    admins[index] = { ...admins[index], ...updates }
+    saveAdmins(admins)
+  }
+}
+
+// 管理者の削除
+export const deleteAdmin = (id: string): void => {
+  const admins = getAdmins()
+  const filtered = admins.filter(a => a.id !== id)
+  saveAdmins(filtered)
+}
+
+// IDで管理者を取得
+export const getAdminById = (id: string): Admin | undefined => {
+  const admins = getAdmins()
+  return admins.find(a => a.id === id)
+}
+
+// ユーザー名で管理者を取得
+export const getAdminByUsername = (username: string): Admin | undefined => {
+  const admins = getAdmins()
+  return admins.find(a => a.username === username)
+}
+
+// ========== 協力会社関連の操作 ==========
 
 // 協力会社の取得
 export const getContractors = (): Contractor[] => {
@@ -127,6 +190,23 @@ export const getTeamById = (id: string): Team | undefined => {
 
 // 初期データのセットアップ（既存のデータがない場合のみ）
 export const initializeDefaultData = (): void => {
+  // 管理者データの初期化
+  const existingAdmins = getAdmins()
+  if (existingAdmins.length === 0) {
+    const defaultAdmins: Admin[] = [
+      {
+        id: 'admin-1',
+        name: 'KCT管理者',
+        username: 'admin',
+        password: 'admin',
+        createdAt: new Date().toISOString(),
+        isActive: true,
+      },
+    ]
+    saveAdmins(defaultAdmins)
+  }
+
+  // 協力会社データの初期化
   const existingContractors = getContractors()
   if (existingContractors.length > 0) return
 
