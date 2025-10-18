@@ -1,10 +1,14 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { PlusIcon, PencilIcon, TrashIcon, EyeIcon, EyeSlashIcon, KeyIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, PencilIcon, TrashIcon, EyeIcon, EyeSlashIcon, KeyIcon, UserGroupIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
 import Layout from '@/components/Layout'
-import { Contractor, Team } from '@/types/contractor'
+import { Admin, Contractor, Team } from '@/types/contractor'
 import {
+  getAdmins,
+  addAdmin,
+  updateAdmin,
+  deleteAdmin,
   getContractors,
   getTeams,
   addContractor,
@@ -19,18 +23,32 @@ import {
 import { generateSimplePassword } from '@/lib/password-generator'
 
 export default function ContractorManagementPage() {
+  const [admins, setAdmins] = useState<Admin[]>([])
   const [contractors, setContractors] = useState<Contractor[]>([])
   const [teams, setTeams] = useState<Team[]>([])
   const [expandedContractors, setExpandedContractors] = useState<Set<string>>(new Set())
+  const [activeTab, setActiveTab] = useState<'admins' | 'contractors'>('admins')
 
   // モーダル状態
+  const [showAddAdminModal, setShowAddAdminModal] = useState(false)
+  const [showEditAdminModal, setShowEditAdminModal] = useState(false)
   const [showAddContractorModal, setShowAddContractorModal] = useState(false)
   const [showEditContractorModal, setShowEditContractorModal] = useState(false)
   const [showAddTeamModal, setShowAddTeamModal] = useState(false)
   const [showEditTeamModal, setShowEditTeamModal] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
 
-  // フォーム状態
+  // 管理者フォーム状態
+  const [newAdminName, setNewAdminName] = useState('')
+  const [newAdminUsername, setNewAdminUsername] = useState('')
+  const [newAdminPassword, setNewAdminPassword] = useState('')
+  const [isAutoGenerateAdminPassword, setIsAutoGenerateAdminPassword] = useState(true)
+  const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null)
+  const [editAdminName, setEditAdminName] = useState('')
+  const [editAdminUsername, setEditAdminUsername] = useState('')
+  const [visibleAdminPasswords, setVisibleAdminPasswords] = useState<Set<string>>(new Set())
+
+  // 協力会社フォーム状態
   const [newContractorName, setNewContractorName] = useState('')
   const [newContractorUsername, setNewContractorUsername] = useState('')
   const [newContractorPassword, setNewContractorPassword] = useState('')
@@ -57,9 +75,117 @@ export default function ContractorManagementPage() {
   }, [])
 
   const loadData = () => {
+    setAdmins(getAdmins())
     setContractors(getContractors())
     setTeams(getTeams())
   }
+
+  // ========== 管理者関連の操作 ==========
+
+  const handleOpenAddAdminModal = () => {
+    setNewAdminName('')
+    setNewAdminUsername('')
+    setIsAutoGenerateAdminPassword(true)
+    const password = generateSimplePassword(10)
+    setNewAdminPassword(password)
+    setShowAddAdminModal(true)
+  }
+
+  const handleToggleAdminPasswordMode = () => {
+    setIsAutoGenerateAdminPassword(!isAutoGenerateAdminPassword)
+    if (!isAutoGenerateAdminPassword) {
+      // 自動生成モードに切り替える場合、新しいパスワードを生成
+      const password = generateSimplePassword(10)
+      setNewAdminPassword(password)
+    } else {
+      // 手動入力モードに切り替える場合、パスワードをクリア
+      setNewAdminPassword('')
+    }
+  }
+
+  const handleGenerateAdminPassword = () => {
+    const password = generateSimplePassword(10)
+    setNewAdminPassword(password)
+  }
+
+  const handleAddAdmin = () => {
+    if (!newAdminName.trim() || !newAdminUsername.trim() || !newAdminPassword.trim()) {
+      alert('すべての項目を入力してください')
+      return
+    }
+
+    const newAdmin: Admin = {
+      id: `admin-${Date.now()}`,
+      name: newAdminName,
+      username: newAdminUsername,
+      password: newAdminPassword,
+      createdAt: new Date().toISOString(),
+      isActive: true,
+    }
+
+    addAdmin(newAdmin)
+    loadData()
+
+    setNewAdminName('')
+    setNewAdminUsername('')
+    setNewAdminPassword('')
+    setShowAddAdminModal(false)
+  }
+
+  const handleEditAdmin = (admin: Admin) => {
+    setEditingAdmin(admin)
+    setEditAdminName(admin.name)
+    setEditAdminUsername(admin.username)
+    setShowEditAdminModal(true)
+  }
+
+  const handleSaveEditAdmin = () => {
+    if (!editingAdmin || !editAdminName.trim() || !editAdminUsername.trim()) {
+      alert('すべての項目を入力してください')
+      return
+    }
+
+    updateAdmin(editingAdmin.id, {
+      name: editAdminName,
+      username: editAdminUsername,
+    })
+    loadData()
+    setShowEditAdminModal(false)
+    setEditingAdmin(null)
+  }
+
+  const handleDeleteAdmin = (admin: Admin) => {
+    if (confirm(`管理者「${admin.name}」を削除してもよろしいですか？`)) {
+      deleteAdmin(admin.id)
+      loadData()
+    }
+  }
+
+  const toggleAdminPasswordVisibility = (adminId: string) => {
+    const newVisible = new Set(visibleAdminPasswords)
+    if (newVisible.has(adminId)) {
+      newVisible.delete(adminId)
+    } else {
+      newVisible.add(adminId)
+    }
+    setVisibleAdminPasswords(newVisible)
+  }
+
+  const handleRegenerateAdminPassword = (admin: Admin) => {
+    const newPassword = generateSimplePassword(10)
+    setCurrentPassword(newPassword)
+    setShowPasswordModal(true)
+
+    updateAdmin(admin.id, { password: newPassword })
+    loadData()
+  }
+
+  const handleToggleAdminActive = (admin: Admin) => {
+    updateAdmin(admin.id, { isActive: !admin.isActive })
+    loadData()
+  }
+
+  // ========== 協力会社関連の操作 ==========
 
   const toggleContractor = (contractorId: string) => {
     const newExpanded = new Set(expandedContractors)
@@ -212,25 +338,176 @@ export default function ContractorManagementPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-6">
               <h1 className="text-3xl font-bold text-gray-900">
-                協力会社・班管理
+                アカウント管理
               </h1>
-              <button
-                onClick={() => setShowAddContractorModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-              >
-                <PlusIcon className="h-5 w-5 mr-2" />
-                新規協力会社を追加
-              </button>
             </div>
           </div>
         </header>
 
         <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <div className="bg-white shadow rounded-lg overflow-hidden">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                協力会社一覧
-              </h3>
+          {/* タブナビゲーション */}
+          <div className="mb-6">
+            <div className="border-b border-gray-200">
+              <nav className="-mb-px flex space-x-8">
+                <button
+                  onClick={() => setActiveTab('admins')}
+                  className={`${
+                    activeTab === 'admins'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                >
+                  <ShieldCheckIcon className="h-5 w-5 mr-2" />
+                  管理者アカウント
+                </button>
+                <button
+                  onClick={() => setActiveTab('contractors')}
+                  className={`${
+                    activeTab === 'contractors'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                >
+                  <UserGroupIcon className="h-5 w-5 mr-2" />
+                  協力会社・班管理
+                </button>
+              </nav>
+            </div>
+          </div>
+
+          {/* 管理者タブ */}
+          {activeTab === 'admins' && (
+            <div className="bg-white shadow rounded-lg overflow-hidden">
+              <div className="px-4 py-5 sm:p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    管理者一覧
+                  </h3>
+                  <button
+                    onClick={handleOpenAddAdminModal}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                  >
+                    <PlusIcon className="h-5 w-5 mr-2" />
+                    新規管理者を追加
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          名前
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          ユーザー名
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          パスワード
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          作成日
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          ステータス
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          操作
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {admins.map((admin) => (
+                        <tr key={admin.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {admin.name}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {admin.username}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <div className="flex items-center space-x-2">
+                              <span className="font-mono">
+                                {visibleAdminPasswords.has(admin.id) ? admin.password : '••••••••••'}
+                              </span>
+                              <button
+                                onClick={() => toggleAdminPasswordVisibility(admin.id)}
+                                className="text-gray-400 hover:text-gray-600"
+                              >
+                                {visibleAdminPasswords.has(admin.id) ? (
+                                  <EyeSlashIcon className="h-4 w-4" />
+                                ) : (
+                                  <EyeIcon className="h-4 w-4" />
+                                )}
+                              </button>
+                              <button
+                                onClick={() => handleRegenerateAdminPassword(admin)}
+                                className="text-blue-600 hover:text-blue-800"
+                                title="パスワード再生成"
+                              >
+                                <KeyIcon className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(admin.createdAt).toLocaleDateString('ja-JP')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <button
+                              onClick={() => handleToggleAdminActive(admin)}
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                admin.isActive
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-red-100 text-red-800'
+                              }`}
+                            >
+                              {admin.isActive ? '● アクティブ' : '● 無効'}
+                            </button>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                            <button
+                              onClick={() => handleEditAdmin(admin)}
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              <PencilIcon className="h-4 w-4 inline" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteAdmin(admin)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              <TrashIcon className="h-4 w-4 inline" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {admins.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      管理者アカウントがありません
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 協力会社タブ */}
+          {activeTab === 'contractors' && (
+            <div className="bg-white shadow rounded-lg overflow-hidden">
+              <div className="px-4 py-5 sm:p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    協力会社一覧
+                  </h3>
+                  <button
+                    onClick={() => setShowAddContractorModal(true)}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                  >
+                    <PlusIcon className="h-5 w-5 mr-2" />
+                    新規協力会社を追加
+                  </button>
+                </div>
 
               <div className="space-y-4">
                 {contractors.map((contractor) => {
@@ -375,7 +652,148 @@ export default function ContractorManagementPage() {
               </div>
             </div>
           </div>
+          )}
         </main>
+
+        {/* 管理者追加モーダル */}
+        {showAddAdminModal && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="mb-4">
+                <h3 className="text-lg font-medium text-gray-900">新規管理者を追加</h3>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">管理者名</label>
+                  <input
+                    type="text"
+                    value={newAdminName}
+                    onChange={(e) => setNewAdminName(e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
+                    placeholder="例：田中太郎"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">ユーザー名</label>
+                  <input
+                    type="text"
+                    value={newAdminUsername}
+                    onChange={(e) => setNewAdminUsername(e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
+                    placeholder="例：tanaka"
+                  />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">パスワード</label>
+                    <label className="flex items-center text-sm text-gray-600">
+                      <input
+                        type="checkbox"
+                        checked={isAutoGenerateAdminPassword}
+                        onChange={handleToggleAdminPasswordMode}
+                        className="mr-2"
+                      />
+                      自動生成
+                    </label>
+                  </div>
+                  {isAutoGenerateAdminPassword ? (
+                    <div>
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          value={newAdminPassword}
+                          readOnly
+                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-900 font-mono"
+                        />
+                        <button
+                          onClick={handleGenerateAdminPassword}
+                          className="mt-1 px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm whitespace-nowrap"
+                        >
+                          再生成
+                        </button>
+                      </div>
+                      <p className="mt-1 text-xs text-gray-500">
+                        ※このパスワードを管理者に共有してください
+                      </p>
+                    </div>
+                  ) : (
+                    <input
+                      type="text"
+                      value={newAdminPassword}
+                      onChange={(e) => setNewAdminPassword(e.target.value)}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
+                      placeholder="パスワードを入力してください"
+                    />
+                  )}
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end space-x-2">
+                <button
+                  onClick={() => setShowAddAdminModal(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                >
+                  キャンセル
+                </button>
+                <button
+                  onClick={handleAddAdmin}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                  追加
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 管理者編集モーダル */}
+        {showEditAdminModal && editingAdmin && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="mb-4">
+                <h3 className="text-lg font-medium text-gray-900">管理者を編集</h3>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">管理者名</label>
+                  <input
+                    type="text"
+                    value={editAdminName}
+                    onChange={(e) => setEditAdminName(e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">ユーザー名</label>
+                  <input
+                    type="text"
+                    value={editAdminUsername}
+                    onChange={(e) => setEditAdminUsername(e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
+                  />
+                </div>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                  <p className="text-xs text-yellow-800">
+                    パスワードを変更する場合は、パスワード再生成ボタンを使用してください
+                  </p>
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end space-x-2">
+                <button
+                  onClick={() => setShowEditAdminModal(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                >
+                  キャンセル
+                </button>
+                <button
+                  onClick={handleSaveEditAdmin}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                  保存
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 新規協力会社追加モーダル */}
         {showAddContractorModal && (

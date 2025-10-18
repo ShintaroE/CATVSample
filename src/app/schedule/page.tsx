@@ -166,6 +166,7 @@ export default function SchedulePage() {
   const [exclusions, setExclusions] = useState<ExclusionEntry[]>(sampleExclusions)
   const [currentDate, setCurrentDate] = useState<Date>(new Date(2025, 8, 15)) // 2025年9月15日
   const [selectedDate, setSelectedDate] = useState<string>('2025-09-15')
+  const [selectedDateForAdd, setSelectedDateForAdd] = useState<string | null>(null) // 新規登録用の選択日
   const [selectedContractor, setSelectedContractor] = useState<string>('全て')
   const [editingSchedule, setEditingSchedule] = useState<ScheduleItem | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -264,14 +265,18 @@ export default function SchedulePage() {
     )
   }
 
-  // 日付をクリックした時の処理
-  const handleDateClick = (date: Date) => {
+  // 日付をクリックした時の処理（月表示・週表示用）
+  const handleDateSelect = (date: Date) => {
+    const dateStr = formatDateString(date)
+    setSelectedDateForAdd(dateStr)
+  }
+
+  // 日付をダブルクリックした時の処理（日ビューに移動）
+  const handleDateDoubleClick = (date: Date) => {
     const dateStr = formatDateString(date)
     setSelectedDate(dateStr)
     setCurrentDate(date)
-    if (viewMode === 'month') {
-      setViewMode('day')
-    }
+    setViewMode('day')
   }
 
   // 今日に戻る
@@ -468,6 +473,12 @@ export default function SchedulePage() {
   }
 
   const handleAddSchedule = () => {
+    // 選択された日付があればそれを使用、なければ現在のselectedDateを使用
+    const dateToUse = selectedDateForAdd || selectedDate
+    setNewSchedule({
+      ...newSchedule,
+      assignedDate: dateToUse
+    })
     setShowAddModal(true)
   }
 
@@ -492,6 +503,7 @@ export default function SchedulePage() {
 
     setSchedules(prev => [...prev, schedule])
     setShowAddModal(false)
+    setSelectedDateForAdd(null) // 選択状態をクリア
     setNewSchedule({
       orderNumber: '',
       customerName: '',
@@ -673,13 +685,27 @@ export default function SchedulePage() {
                 </select>
               </div>
 
-              <button
-                onClick={handleAddSchedule}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <PlusIcon className="h-4 w-4 mr-2" />
-                新規登録
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={handleAddSchedule}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  {selectedDateForAdd ? (
+                    <>新規登録 ({new Date(selectedDateForAdd + 'T00:00:00').toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' })})</>
+                  ) : (
+                    '新規登録'
+                  )}
+                </button>
+                {selectedDateForAdd && (
+                  <button
+                    onClick={() => setSelectedDateForAdd(null)}
+                    className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    選択解除
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -697,7 +723,7 @@ export default function SchedulePage() {
               </div>
               <div className="grid grid-cols-7 gap-0">
                 {getMonthDays().map((date, index) => {
-                  const dateStr = date.toISOString().split('T')[0]
+                  const dateStr = formatDateString(date)
                   const daySchedules = getSchedulesForDate(date)
                   const dayExclusions = exclusions.filter(ex => ex.date === dateStr)
                   return (
@@ -705,10 +731,11 @@ export default function SchedulePage() {
                       key={index}
                       className={`min-h-32 p-2 border-r border-b border-gray-200 last:border-r-0 cursor-pointer hover:bg-gray-50 ${
                         !isCurrentMonth(date) ? 'bg-gray-50' : 'bg-white'
-                      } ${isSelected(date) ? 'bg-blue-50 border-blue-300' : ''} ${
-                        isToday(date) ? 'ring-2 ring-blue-500' : ''
+                      } ${dateStr === selectedDateForAdd ? 'bg-blue-100 ring-2 ring-blue-500' : ''} ${
+                        isToday(date) ? 'ring-2 ring-green-400' : ''
                       }`}
-                      onClick={() => handleDateClick(date)}
+                      onClick={() => handleDateSelect(date)}
+                      onDoubleClick={() => handleDateDoubleClick(date)}
                     >
                       <div className={`text-sm font-medium mb-1 ${
                         !isCurrentMonth(date) ? 'text-gray-400' :
@@ -774,13 +801,26 @@ export default function SchedulePage() {
                 <div className="p-3 bg-gray-50 border-r border-gray-200 text-sm font-medium text-gray-700">
                   時間
                 </div>
-                {getWeekDays().map((date) => (
-                  <div key={date.toISOString()} className="p-3 text-center bg-gray-50 border-r border-gray-200 last:border-r-0">
-                    <div className={`text-sm font-medium ${isToday(date) ? 'text-blue-600' : 'text-gray-700'}`}>
-                      {formatDate(date)}
+                {getWeekDays().map((date) => {
+                  const dateStr = formatDateString(date)
+                  return (
+                    <div
+                      key={date.toISOString()}
+                      className={`p-3 text-center border-r border-gray-200 last:border-r-0 cursor-pointer hover:bg-gray-100 ${
+                        dateStr === selectedDateForAdd ? 'bg-blue-200 ring-2 ring-inset ring-blue-500' : 'bg-gray-50'
+                      }`}
+                      onClick={() => handleDateSelect(date)}
+                      onDoubleClick={() => handleDateDoubleClick(date)}
+                    >
+                      <div className={`text-sm font-medium ${
+                        isToday(date) ? 'text-blue-600' :
+                        dateStr === selectedDateForAdd ? 'text-blue-900' : 'text-gray-700'
+                      }`}>
+                        {formatDate(date)}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
 
               {/* タイムスロット */}
@@ -797,21 +837,24 @@ export default function SchedulePage() {
 
                   {/* 各日のカラム */}
                   {getWeekDays().map((date) => {
-                    const dateStr = date.toISOString().split('T')[0]
+                    const dateStr = formatDateString(date)
                     const daySchedules = getSchedulesForDate(date)
                     const dayExclusions = exclusions.filter(ex => ex.date === dateStr)
                     const layoutItems = calculateOverlappingLayoutWithExclusions(daySchedules, dayExclusions)
 
                     return (
-                      <div key={date.toISOString()} className="relative border-r border-gray-200 last:border-r-0">
+                      <div key={date.toISOString()} className={`relative border-r border-gray-200 last:border-r-0 ${
+                        dateStr === selectedDateForAdd ? 'bg-blue-50' : ''
+                      }`}>
                         {/* 時間グリッド */}
                         {getHourlyTimeSlots().map((hour) => (
                           <div
                             key={hour}
                             className={`h-16 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                              isSelected(date) ? 'bg-blue-25' : 'bg-white'
+                              dateStr === selectedDateForAdd ? 'bg-blue-50' : 'bg-white'
                             }`}
-                            onClick={() => handleDateClick(date)}
+                            onClick={() => handleDateSelect(date)}
+                            onDoubleClick={() => handleDateDoubleClick(date)}
                           />
                         ))}
 
@@ -919,7 +962,7 @@ export default function SchedulePage() {
                     {/* 予定と除外日のバー */}
                     <div className="absolute inset-0">
                       {(() => {
-                        const dateStr = currentDate.toISOString().split('T')[0]
+                        const dateStr = formatDateString(currentDate)
                         const daySchedules = getSchedulesForDate(currentDate)
                         const dayExclusions = exclusions.filter(ex => ex.date === dateStr)
                         const layoutItems = calculateOverlappingLayoutWithExclusions(daySchedules, dayExclusions)
@@ -1140,7 +1183,10 @@ export default function SchedulePage() {
                   新規スケジュール登録
                 </h3>
                 <button
-                  onClick={() => setShowAddModal(false)}
+                  onClick={() => {
+                    setShowAddModal(false)
+                    setSelectedDateForAdd(null)
+                  }}
                   className="text-gray-400 hover:text-gray-600"
                 >
                   ✕
@@ -1247,7 +1293,10 @@ export default function SchedulePage() {
 
               <div className="mt-6 flex justify-end space-x-3">
                 <button
-                  onClick={() => setShowAddModal(false)}
+                  onClick={() => {
+                    setShowAddModal(false)
+                    setSelectedDateForAdd(null)
+                  }}
                   className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
                 >
                   キャンセル

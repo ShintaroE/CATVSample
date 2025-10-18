@@ -43,7 +43,7 @@ const adminMenuItems: MenuItem[] = [
     icon: DocumentCheckIcon,
   },
   {
-    name: '協力会社管理',
+    name: 'アカウント管理',
     href: '/contractor-management',
     icon: UserGroupIcon,
   },

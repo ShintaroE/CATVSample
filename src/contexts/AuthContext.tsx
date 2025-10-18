@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { User } from '@/types/contractor'
-import { getContractorByUsername } from '@/lib/contractors'
+import { getContractorByUsername, getAdminByUsername } from '@/lib/contractors'
 
 interface AuthContextType {
   user: User | null
@@ -37,13 +37,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const login = (username: string, password: string): boolean => {
-    // 管理者アカウント
-    if (username === 'admin' && password === 'admin') {
+    // 管理者アカウントをチェック
+    const admin = getAdminByUsername(username)
+    if (admin) {
+      if (admin.password !== password) {
+        return false
+      }
+      if (!admin.isActive) {
+        return false
+      }
+
       const adminUser: User = {
-        id: 'admin',
-        name: 'KCT管理者',
-        contractor: 'KCT管理者',
-        contractorId: 'admin',
+        id: admin.id,
+        name: admin.name,
+        contractor: admin.name,
+        contractorId: admin.id,
         role: 'admin',
       }
       setUser(adminUser)

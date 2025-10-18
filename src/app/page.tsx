@@ -96,8 +96,37 @@ export default function Home() {
               </div>
               <div className="bg-gray-50 px-5 py-3">
                 <div className="text-sm">
-                  <a href="#" className="font-medium text-orange-600 hover:text-orange-500">
+                  <a href="/applications" className="font-medium text-orange-600 hover:text-orange-500">
                     申請管理画面へ
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold">4</span>
+                    </div>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">
+                        アカウント管理
+                      </dt>
+                      <dd className="text-lg font-medium text-gray-900">
+                        管理者・協力会社
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-5 py-3">
+                <div className="text-sm">
+                  <a href="/contractor-management" className="font-medium text-green-600 hover:text-green-500">
+                    アカウント管理画面へ
                   </a>
                 </div>
               </div>
@@ -167,7 +196,7 @@ export default function Home() {
             <div className="bg-white shadow rounded-lg">
               <div className="px-4 py-5 sm:p-6">
                 <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  業務フロー概要
+                  システム概要
                 </h3>
                 <div className="mt-2 text-sm text-gray-600">
                   <p>
@@ -175,19 +204,79 @@ export default function Home() {
                     工事調査依頼から完了まで、関係者間の連携を効率化します。
                   </p>
                 </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    パワーケーブル（直営班）
-                  </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    栄光電気通信
-                  </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                    スライヴ
-                  </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                    中国電力・NTT連携
-                  </span>
+
+                <div className="mt-6">
+                  <h4 className="text-sm font-semibold text-gray-900 mb-3">主要機能</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center">
+                          <span className="text-blue-600 text-xs font-bold">✓</span>
+                        </div>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-gray-700 font-medium">工事依頼管理</p>
+                        <p className="text-xs text-gray-500">アポイント履歴、進捗管理</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <div className="w-6 h-6 bg-purple-100 rounded flex items-center justify-center">
+                          <span className="text-purple-600 text-xs font-bold">✓</span>
+                        </div>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-gray-700 font-medium">スケジュール調整</p>
+                        <p className="text-xs text-gray-500">月/週/日表示、除外日管理</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <div className="w-6 h-6 bg-orange-100 rounded flex items-center justify-center">
+                          <span className="text-orange-600 text-xs font-bold">✓</span>
+                        </div>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-gray-700 font-medium">申請番号管理</p>
+                        <p className="text-xs text-gray-500">中電/NTT共架・添架許可</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center">
+                          <span className="text-green-600 text-xs font-bold">✓</span>
+                        </div>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-gray-700 font-medium">アカウント管理</p>
+                        <p className="text-xs text-gray-500">管理者・協力会社・班管理</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <h4 className="text-sm font-semibold text-gray-900 mb-3">協力会社・班構成</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 w-32">
+                        直営班
+                      </span>
+                      <span className="ml-2 text-xs text-gray-600">A班、B班</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 w-32">
+                        栄光電気通信
+                      </span>
+                      <span className="ml-2 text-xs text-gray-600">1班</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 w-32">
+                        スライヴ
+                      </span>
+                      <span className="ml-2 text-xs text-gray-600">第1班</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
