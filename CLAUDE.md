@@ -745,3 +745,223 @@ interface CalendarPickerProps {
 - **Schedule boxes**: Small colored boxes (10px text) with contractor name
 - **Exclusion boxes**: Red border with 🚫 icon and contractor name
 - **Overflow**: Shows "+N" when more than 2 items on a date
+
+## Schedule Page: Advanced Filtering & Column Layout
+
+### Checkbox-based Team Filtering (Outlook-style)
+
+The schedule page uses a hierarchical checkbox filtering system inspired by Microsoft Outlook:
+
+#### Filter Data Structure
+```typescript
+interface TeamFilter {
+  contractorId: string
+  contractorName: string
+  teamId: string
+  teamName: string
+  isVisible: boolean
+  color: string          // 'blue' | 'green' | 'purple'
+}
+```
+
+#### Filter Panel Features
+- **Hierarchical checkboxes**: Contractors as parent, teams as children
+- **Indeterminate state**: Parent checkbox shows "partially checked" when some teams are selected
+- **Multi-selection**: Multiple teams can be displayed simultaneously
+- **Visual indicators**: Colored dots next to contractor names
+- **Selection counter**: Shows "N/M" (selected/total) in filter button badge
+- **Dropdown panel**: Positioned absolutely, z-index 20, max-height with scroll
+
+#### Filter Logic
+```typescript
+// Filter schedules based on visible teams
+const filteredSchedules = useMemo(() => {
+  return schedules.filter(schedule => {
+    if (teamFilters.length === 0) return true
+
+    // If schedule has teamId, match by teamId
+    if (schedule.teamId) {
+      return teamFilters.some(f => f.teamId === schedule.teamId && f.isVisible)
+    }
+
+    // If no teamId, match by contractor name
+    return teamFilters.some(f =>
+      f.contractorName === schedule.contractor && f.isVisible
+    )
+  })
+}, [schedules, teamFilters])
+```
+
+#### Checkbox State Functions
+- `getContractorCheckState(contractorId)`: Returns 'all' | 'some' | 'none'
+- `handleToggleAll(checked)`: Toggle all teams
+- `handleToggleContractor(contractorId, checked)`: Toggle all teams under contractor
+- `handleToggleTeam(teamId, checked)`: Toggle individual team
+
+### Day View: Column-based Layout
+
+When viewing a single day, schedules are displayed in columns by team rather than overlapping.
+
+#### Design Principles
+- **Time column**: Fixed on left (3.75rem width, sticky positioning)
+- **Team columns**: One column per visible team
+- **Responsive width**:
+  - 1-5 columns: Flex layout fills screen width
+  - 6+ columns: Fixed 180px width with horizontal scroll
+- **rem-based units**: All measurements in rem for cross-device compatibility
+
+#### Constants
+```typescript
+const HOUR_HEIGHT = 4           // 1 hour = 4rem (64px at default font size)
+const BUSINESS_START_HOUR = 9
+const BUSINESS_END_HOUR = 18
+```
+
+#### Column Width Configuration
+```typescript
+const getColumnWidthConfig = useMemo(() => {
+  const columnCount = visibleColumns.length
+  if (columnCount === 0) {
+    return { useFlex: false, minWidth: '180px' }
+  }
+  if (columnCount <= 5) {
+    // 1-5 columns: Flex layout fills screen
+    return { useFlex: true, minWidth: '200px' }
+  } else {
+    // 6+ columns: Fixed width with horizontal scroll
+    return { useFlex: false, minWidth: '180px' }
+  }
+}, [visibleColumns.length])
+```
+
+#### Column Definition
+```typescript
+interface ColumnDefinition {
+  contractorId: string
+  contractorName: string
+  teamId: string
+  teamName: string
+  color: string
+  displayName: string      // "Contractor - Team"
+  isVisible: boolean
+}
+
+// Generate visible columns from filters
+const visibleColumns = useMemo(() => {
+  return teamFilters
+    .filter(f => f.isVisible)
+    .map(f => ({
+      contractorId: f.contractorId,
+      contractorName: f.contractorName,
+      teamId: f.teamId,
+      teamName: f.teamName,
+      color: f.color,
+      displayName: `${f.contractorName} - ${f.teamName}`,
+      isVisible: true
+    }))
+}, [teamFilters])
+```
+
+#### Position Calculation (rem-based)
+```typescript
+// Calculate top position in rem
+const calculateScheduleTop = (timeSlot: string): string => {
+  if (timeSlot === '終日') return '0rem'
+
+  const [startTime] = timeSlot.split('-')
+  const [hour, minute] = startTime.split(':').map(Number)
+  const minutesFromStart = (hour - BUSINESS_START_HOUR) * 60 + minute
+
+  return `${(minutesFromStart / 60) * HOUR_HEIGHT}rem`
+}
+
+// Calculate height in rem
+const calculateScheduleHeight = (timeSlot: string): string => {
+  if (timeSlot === '終日') {
+    return `${(BUSINESS_END_HOUR - BUSINESS_START_HOUR) * HOUR_HEIGHT}rem`
+  }
+
+  const [startTime, endTime] = timeSlot.split('-')
+  const [startHour, startMinute] = startTime.split(':').map(Number)
+  const [endHour, endMinute] = endTime.split(':').map(Number)
+
+  const startMinutes = startHour * 60 + startMinute
+  const endMinutes = endHour * 60 + endMinute
+  const durationMinutes = endMinutes - startMinutes
+
+  return `${Math.max((durationMinutes / 60) * HOUR_HEIGHT, 2)}rem`
+}
+```
+
+#### Layout Structure
+```
+┌─────────────┬──────────────┬──────────────┬──────────────┐
+│ Time (3.75) │ Team 1 (flex)│ Team 2 (flex)│ Team 3 (flex)│
+│   (fixed)   │              │              │              │
+├─────────────┼──────────────┼──────────────┼──────────────┤
+│   9:00      │  Schedule A  │              │  Exclusion X │
+│   10:00     │              │  Schedule B  │              │
+│   11:00     │  Schedule C  │              │              │
+│   ...       │              │              │              │
+└─────────────┴──────────────┴──────────────┴──────────────┘
+```
+
+#### Data Organization
+```typescript
+// Group schedules by team
+const schedulesByColumn = useMemo(() => {
+  const grouped: Record<string, ScheduleItem[]> = {}
+
+  visibleColumns.forEach(col => {
+    grouped[col.teamId] = filteredSchedules.filter(s =>
+      s.teamId === col.teamId ||
+      (!s.teamId && s.contractor === col.contractorName)
+    ).filter(s => s.assignedDate === formatDateString(currentDate))
+  })
+
+  return grouped
+}, [visibleColumns, filteredSchedules, currentDate])
+
+// Group exclusions by team
+const exclusionsByColumn = useMemo(() => {
+  const grouped: Record<string, ExclusionEntry[]> = {}
+
+  visibleColumns.forEach(col => {
+    grouped[col.teamId] = exclusions.filter(e =>
+      e.teamId === col.teamId &&
+      e.date === formatDateString(currentDate)
+    )
+  })
+
+  return grouped
+}, [visibleColumns, exclusions, currentDate])
+```
+
+#### Styling Notes
+- **Time column**: `sticky left-0 z-20`, gray background, 2px right border
+- **Team columns**: Relative positioning, border-right for grid lines
+- **Grid lines**: Absolute positioned divs with `border-b border-gray-100`
+- **Schedule bars**: Absolute positioned with calculated top/height in rem
+- **Z-index**: Exclusions at z-10+, schedules at z-1+
+
+### Cross-Device Compatibility
+
+#### Why rem units?
+- **Respects user browser settings**: Users who increase default font size get proportionally larger UI
+- **Consistent across zoom levels**: UI maintains correct proportions when zooming
+- **Predictable scaling**: 1rem = user's browser font size (typically 16px)
+- **Avoids SSR issues**: No need for window.innerWidth or resize listeners
+
+#### Conversion Reference
+At default browser font size (16px):
+- `3.75rem` = 60px (time column width)
+- `4rem` = 64px (one hour height)
+- `200px` min-width for flex columns
+- `180px` min-width for fixed columns
+
+### Integration with Filtering
+- **Filter changes**: Automatically update `visibleColumns` via useMemo
+- **Column removal**: Unchecking team removes its column immediately
+- **Column addition**: Checking team adds column to the right
+- **Empty state**: Shows message when all teams are filtered out
+- **Persistence**: Filter state maintained in component state (not localStorage yet)
