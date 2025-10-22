@@ -1,0 +1,317 @@
+import {
+  ApplicationRequest,
+  SurveyRequest,
+  AttachmentRequest,
+  ConstructionRequest,
+  RequestType,
+} from '@/types/application'
+
+// ローカルストレージのキー
+const STORAGE_KEYS = {
+  survey: 'applications_survey',
+  attachment: 'applications_attachment',
+  construction: 'applications_construction',
+} as const
+
+// ========== 汎用CRUD操作 ==========
+
+// データ取得
+export const getApplications = <T extends ApplicationRequest>(
+  type: RequestType
+): T[] => {
+  if (typeof window === 'undefined') return []
+  try {
+    const key = STORAGE_KEYS[type]
+    const data = localStorage.getItem(key)
+    return data ? JSON.parse(data) : []
+  } catch (error) {
+    console.error(`Failed to load ${type} applications:`, error)
+    return []
+  }
+}
+
+// データ保存
+export const saveApplications = <T extends ApplicationRequest>(
+  type: RequestType,
+  applications: T[]
+): void => {
+  if (typeof window === 'undefined') return
+  try {
+    const key = STORAGE_KEYS[type]
+    localStorage.setItem(key, JSON.stringify(applications))
+  } catch (error) {
+    console.error(`Failed to save ${type} applications:`, error)
+  }
+}
+
+// データ追加
+export const addApplication = <T extends ApplicationRequest>(
+  application: T
+): void => {
+  const applications = getApplications<T>(application.type)
+  applications.push(application)
+  saveApplications(application.type, applications)
+}
+
+// データ更新
+export const updateApplication = <T extends ApplicationRequest>(
+  type: RequestType,
+  id: string,
+  updates: Partial<T>
+): void => {
+  const applications = getApplications<T>(type)
+  const index = applications.findIndex((a) => a.id === id)
+  if (index !== -1) {
+    applications[index] = {
+      ...applications[index],
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    }
+    saveApplications(type, applications)
+  }
+}
+
+// データ削除
+export const deleteApplication = (type: RequestType, id: string): void => {
+  const applications = getApplications(type)
+  const filtered = applications.filter((a) => a.id !== id)
+  saveApplications(type, filtered)
+}
+
+// IDでデータ取得
+export const getApplicationById = <T extends ApplicationRequest>(
+  type: RequestType,
+  id: string
+): T | undefined => {
+  const applications = getApplications<T>(type)
+  return applications.find((a) => a.id === id)
+}
+
+// 次の整理番号を取得
+export const getNextSerialNumber = (type: RequestType): number => {
+  const applications = getApplications(type)
+  if (applications.length === 0) return 1
+  const maxSerial = Math.max(...applications.map((a) => a.serialNumber))
+  return maxSerial + 1
+}
+
+// ========== 型別アクセサ（型安全性向上） ==========
+
+export const getSurveyRequests = (): SurveyRequest[] =>
+  getApplications<SurveyRequest>('survey')
+
+export const getAttachmentRequests = (): AttachmentRequest[] =>
+  getApplications<AttachmentRequest>('attachment')
+
+export const getConstructionRequests = (): ConstructionRequest[] =>
+  getApplications<ConstructionRequest>('construction')
+
+// ========== 進捗履歴管理 ==========
+
+// 進捗履歴を追加
+export const addProgressEntry = <T extends ApplicationRequest>(
+  type: RequestType,
+  id: string,
+  entry: Omit<import('@/types/application').ProgressEntry, 'id'>
+): void => {
+  const applications = getApplications<T>(type)
+  const index = applications.findIndex((a) => a.id === id)
+
+  if (index !== -1) {
+    const newEntry = {
+      id: `progress-${Date.now()}`,
+      ...entry,
+    }
+
+    const progressHistory = applications[index].progressHistory || []
+    applications[index] = {
+      ...applications[index],
+      progressHistory: [...progressHistory, newEntry],
+      lastUpdatedBy: entry.updatedBy,
+      lastUpdatedByName: entry.updatedByName,
+      updatedAt: new Date().toISOString(),
+    }
+
+    saveApplications(type, applications)
+  }
+}
+
+// 進捗履歴を取得
+export const getProgressHistory = (
+  type: RequestType,
+  id: string
+): import('@/types/application').ProgressEntry[] => {
+  const application = getApplicationById(type, id)
+  return application?.progressHistory || []
+}
+
+// ========== 初期データセットアップ ==========
+
+export const initializeApplicationData = (): void => {
+  // 現地調査依頼のサンプルデータ
+  const existingSurvey = getSurveyRequests()
+  if (existingSurvey.length === 0) {
+    const sampleSurvey: SurveyRequest[] = [
+      {
+        id: 'survey-1',
+        type: 'survey',
+        serialNumber: 1,
+        orderNumber: '2024031500001',
+        contractNo: '101080601',
+        customerCode: '123456789',
+        customerName: '山田太郎',
+        address: '岡山県倉敷市○○町1-2-3',
+        phoneNumber: '086-123-4567',
+        assigneeType: 'internal',
+        contractorId: 'contractor-1',
+        contractorName: '直営班',
+        teamId: 'team-1',
+        teamName: 'A班',
+        status: '完了',
+        requestedAt: '2025-01-10',
+        scheduledDate: '2025-01-15',
+        completedAt: '2025-01-15',
+        surveyItems: ['クロージャ番号確認', '引込ルート確認', '電柱高さ測定'],
+        surveyResult: {
+          closureNumber: 'CL-2024-0123',
+          lineType: '光ファイバ',
+          notes: '引込ルート問題なし。電柱高さ6.5m',
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: 'survey-2',
+        type: 'survey',
+        serialNumber: 2,
+        orderNumber: '2024031600002',
+        contractNo: '101784701',
+        customerCode: '223456789',
+        customerName: '佐藤花子',
+        address: '岡山県倉敷市△△町4-5-6',
+        phoneNumber: '086-234-5678',
+        assigneeType: 'contractor',
+        contractorId: 'contractor-2',
+        contractorName: '栄光電気通信',
+        teamId: 'team-3',
+        teamName: '1班',
+        status: '調査中',
+        requestedAt: '2025-01-20',
+        scheduledDate: '2025-01-25',
+        notes: '既設ケーブルあり',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ]
+    saveApplications('survey', sampleSurvey)
+  }
+
+  // 共架・添架依頼のサンプルデータ
+  const existingAttachment = getAttachmentRequests()
+  if (existingAttachment.length === 0) {
+    const sampleAttachment: AttachmentRequest[] = [
+      {
+        id: 'attachment-1',
+        type: 'attachment',
+        serialNumber: 2164,
+        orderNumber: '2024031500001',
+        contractNo: '101080601',
+        customerCode: '123456789',
+        customerName: '山田太郎',
+        address: '岡山県倉敷市○○町1-2-3',
+        assigneeType: 'internal',
+        contractorId: 'contractor-1',
+        contractorName: '直営班',
+        teamId: 'team-1',
+        teamName: 'A班',
+        status: '許可',
+        submittedAt: '2025-02-07',
+        approvedAt: '2025-03-10',
+        requestedAt: '2025-02-05',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: 'attachment-2',
+        type: 'attachment',
+        serialNumber: 2165,
+        orderNumber: '2024031800004',
+        contractNo: '102001201',
+        customerCode: '456789012',
+        customerName: '鈴木一郎',
+        address: '岡山県倉敷市□□町7-8-9',
+        assigneeType: 'contractor',
+        contractorId: 'contractor-3',
+        contractorName: 'スライヴ',
+        teamId: 'team-4',
+        teamName: '第1班',
+        status: '提出済',
+        submittedAt: '2025-02-07',
+        requestedAt: '2025-02-01',
+        notes: '許可待ち',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ]
+    saveApplications('attachment', sampleAttachment)
+  }
+
+  // 工事依頼のサンプルデータ
+  const existingConstruction = getConstructionRequests()
+  if (existingConstruction.length === 0) {
+    const sampleConstruction: ConstructionRequest[] = [
+      {
+        id: 'construction-1',
+        type: 'construction',
+        serialNumber: 1,
+        orderNumber: '2024031500001',
+        contractNo: '101080601',
+        customerCode: '123456789',
+        customerName: '山田太郎',
+        address: '岡山県倉敷市○○町1-2-3',
+        phoneNumber: '086-123-4567',
+        assigneeType: 'internal',
+        contractorId: 'contractor-1',
+        contractorName: '直営班',
+        teamId: 'team-2',
+        teamName: 'B班',
+        status: '完了',
+        constructionType: '宅内引込',
+        constructionDate: '2025-03-15',
+        requestedAt: '2025-03-01',
+        completedAt: '2025-03-15',
+        constructionResult: {
+          actualDate: '2025-03-15',
+          workHours: 3.5,
+          materials: '光ケーブル50m、クランプ3個',
+          notes: '問題なく完了',
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: 'construction-2',
+        type: 'construction',
+        serialNumber: 2,
+        orderNumber: '2024031700003',
+        contractNo: '101999501',
+        customerCode: '345678901',
+        customerName: '高橋次郎',
+        address: '岡山県倉敷市◇◇町10-11-12',
+        phoneNumber: '086-345-6789',
+        assigneeType: 'contractor',
+        contractorId: 'contractor-2',
+        contractorName: '栄光電気通信',
+        teamId: 'team-3',
+        teamName: '1班',
+        status: '未着手',
+        constructionType: '宅内引込',
+        requestedAt: '2025-03-10',
+        scheduledDate: '2025-04-01',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ]
+    saveApplications('construction', sampleConstruction)
+  }
+}

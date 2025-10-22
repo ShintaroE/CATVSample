@@ -13,6 +13,7 @@ import {
   ArrowRightOnRectangleIcon,
   UserCircleIcon,
   UserGroupIcon,
+  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline'
 
 interface MenuItem {
@@ -50,6 +51,11 @@ const adminMenuItems: MenuItem[] = [
 ]
 
 const contractorMenuItems: MenuItem[] = [
+  {
+    name: '依頼一覧',
+    href: '/contractor-requests',
+    icon: ClipboardDocumentListIcon,
+  },
   {
     name: '除外日管理',
     href: '/my-exclusions',
