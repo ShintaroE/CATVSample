@@ -29,7 +29,9 @@ This is a Next.js 15 application for CATV management built with:
 ```
 src/
 ├── app/                     # App Router pages
-│   ├── applications/        # 申請番号管理ページ（中電/NTT共架・添架許可管理）
+│   ├── applications/        # 申請番号管理ページ（3タブ: 現地調査・共架添架・工事依頼）
+│   │   └── components/      # 申請管理用コンポーネント
+│   ├── contractor-requests/ # 協力会社専用依頼一覧・進捗更新ページ
 │   ├── orders/             # 工事依頼管理ページ（小川オーダー表形式）
 │   ├── schedule/           # 工事日程調整ページ（Outlookライクカレンダー）
 │   ├── my-exclusions/      # 協力会社用除外日管理ページ（認証済みユーザー）
@@ -46,9 +48,11 @@ src/
 │   └── AuthContext.tsx     # Authentication context provider
 ├── lib/
 │   ├── contractors.ts      # Contractor & team CRUD operations (localStorage)
+│   ├── applications.ts     # Application request CRUD & progress tracking
 │   └── password-generator.ts # Password generation utility
 └── types/
-    └── contractor.ts       # TypeScript interfaces for contractor system
+    ├── contractor.ts       # TypeScript interfaces for contractor system
+    └── application.ts      # TypeScript interfaces for application requests
 ```
 
 ### Key Features
@@ -58,11 +62,13 @@ src/
   - ダッシュボード (Dashboard) - システム概要と工事進捗サマリ
   - 工事依頼管理 (Order Management) - 小川オーダー表形式の工事依頼管理 + アポイント履歴にスケジュール統合表示
   - 工事日程調整 (Schedule Management) - Outlookライクなカレンダー + 協力会社除外日表示
-  - 申請番号管理 (Application Number Management) - 中電/NTT申請の受付〜許可管理
+  - **申請番号管理 (Application Number Management)** - 3タブ構成（現地調査依頼・共架添架依頼・工事依頼）+ 進捗管理 + 協力会社への依頼機能
+  - **依頼一覧 (Contractor Requests)** - 協力会社専用：割り当てられた依頼の確認・進捗更新
   - 除外日管理 (My Exclusions) - 協力会社専用の作業不可日時登録
   - アカウント管理 (Account Management) - 管理者・協力会社・班アカウント管理（管理者専用）
 - **Exclusion Date Management**: Time-specific exclusions (終日/午前/午後/カスタム時間指定)
 - **Outlook-style overlapping layout** for schedules and exclusions with collision detection
+- **Progress Tracking System**: 進捗履歴の自動記録と表示（協力会社が更新、管理者が閲覧）
 - TypeScript path aliases configured (@/* maps to ./src/*)
 
 ### Domain-Specific Functionality
@@ -965,3 +971,197 @@ At default browser font size (16px):
 - **Column addition**: Checking team adds column to the right
 - **Empty state**: Shows message when all teams are filtered out
 - **Persistence**: Filter state maintained in component state (not localStorage yet)
+
+## Application Request Management System
+
+### Overview (src/app/applications/)
+
+The application management system handles three types of requests with unified progress tracking:
+1. **Survey Requests (現地調査依頼)** - Field surveys for CATV installation planning
+2. **Attachment Requests (共架・添架依頼)** - Utility pole attachment permit applications
+3. **Construction Requests (工事依頼)** - Construction work orders
+
+### Data Model (src/types/application.ts)
+
+#### Request Types
+```typescript
+type RequestType = 'survey' | 'attachment' | 'construction'
+type AssigneeType = 'internal' | 'contractor'
+```
+
+#### Base Structure
+All requests extend `RequestBase`:
+- Basic info: serialNumber, orderNumber, contractNo, customerCode, customerName, address, phoneNumber
+- Assignment: assigneeType, contractorId, contractorName, teamId, teamName
+- Dates: requestedAt, scheduledDate, completedAt
+- Progress tracking: progressHistory, lastUpdatedBy, lastUpdatedByName
+
+#### Progress History
+```typescript
+interface ProgressEntry {
+  id: string
+  timestamp: string              // ISO 8601
+  updatedBy: string              // User/contractor ID
+  updatedByName: string          // Display name
+  updatedByTeam?: string         // Team name
+  status: string                 // Updated status
+  comment?: string               // Progress comment
+  photos?: string[]              // Attached photos
+}
+```
+
+#### Type-Specific Fields
+
+**Survey Request:**
+- Status: '未着手' | '調査中' | '完了' | 'キャンセル'
+- surveyItems: Checklist of survey tasks
+- surveyResult: Findings (closure number, line type, notes, photos)
+- intermediateReport: Mid-progress report with rate, findings, issues
+
+**Attachment Request:**
+- Status: '受付' | '提出済' | '許可' | '取下げ'
+- submittedAt, approvedAt: Application dates
+- withdrawNeeded, withdrawCreated: Withdrawal flags
+- detail: Application details (line type, mount height, photos)
+- preparationStatus: Document/photo readiness, expected submit date
+
+**Construction Request:**
+- Status: '未着手' | '施工中' | '完了' | '保留'
+- constructionType: Work category
+- constructionDate: Scheduled work date
+- constructionResult: Completion details (actual date, work hours, materials, photos)
+- workProgress: Mid-work status (progress rate, current phase, completion estimate, issues)
+
+### Admin Flow (src/app/applications/page.tsx)
+
+#### Creating Requests
+1. Click "新規依頼" button
+2. Select request type tab (survey/attachment/construction)
+3. Fill in customer information
+4. **Assignment Selection**:
+   - Radio: "自社（直営班）" or "協力会社"
+   - If 自社: Select team from 直営班's teams
+   - If 協力会社: Select contractor → select team (2-stage dropdown)
+5. Add type-specific details
+6. Save creates request with initial status
+
+#### Viewing Progress
+- Edit any request to see progress history at bottom
+- Progress history shows:
+  - Timestamp with user/contractor/team name
+  - Status changes
+  - Comments from contractors
+  - Photos (if any)
+
+#### Components Structure
+```
+applications/
+├── page.tsx                    # Main page with tab navigation
+└── components/
+    ├── SurveyTab.tsx          # Survey requests table
+    ├── AttachmentTab.tsx      # Attachment requests table
+    ├── ConstructionTab.tsx    # Construction requests table
+    ├── NewRequestModal.tsx    # Create new request with contractor selection
+    ├── EditSurveyModal.tsx    # Edit survey + view progress history
+    ├── EditAttachmentModal.tsx
+    ├── EditConstructionModal.tsx
+    └── ProgressHistory.tsx    # Displays progress entries with timeline
+```
+
+### Contractor Flow (src/app/contractor-requests/page.tsx)
+
+#### Access Control
+- Only accessible by users with `role: 'contractor'`
+- Automatically filters to show only requests assigned to logged-in contractor
+- Team filter dropdown if contractor has multiple teams
+
+#### Updating Progress
+1. View assigned requests in table (filtered by contractorId + teamId)
+2. Click "進捗更新" button
+3. Modal shows:
+   - Request basic info (read-only)
+   - Status dropdown (type-specific options)
+   - Progress comment textarea (required)
+   - Photo upload (future feature)
+4. On save:
+   - Updates request status
+   - Adds progress entry via `addProgressEntry()`
+   - Entry includes: timestamp, updatedBy (contractorId), updatedByName, updatedByTeam, status, comment
+
+#### Progress Entry Creation
+Automatically records:
+- Who updated (contractor name + team name)
+- When (ISO timestamp)
+- New status
+- Comment explaining the progress
+
+### localStorage Operations (src/lib/applications.ts)
+
+#### Storage Keys
+- `applications_survey` - Survey requests
+- `applications_attachment` - Attachment requests
+- `applications_construction` - Construction requests
+
+#### Key Functions
+```typescript
+// CRUD operations
+getApplications<T>(type): T[]
+saveApplications<T>(type, applications): void
+addApplication<T>(application): void
+updateApplication<T>(type, id, updates): void
+deleteApplication(type, id): void
+getNextSerialNumber(type): number
+
+// Progress tracking
+addProgressEntry<T>(type, id, entry): void
+  - Adds new progress entry to progressHistory array
+  - Updates lastUpdatedBy and lastUpdatedByName
+  - Updates updatedAt timestamp
+
+getProgressHistory(type, id): ProgressEntry[]
+  - Returns all progress entries for a request
+```
+
+#### Data Initialization
+`initializeApplicationData()` creates sample data for all three request types on first load.
+
+### Role-Based Menu Items
+
+**Admin:**
+- ダッシュボード, 工事依頼管理, 工事日程調整, **申請番号管理**, アカウント管理
+
+**Contractor:**
+- **依頼一覧** (new), 除外日管理
+
+### Workflow Example
+
+1. **Admin creates survey request**:
+   - Assigns to 栄光電気通信 - 1班
+   - Status: 未着手
+   - Request stored in `applications_survey`
+
+2. **Contractor (栄光電気通信) logs in**:
+   - Views request in 依頼一覧 page
+   - Clicks 進捗更新
+   - Changes status to 調査中
+   - Adds comment: "現地調査開始しました"
+   - Progress entry created with contractor/team info
+
+3. **Contractor updates progress**:
+   - Later updates status to 完了
+   - Adds comment: "調査完了。報告書提出済み。"
+   - New progress entry added
+
+4. **Admin reviews**:
+   - Opens request in 申請番号管理
+   - Sees progress history with all contractor updates
+   - Can see who did what and when
+
+### Important Implementation Notes
+
+1. **Progress History is Append-Only**: Never modify existing entries, always add new ones
+2. **Team Selection at Request Creation**: Unlike exclusions (where team is selected at registration), requests have teamId set during creation
+3. **Contractor Filtering**: Contractor users see only requests where `contractorId` matches their ID AND `teamId` matches selected team
+4. **Status Auto-completion**: When status changes to "完了", `completedAt` is auto-set to current date
+5. **Progress Comments are Required**: Contractors must provide context when updating status
+6. **Type Safety**: Use type-specific functions when possible (getSurveyRequests, getAttachmentRequests, getConstructionRequests)
