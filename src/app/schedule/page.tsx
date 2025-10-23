@@ -574,6 +574,8 @@ export default function SchedulePage() {
   const handleDateSelect = (date: Date) => {
     const dateStr = formatDateString(date)
     setSelectedDateForAdd(dateStr)
+    setCurrentDate(date) // 週表示・日表示に切り替えたときにこの日付が反映されるように
+    setSelectedDate(dateStr) // 日表示のスケジュールデータを更新
   }
 
   // 日付をダブルクリックした時の処理（日ビューに移動）
