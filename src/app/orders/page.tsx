@@ -18,6 +18,9 @@ interface ExclusionEntry {
   date: string
   reason: string
   contractor: string
+  contractorId: string
+  teamId: string
+  teamName: string
   timeType: 'all_day' | 'am' | 'pm' | 'custom'
   startTime?: string
   endTime?: string
@@ -516,11 +519,6 @@ export default function OrdersPage() {
       default:
         return 'bg-gray-100 text-gray-800'
     }
-  }
-
-  // カレンダーピッカーを開く
-  const handleOpenCalendarPicker = () => {
-    setShowCalendarPicker(true)
   }
 
   // カレンダーから日付を選択

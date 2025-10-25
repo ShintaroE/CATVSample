@@ -10,6 +10,9 @@ import {
   AttachmentRequest,
   ConstructionRequest,
   ApplicationRequest,
+  SurveyStatus,
+  AttachmentStatus,
+  ConstructionStatus,
 } from '@/types/application'
 import {
   getApplications,
@@ -96,7 +99,9 @@ export default function ContractorRequestsPage() {
     comment: string
   ) => {
     // ステータス更新
-    updateApplication(type, id, { status })
+    updateApplication(type, id, {
+      status: status as SurveyStatus | AttachmentStatus | ConstructionStatus
+    })
 
     // 進捗履歴追加
     addProgressEntry(type, id, {
@@ -257,7 +262,7 @@ function ProgressUpdateModal({
   onClose: () => void
   onSave: (type: RequestType, id: string, status: string, comment: string) => void
 }) {
-  const [status, setStatus] = useState(request.status)
+  const [status, setStatus] = useState<string>(request.status)
   const [comment, setComment] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {

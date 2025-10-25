@@ -73,12 +73,6 @@ export default function CalendarPicker({
     return `${year}-${month}-${day}`
   }
 
-  // 特定の日付のスケジュール数を取得
-  const getScheduleCount = (date: Date) => {
-    const dateStr = formatDateString(date)
-    return existingSchedules.filter(schedule => schedule.assignedDate === dateStr).length
-  }
-
   // 除外日の時間タイプを表示用テキストに変換
   const getExclusionTimeText = (exclusion: ExclusionEntry) => {
     switch (exclusion.timeType) {

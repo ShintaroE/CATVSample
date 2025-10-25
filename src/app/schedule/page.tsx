@@ -43,16 +43,6 @@ interface TeamFilter {
   color: string
 }
 
-interface ColumnDefinition {
-  contractorId: string
-  contractorName: string
-  teamId: string
-  teamName: string
-  color: string
-  displayName: string
-  isVisible: boolean
-}
-
 const contractors = ['直営班', '栄光電気', 'スライヴ'] as const
 const statuses = ['予定', '作業中', '完了', '延期'] as const
 
@@ -353,7 +343,7 @@ export default function SchedulePage() {
   }, [exclusions, teamFilters])
 
   // 日表示用の列定義を取得
-  const getVisibleColumns = (): ColumnDefinition[] => {
+  const visibleColumns = useMemo(() => {
     return teamFilters
       .filter(f => f.isVisible)
       .map(f => ({
@@ -371,33 +361,19 @@ export default function SchedulePage() {
         }
         return a.teamName.localeCompare(b.teamName, 'ja')
       })
-  }
-
-  const visibleColumns = useMemo(() => getVisibleColumns(), [teamFilters])
-
-  // 特定の班のスケジュールを取得
-  const getSchedulesByTeam = (teamId: string, date: string) => {
-    return filteredSchedules.filter(s =>
-      s.teamId === teamId && s.assignedDate === date
-    ).sort((a, b) => {
-      const aStart = a.timeSlot.split('-')[0] || a.timeSlot
-      const bStart = b.timeSlot.split('-')[0] || b.timeSlot
-      return aStart.localeCompare(bStart)
-    })
-  }
-
-  // 特定の班の除外日を取得
-  const getExclusionsByTeam = (teamId: string, date: string) => {
-    return filteredExclusions.filter(e =>
-      e.teamId === teamId && e.date === date
-    )
-  }
+  }, [teamFilters])
 
   // 班ごとのスケジュールをメモ化
   const schedulesByColumn = useMemo(() => {
     const result: Record<string, ScheduleItem[]> = {}
     visibleColumns.forEach(column => {
-      result[column.teamId] = getSchedulesByTeam(column.teamId, selectedDate)
+      result[column.teamId] = filteredSchedules.filter(s =>
+        s.teamId === column.teamId && s.assignedDate === selectedDate
+      ).sort((a, b) => {
+        const aStart = a.timeSlot.split('-')[0] || a.timeSlot
+        const bStart = b.timeSlot.split('-')[0] || b.timeSlot
+        return aStart.localeCompare(bStart)
+      })
     })
     return result
   }, [visibleColumns, filteredSchedules, selectedDate])
@@ -406,7 +382,9 @@ export default function SchedulePage() {
   const exclusionsByColumn = useMemo(() => {
     const result: Record<string, ExclusionEntry[]> = {}
     visibleColumns.forEach(column => {
-      result[column.teamId] = getExclusionsByTeam(column.teamId, selectedDate)
+      result[column.teamId] = filteredExclusions.filter(e =>
+        e.teamId === column.teamId && e.date === selectedDate
+      )
     })
     return result
   }, [visibleColumns, filteredExclusions, selectedDate])
@@ -774,6 +752,9 @@ export default function SchedulePage() {
       address: newSchedule.address!,
       workType: newSchedule.workType || '個別対応',
       contractor: newSchedule.contractor as typeof contractors[number],
+      contractorId: 'contractor-1', // TODO: 実際の協力会社IDを設定
+      teamId: 'team-1', // TODO: 実際の班IDを設定
+      teamName: 'A班', // TODO: 実際の班名を設定
       assignedDate: newSchedule.assignedDate!,
       timeSlot: timeSlot,
       status: newSchedule.status as typeof statuses[number],

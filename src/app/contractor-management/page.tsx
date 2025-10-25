@@ -17,7 +17,6 @@ import {
   addTeam,
   updateTeam,
   deleteTeam,
-  getTeamsByContractorId,
   initializeDefaultData
 } from '@/lib/contractors'
 import { generateSimplePassword } from '@/lib/password-generator'

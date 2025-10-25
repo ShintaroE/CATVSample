@@ -1,4 +1,5 @@
 import React from 'react'
+import Image from 'next/image'
 import { ProgressEntry } from '@/types/application'
 import { ClockIcon } from '@heroicons/react/24/outline'
 
@@ -64,12 +65,13 @@ export default function ProgressHistory({ history }: ProgressHistoryProps) {
                   {entry.photos.map((photo, idx) => (
                     <div
                       key={idx}
-                      className="w-16 h-16 border rounded overflow-hidden bg-gray-100"
+                      className="w-16 h-16 border rounded overflow-hidden bg-gray-100 relative"
                     >
-                      <img
+                      <Image
                         src={photo}
                         alt={`photo-${idx + 1}`}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                     </div>
                   ))}

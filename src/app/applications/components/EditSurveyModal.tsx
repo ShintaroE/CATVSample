@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { SurveyRequest, SurveyStatus, AssigneeType } from '@/types/application'
+import { SurveyRequest, SurveyStatus, SurveyResult, SurveyIntermediateReport } from '@/types/application'
 import { Contractor, Team } from '@/types/contractor'
 import { getTeamsByContractorId } from '@/lib/contractors'
 import ProgressHistory from './ProgressHistory'
@@ -31,7 +31,7 @@ export default function EditSurveyModal({
     return []
   }, [formData.assigneeType, formData.contractorId, contractors])
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: string | boolean | string[] | undefined | SurveyResult | SurveyIntermediateReport) => {
     setFormData((prev) => {
       const newData = { ...prev, [field]: value }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import {
@@ -8,10 +8,6 @@ import {
   SurveyRequest,
   AttachmentRequest,
   ConstructionRequest,
-  SurveyStatus,
-  AttachmentStatus,
-  ConstructionStatus,
-  AssigneeType,
 } from '@/types/application'
 import {
   getApplications,

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { ConstructionRequest, ConstructionStatus } from '@/types/application'
+import { ConstructionRequest, ConstructionStatus, ConstructionResult, ConstructionWorkProgress } from '@/types/application'
 import { Contractor, Team } from '@/types/contractor'
 import { getTeamsByContractorId } from '@/lib/contractors'
 
@@ -30,7 +30,7 @@ export default function EditConstructionModal({
     return []
   }, [formData.assigneeType, formData.contractorId, contractors])
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: string | boolean | string[] | undefined | ConstructionResult | ConstructionWorkProgress) => {
     setFormData((prev) => {
       const newData = { ...prev, [field]: value }
 

@@ -28,7 +28,7 @@ export default function NewRequestModal({
   onCreate,
 }: NewRequestModalProps) {
   const [activeTab, setActiveTab] = useState<RequestType>(defaultTab)
-  const [formData, setFormData] = useState<any>({
+  const [formData, setFormData] = useState<Record<string, string | boolean | string[] | undefined>>({
     assigneeType: 'internal' as AssigneeType,
     contractorId: '',
     teamId: '',
@@ -42,7 +42,7 @@ export default function NewRequestModal({
       return chokueiContractor
         ? getTeamsByContractorId(chokueiContractor.id)
         : []
-    } else if (formData.contractorId) {
+    } else if (formData.contractorId && typeof formData.contractorId === 'string') {
       return getTeamsByContractorId(formData.contractorId)
     }
     return []
@@ -52,7 +52,7 @@ export default function NewRequestModal({
     field: string,
     value: string | boolean | string[] | undefined
   ) => {
-    setFormData((prev: any) => {
+    setFormData((prev) => {
       const newData = { ...prev, [field]: value }
 
       // 依頼先タイプ変更時にcontractorIdとteamIdをリセット
@@ -136,7 +136,7 @@ export default function NewRequestModal({
             {/* 共通項目 */}
             <FormField label="受注番号">
               <input
-                value={formData.orderNumber || ''}
+                value={(formData.orderNumber as string) || ''}
                 onChange={(e) => handleChange('orderNumber', e.target.value)}
                 className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
                 placeholder="例: 2024031500001"
@@ -145,7 +145,7 @@ export default function NewRequestModal({
 
             <FormField label="契約No.">
               <input
-                value={formData.contractNo || ''}
+                value={(formData.contractNo as string) || ''}
                 onChange={(e) => handleChange('contractNo', e.target.value)}
                 className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
               />
@@ -153,7 +153,7 @@ export default function NewRequestModal({
 
             <FormField label="顧客コード">
               <input
-                value={formData.customerCode || ''}
+                value={(formData.customerCode as string) || ''}
                 onChange={(e) => handleChange('customerCode', e.target.value)}
                 className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
               />
@@ -161,7 +161,7 @@ export default function NewRequestModal({
 
             <FormField label="顧客名">
               <input
-                value={formData.customerName || ''}
+                value={(formData.customerName as string) || ''}
                 onChange={(e) => handleChange('customerName', e.target.value)}
                 className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
               />
@@ -170,7 +170,7 @@ export default function NewRequestModal({
             <div className="sm:col-span-2">
               <FormField label="住所">
                 <input
-                  value={formData.address || ''}
+                  value={(formData.address as string) || ''}
                   onChange={(e) => handleChange('address', e.target.value)}
                   className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
                 />
@@ -179,7 +179,7 @@ export default function NewRequestModal({
 
             <FormField label="電話番号">
               <input
-                value={formData.phoneNumber || ''}
+                value={(formData.phoneNumber as string) || ''}
                 onChange={(e) => handleChange('phoneNumber', e.target.value)}
                 className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
                 placeholder="086-123-4567"
@@ -217,7 +217,7 @@ export default function NewRequestModal({
                     <div>
                       <label className="block text-xs text-gray-600 mb-1">協力会社</label>
                       <select
-                        value={formData.contractorId || ''}
+                        value={(formData.contractorId as string) || ''}
                         onChange={(e) => handleChange('contractorId', e.target.value)}
                         className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
                         required
@@ -237,7 +237,7 @@ export default function NewRequestModal({
                   <div>
                     <label className="block text-xs text-gray-600 mb-1">班</label>
                     <select
-                      value={formData.teamId || ''}
+                      value={(formData.teamId as string) || ''}
                       onChange={(e) => handleChange('teamId', e.target.value)}
                       className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
                       required
@@ -257,7 +257,7 @@ export default function NewRequestModal({
             <FormField label="依頼日">
               <input
                 type="date"
-                value={formData.requestedAt || ''}
+                value={(formData.requestedAt as string) || ''}
                 onChange={(e) => handleChange('requestedAt', e.target.value)}
                 className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
               />
@@ -266,7 +266,7 @@ export default function NewRequestModal({
             <FormField label="予定日">
               <input
                 type="date"
-                value={formData.scheduledDate || ''}
+                value={(formData.scheduledDate as string) || ''}
                 onChange={(e) => handleChange('scheduledDate', e.target.value)}
                 className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
               />
@@ -283,9 +283,9 @@ export default function NewRequestModal({
                           <label key={item} className="inline-flex items-center mr-4">
                             <input
                               type="checkbox"
-                              checked={(formData.surveyItems || []).includes(item)}
+                              checked={((formData.surveyItems as string[]) || []).includes(item)}
                               onChange={(e) => {
-                                const current = formData.surveyItems || []
+                                const current = (formData.surveyItems as string[]) || []
                                 const updated = e.target.checked
                                   ? [...current, item]
                                   : current.filter((i: string) => i !== item)
@@ -308,7 +308,7 @@ export default function NewRequestModal({
                 <FormField label="提出日">
                   <input
                     type="date"
-                    value={formData.submittedAt || ''}
+                    value={(formData.submittedAt as string) || ''}
                     onChange={(e) => handleChange('submittedAt', e.target.value)}
                     className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
                   />
@@ -320,7 +320,7 @@ export default function NewRequestModal({
               <>
                 <FormField label="工事種別">
                   <select
-                    value={formData.constructionType || ''}
+                    value={(formData.constructionType as string) || ''}
                     onChange={(e) => handleChange('constructionType', e.target.value)}
                     className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
                   >
@@ -335,7 +335,7 @@ export default function NewRequestModal({
                 <FormField label="工事予定日">
                   <input
                     type="date"
-                    value={formData.constructionDate || ''}
+                    value={(formData.constructionDate as string) || ''}
                     onChange={(e) => handleChange('constructionDate', e.target.value)}
                     className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
                   />
@@ -346,7 +346,7 @@ export default function NewRequestModal({
             <div className="sm:col-span-2">
               <FormField label="備考">
                 <textarea
-                  value={formData.notes || ''}
+                  value={(formData.notes as string) || ''}
                   onChange={(e) => handleChange('notes', e.target.value)}
                   className="w-full px-3 py-2 border rounded-md bg-white text-gray-900 min-h-[72px]"
                 />

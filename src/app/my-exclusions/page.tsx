@@ -63,6 +63,26 @@ export default function MyExclusionsPage() {
   const [newStartTime, setNewStartTime] = useState('09:00')
   const [newEndTime, setNewEndTime] = useState('18:00')
 
+  // カレンダーの日付配列を生成（フックは条件分岐の前に配置）
+  const calendarDays = useMemo(() => {
+    const year = currentMonth.getFullYear()
+    const month = currentMonth.getMonth()
+    const firstDay = new Date(year, month, 1)
+    const startDate = new Date(firstDay)
+    startDate.setDate(startDate.getDate() - firstDay.getDay())
+
+    const days = []
+    for (let i = 0; i < 42; i++) {
+      const date = new Date(startDate)
+      date.setDate(startDate.getDate() + i)
+      days.push(date)
+    }
+    return days
+  }, [currentMonth])
+
+  // 自分の協力会社の除外日のみフィルター
+  const myExclusions = user ? exclusions.filter((ex) => ex.contractorId === user.contractorId) : []
+
   // 認証チェックと班データの読み込み
   useEffect(() => {
     if (!isAuthenticated || !user) {
@@ -90,26 +110,6 @@ export default function MyExclusionsPage() {
   if (!isAuthenticated || !user || user.role !== 'contractor') {
     return null
   }
-
-  // 自分の協力会社の除外日のみフィルター
-  const myExclusions = exclusions.filter((ex) => ex.contractorId === user.contractorId)
-
-  // カレンダーの日付配列を生成
-  const calendarDays = useMemo(() => {
-    const year = currentMonth.getFullYear()
-    const month = currentMonth.getMonth()
-    const firstDay = new Date(year, month, 1)
-    const startDate = new Date(firstDay)
-    startDate.setDate(startDate.getDate() - firstDay.getDay())
-
-    const days = []
-    for (let i = 0; i < 42; i++) {
-      const date = new Date(startDate)
-      date.setDate(startDate.getDate() + i)
-      days.push(date)
-    }
-    return days
-  }, [currentMonth])
 
   // 指定日の除外日を取得
   const getExclusionsForDate = (date: Date) => {
@@ -407,7 +407,7 @@ export default function MyExclusionsPage() {
                         type="radio"
                         value="all_day"
                         checked={newTimeType === 'all_day'}
-                        onChange={(e) => setNewTimeType(e.target.value as any)}
+                        onChange={(e) => setNewTimeType(e.target.value as 'all_day' | 'am' | 'pm' | 'custom')}
                         className="mr-2"
                       />
                       <span className="text-sm text-gray-700">終日（9:00-18:00）</span>
@@ -417,7 +417,7 @@ export default function MyExclusionsPage() {
                         type="radio"
                         value="am"
                         checked={newTimeType === 'am'}
-                        onChange={(e) => setNewTimeType(e.target.value as any)}
+                        onChange={(e) => setNewTimeType(e.target.value as 'all_day' | 'am' | 'pm' | 'custom')}
                         className="mr-2"
                       />
                       <span className="text-sm text-gray-700">午前（9:00-12:00）</span>
@@ -427,7 +427,7 @@ export default function MyExclusionsPage() {
                         type="radio"
                         value="pm"
                         checked={newTimeType === 'pm'}
-                        onChange={(e) => setNewTimeType(e.target.value as any)}
+                        onChange={(e) => setNewTimeType(e.target.value as 'all_day' | 'am' | 'pm' | 'custom')}
                         className="mr-2"
                       />
                       <span className="text-sm text-gray-700">午後（12:00-18:00）</span>
@@ -437,7 +437,7 @@ export default function MyExclusionsPage() {
                         type="radio"
                         value="custom"
                         checked={newTimeType === 'custom'}
-                        onChange={(e) => setNewTimeType(e.target.value as any)}
+                        onChange={(e) => setNewTimeType(e.target.value as 'all_day' | 'am' | 'pm' | 'custom')}
                         className="mr-2"
                       />
                       <span className="text-sm text-gray-700">カスタム</span>
