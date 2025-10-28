@@ -5,6 +5,13 @@ import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from '@h
 import Layout from '@/components/Layout'
 import { getContractors, getTeams } from '@/lib/contractors'
 
+interface AssignedTeam {
+  contractorId: string
+  contractorName: string
+  teamId: string
+  teamName: string
+}
+
 interface ScheduleItem {
   id: string
   orderNumber: string
@@ -15,10 +22,39 @@ interface ScheduleItem {
   contractorId: string
   teamId?: string
   teamName?: string
+  assignedTeams: AssignedTeam[] // 複数班対応
   assignedDate: string
   timeSlot: string
   status: '予定' | '作業中' | '完了' | '延期'
   memo?: string
+}
+
+// 表示用に班ごとに展開されたスケジュール
+interface ScheduleItemWithTeam extends ScheduleItem {
+  displayTeam: AssignedTeam  // 表示対象の班
+}
+
+// 週表示の列定義
+interface WeekViewColumn {
+  teamId: string
+  teamName: string
+  contractorId: string
+  contractorName: string
+  color: string
+  date: Date
+  dateStr: string
+  displayName: string  // "9/11(月)"
+  teamDisplayName: string  // "直営班-A班"
+}
+
+// 週表示の班グループ
+interface TeamGroup {
+  teamId: string
+  teamName: string
+  contractorName: string
+  color: string
+  displayName: string  // "直営班-A班"
+  columnCount: number  // この班の列数（= 7日）
 }
 
 interface ExclusionEntry {
@@ -98,6 +134,9 @@ const sampleSchedules: ScheduleItem[] = [
     contractorId: 'contractor-1',
     teamId: 'team-1',
     teamName: 'A班',
+    assignedTeams: [
+      { contractorId: 'contractor-1', contractorName: '直営班', teamId: 'team-1', teamName: 'A班' }
+    ],
     assignedDate: '2025-09-10',
     timeSlot: '09:00-12:00',
     status: '予定',
@@ -113,6 +152,10 @@ const sampleSchedules: ScheduleItem[] = [
     contractorId: 'contractor-2',
     teamId: 'team-3',
     teamName: '1班',
+    assignedTeams: [
+      { contractorId: 'contractor-2', contractorName: '栄光電気', teamId: 'team-3', teamName: '1班' },
+      { contractorId: 'contractor-1', contractorName: '直営班', teamId: 'team-2', teamName: 'B班' }
+    ],
     assignedDate: '2025-09-11',
     timeSlot: '13:00-17:00',
     status: '作業中'
@@ -127,6 +170,9 @@ const sampleSchedules: ScheduleItem[] = [
     contractorId: 'contractor-3',
     teamId: 'team-4',
     teamName: '第1班',
+    assignedTeams: [
+      { contractorId: 'contractor-3', contractorName: 'スライヴ', teamId: 'team-4', teamName: '第1班' }
+    ],
     assignedDate: '2025-09-12',
     timeSlot: '09:00-12:00',
     status: '予定'
@@ -141,6 +187,9 @@ const sampleSchedules: ScheduleItem[] = [
     contractorId: 'contractor-1',
     teamId: 'team-2',
     teamName: 'B班',
+    assignedTeams: [
+      { contractorId: 'contractor-1', contractorName: '直営班', teamId: 'team-2', teamName: 'B班' }
+    ],
     assignedDate: '2025-09-13',
     timeSlot: '13:00-17:00',
     status: '完了'
@@ -155,6 +204,9 @@ const sampleSchedules: ScheduleItem[] = [
     contractorId: 'contractor-2',
     teamId: 'team-3',
     teamName: '1班',
+    assignedTeams: [
+      { contractorId: 'contractor-2', contractorName: '栄光電気', teamId: 'team-3', teamName: '1班' }
+    ],
     assignedDate: '2025-09-15',
     timeSlot: '終日',
     status: '予定',
@@ -170,6 +222,9 @@ const sampleSchedules: ScheduleItem[] = [
     contractorId: 'contractor-3',
     teamId: 'team-4',
     teamName: '第1班',
+    assignedTeams: [
+      { contractorId: 'contractor-3', contractorName: 'スライヴ', teamId: 'team-4', teamName: '第1班' }
+    ],
     assignedDate: '2025-09-16',
     timeSlot: '09:00-12:00',
     status: '延期'
@@ -186,6 +241,7 @@ export default function SchedulePage() {
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false)
   const [editingSchedule, setEditingSchedule] = useState<ScheduleItem | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [selectedTeamsForEdit, setSelectedTeamsForEdit] = useState<AssignedTeam[]>([]) // 編集・新規登録用の選択班
 
   const getTimeLabel = (entry: ExclusionEntry): string => {
     switch (entry.timeType) {
@@ -314,19 +370,121 @@ export default function SchedulePage() {
     )
   }
 
+  // スケジュールを班ごとに展開する関数
+  const expandSchedulesByTeams = (schedules: ScheduleItem[]): ScheduleItemWithTeam[] => {
+    const expanded: ScheduleItemWithTeam[] = []
+
+    schedules.forEach(schedule => {
+      // フィルタで表示対象の班のみ展開
+      const visibleTeams = schedule.assignedTeams.filter(team =>
+        teamFilters.length === 0 || teamFilters.some(f => f.teamId === team.teamId && f.isVisible)
+      )
+
+      // 表示対象の班がない場合でもassignedTeamsが空ならスケジュールを表示（後方互換性）
+      if (visibleTeams.length === 0 && schedule.assignedTeams.length === 0) {
+        expanded.push({
+          ...schedule,
+          displayTeam: {
+            contractorId: schedule.contractorId,
+            contractorName: schedule.contractor,
+            teamId: schedule.teamId || '',
+            teamName: schedule.teamName || ''
+          }
+        })
+      } else {
+        // 各班ごとに展開
+        visibleTeams.forEach(team => {
+          expanded.push({
+            ...schedule,
+            displayTeam: team
+          })
+        })
+      }
+    })
+
+    return expanded
+  }
+
+  // 週表示用: 班グループを取得
+  const getTeamGroups = (): TeamGroup[] => {
+    return teamFilters
+      .filter(f => f.isVisible)
+      .map(f => ({
+        teamId: f.teamId,
+        teamName: f.teamName,
+        contractorName: f.contractorName,
+        color: f.color,
+        displayName: `${f.contractorName}-${f.teamName}`,
+        columnCount: 7  // 週の日数
+      }))
+  }
+
+  // 週表示用: 列を取得（班×日付）
+  const getWeekViewColumns = (): WeekViewColumn[] => {
+    const columns: WeekViewColumn[] = []
+    const visibleTeams = teamFilters.filter(f => f.isVisible)
+    const weekDays = getWeekDays()
+
+    visibleTeams.forEach(team => {
+      weekDays.forEach(date => {
+        columns.push({
+          teamId: team.teamId,
+          teamName: team.teamName,
+          contractorId: team.contractorId,
+          contractorName: team.contractorName,
+          color: team.color,
+          date,
+          dateStr: formatDateString(date),
+          displayName: formatDate(date),
+          teamDisplayName: `${team.contractorName}-${team.teamName}`
+        })
+      })
+    })
+
+    return columns
+  }
+
+  // 週表示用: 列幅を計算
+  const getColumnWidth = (visibleTeamCount: number): string => {
+    const totalColumns = visibleTeamCount * 7
+
+    if (totalColumns <= 7) {
+      return '150px'
+    } else if (totalColumns <= 14) {
+      return '120px'
+    } else if (totalColumns <= 21) {
+      return '100px'
+    } else {
+      return '90px'
+    }
+  }
+
+  // 週表示用: 各列のスケジュールを取得
+  const getSchedulesForColumn = (teamId: string, dateStr: string): ScheduleItem[] => {
+    return filteredSchedules.filter(s =>
+      s.assignedDate === dateStr &&
+      s.assignedTeams.some(t => t.teamId === teamId)
+    )
+  }
+
+  // 週表示用: 各列の除外日を取得
+  const getExclusionsForColumn = (teamId: string, dateStr: string): ExclusionEntry[] => {
+    return filteredExclusions.filter(e =>
+      e.date === dateStr &&
+      e.teamId === teamId
+    )
+  }
+
   // フィルタリング済みスケジュールを取得
   const filteredSchedules = useMemo(() => {
     return schedules.filter(schedule => {
       if (teamFilters.length === 0) return true
 
-      if (!schedule.teamId) {
-        return teamFilters.some(f =>
-          f.contractorName === schedule.contractor && f.isVisible
+      // 複数班対応: assignedTeamsの中にフィルタで表示対象の班が含まれているかチェック
+      return schedule.assignedTeams.some(assignedTeam =>
+        teamFilters.some(f =>
+          f.teamId === assignedTeam.teamId && f.isVisible
         )
-      }
-
-      return teamFilters.some(f =>
-        f.teamId === schedule.teamId && f.isVisible
       )
     })
   }, [schedules, teamFilters])
@@ -363,12 +521,13 @@ export default function SchedulePage() {
       })
   }, [teamFilters])
 
-  // 班ごとのスケジュールをメモ化
+  // 班ごとのスケジュールをメモ化（複数班対応）
   const schedulesByColumn = useMemo(() => {
     const result: Record<string, ScheduleItem[]> = {}
     visibleColumns.forEach(column => {
       result[column.teamId] = filteredSchedules.filter(s =>
-        s.teamId === column.teamId && s.assignedDate === selectedDate
+        s.assignedDate === selectedDate &&
+        s.assignedTeams.some(team => team.teamId === column.teamId)
       ).sort((a, b) => {
         const aStart = a.timeSlot.split('-')[0] || a.timeSlot
         const bStart = b.timeSlot.split('-')[0] || b.timeSlot
@@ -664,6 +823,70 @@ export default function SchedulePage() {
     | { type: 'schedule'; data: ScheduleItem; timeSlot: string }
     | { type: 'exclusion'; data: ExclusionEntry; timeSlot: string }
 
+  // 同じ種類のアイテムの重複を計算（ヘルパー関数）
+  const calculateOverlappingPositions = <T extends { timeSlot: string }>(items: T[]) => {
+    return items.map((item, index) => {
+      let position = 0
+      const overlapping: T[] = []
+
+      // このアイテムと重複する他のアイテムを検索
+      for (let i = 0; i < items.length; i++) {
+        if (i !== index && isTimeOverlapping(item.timeSlot, items[i].timeSlot)) {
+          overlapping.push(items[i])
+          if (i < index) position++
+        }
+      }
+
+      const totalOverlapping = overlapping.length + 1
+      const width = `${100 / totalOverlapping}%`
+      const left = `${(position * 100) / totalOverlapping}%`
+
+      return {
+        item,
+        width,
+        left,
+        zIndex: 10 + index
+      }
+    })
+  }
+
+  // 除外日とスケジュールを左右に分離してレイアウト計算
+  const calculateSeparatedLayout = (schedules: ScheduleItem[], exclusions: ExclusionEntry[]) => {
+    // 除外日の時間スロットを付与
+    const exclusionItems = exclusions.map(e => ({
+      ...e,
+      timeSlot: getExclusionTimeSlot(e)
+    }))
+
+    // 除外日同士の重複を計算
+    const exclusionLayouts = calculateOverlappingPositions(exclusionItems)
+
+    // スケジュール同士の重複を計算
+    const scheduleLayouts = calculateOverlappingPositions(schedules)
+
+    // 除外日とスケジュールが両方ある場合は左右に分離
+    if (exclusions.length > 0 && schedules.length > 0) {
+      return {
+        exclusions: exclusionLayouts.map(layout => ({
+          ...layout,
+          width: `calc(${layout.width} * 0.5)`,
+          left: `calc(${layout.left} * 0.5)`
+        })),
+        schedules: scheduleLayouts.map(layout => ({
+          ...layout,
+          width: `calc(${layout.width} * 0.5)`,
+          left: `calc(50% + ${layout.left} * 0.5)`
+        }))
+      }
+    }
+
+    // どちらか一方のみの場合は全幅使用
+    return {
+      exclusions: exclusionLayouts,
+      schedules: scheduleLayouts
+    }
+  }
+
   // 重複する予定・除外日の位置とサイズを計算（統合版）
   const calculateOverlappingLayoutWithExclusions = (schedules: ScheduleItem[], exclusions: ExclusionEntry[]) => {
     // 予定と除外日を統合
@@ -702,6 +925,7 @@ export default function SchedulePage() {
 
   const handleEditSchedule = (schedule: ScheduleItem) => {
     setEditingSchedule(schedule)
+    setSelectedTeamsForEdit(schedule.assignedTeams || [])
 
     // 既存の時間帯を開始・終了時刻に分割
     if (schedule.timeSlot === '終日') {
@@ -720,13 +944,23 @@ export default function SchedulePage() {
     if (!editingSchedule) return
 
     const timeSlot = endTime === startTime ? '終日' : `${startTime}-${endTime}`
-    const updatedSchedule = { ...editingSchedule, timeSlot }
+    const updatedSchedule = {
+      ...editingSchedule,
+      timeSlot,
+      assignedTeams: selectedTeamsForEdit,
+      // 後方互換性のため、最初の班を主担当として設定
+      contractor: selectedTeamsForEdit[0]?.contractorName as any || editingSchedule.contractor,
+      contractorId: selectedTeamsForEdit[0]?.contractorId || editingSchedule.contractorId,
+      teamId: selectedTeamsForEdit[0]?.teamId,
+      teamName: selectedTeamsForEdit[0]?.teamName
+    }
 
     setSchedules(prev => prev.map(s =>
       s.id === editingSchedule.id ? updatedSchedule : s
     ))
     setShowEditModal(false)
     setEditingSchedule(null)
+    setSelectedTeamsForEdit([])
   }
 
   const handleAddSchedule = () => {
@@ -736,11 +970,12 @@ export default function SchedulePage() {
       ...newSchedule,
       assignedDate: dateToUse
     })
+    setSelectedTeamsForEdit([])
     setShowAddModal(true)
   }
 
   const handleSaveNewSchedule = () => {
-    if (!newSchedule.customerName || !newSchedule.address) return
+    if (!newSchedule.customerName || !newSchedule.address || selectedTeamsForEdit.length === 0) return
 
     const newId = String(Date.now())
     const timeSlot = endTime === startTime ? '終日' : `${startTime}-${endTime}`
@@ -751,10 +986,11 @@ export default function SchedulePage() {
       customerName: newSchedule.customerName!,
       address: newSchedule.address!,
       workType: newSchedule.workType || '個別対応',
-      contractor: newSchedule.contractor as typeof contractors[number],
-      contractorId: 'contractor-1', // TODO: 実際の協力会社IDを設定
-      teamId: 'team-1', // TODO: 実際の班IDを設定
-      teamName: 'A班', // TODO: 実際の班名を設定
+      contractor: selectedTeamsForEdit[0]?.contractorName as any || '直営班',
+      contractorId: selectedTeamsForEdit[0]?.contractorId || 'contractor-1',
+      teamId: selectedTeamsForEdit[0]?.teamId,
+      teamName: selectedTeamsForEdit[0]?.teamName,
+      assignedTeams: selectedTeamsForEdit,
       assignedDate: newSchedule.assignedDate!,
       timeSlot: timeSlot,
       status: newSchedule.status as typeof statuses[number],
@@ -764,6 +1000,7 @@ export default function SchedulePage() {
     setSchedules(prev => [...prev, schedule])
     setShowAddModal(false)
     setSelectedDateForAdd(null) // 選択状態をクリア
+    setSelectedTeamsForEdit([])
     setNewSchedule({
       orderNumber: '',
       customerName: '',
@@ -777,6 +1014,36 @@ export default function SchedulePage() {
     })
     setStartTime('09:00')
     setEndTime('12:00')
+  }
+
+  // 班の追加
+  const handleAddTeam = (teamId: string) => {
+    const allTeams = getTeams()
+    const allContractors = getContractors()
+
+    const team = allTeams.find(t => t.id === teamId)
+    if (!team) return
+
+    const contractor = allContractors.find(c => c.id === team.contractorId)
+    if (!contractor) return
+
+    // 既に追加されている場合はスキップ
+    if (selectedTeamsForEdit.some(t => t.teamId === teamId)) return
+
+    setSelectedTeamsForEdit(prev => [
+      ...prev,
+      {
+        contractorId: team.contractorId,
+        contractorName: contractor.name,
+        teamId: team.id,
+        teamName: team.teamName
+      }
+    ])
+  }
+
+  // 班の削除
+  const handleRemoveTeam = (teamId: string) => {
+    setSelectedTeamsForEdit(prev => prev.filter(t => t.teamId !== teamId))
   }
 
 
@@ -1043,7 +1310,8 @@ export default function SchedulePage() {
               <div className="grid grid-cols-7 gap-0">
                 {getMonthDays().map((date, index) => {
                   const dateStr = formatDateString(date)
-                  const daySchedules = getSchedulesForDate(date)
+                  const daySchedulesRaw = getSchedulesForDate(date)
+                  const daySchedules = expandSchedulesByTeams(daySchedulesRaw)
                   const dayExclusions = filteredExclusions.filter(ex => ex.date === dateStr)
                   return (
                     <div
@@ -1080,10 +1348,10 @@ export default function SchedulePage() {
                         ))}
 
                         {/* 通常のスケジュール */}
-                        {daySchedules.slice(0, dayExclusions.length > 0 ? 2 : 3).map(schedule => (
+                        {daySchedules.slice(0, dayExclusions.length > 0 ? 2 : 3).map((schedule, idx) => (
                           <div
-                            key={schedule.id}
-                            className={`text-xs p-1 rounded truncate cursor-pointer ${getContractorColor(schedule.contractor)}`}
+                            key={`${schedule.id}-${schedule.displayTeam.teamId}-${idx}`}
+                            className={`text-xs p-1 rounded truncate cursor-pointer ${getContractorColor(schedule.displayTeam.contractorName)}`}
                             onClick={(e) => {
                               e.stopPropagation()
                               handleEditSchedule(schedule)
@@ -1094,9 +1362,9 @@ export default function SchedulePage() {
                               <span className={`w-2 h-2 rounded-full ${getStatusColor(schedule.status).split(' ')[0]}`} />
                             </div>
                             <div className="truncate">{schedule.customerName}</div>
-                            {schedule.teamName && (
-                              <div className="text-xs opacity-75 truncate">{schedule.teamName}</div>
-                            )}
+                            <div className="text-xs opacity-75 truncate">
+                              {schedule.displayTeam.contractorName}-{schedule.displayTeam.teamName}
+                            </div>
                           </div>
                         ))}
                         {daySchedules.length > (dayExclusions.length > 0 ? 2 : 3) && (
@@ -1112,139 +1380,205 @@ export default function SchedulePage() {
             </div>
           )}
 
-          {/* 週表示カレンダー - Outlookライク */}
-          {viewMode === 'week' && (
-            <div className="bg-white shadow rounded-lg overflow-hidden">
-              {/* ヘッダー */}
-              <div className="grid grid-cols-8 gap-0 border-b border-gray-200">
-                <div className="p-3 bg-gray-50 border-r border-gray-200 text-sm font-medium text-gray-700">
-                  時間
+          {/* 週表示カレンダー - Outlookライク（班ごとに横並び） */}
+          {viewMode === 'week' && (() => {
+            const teamGroups = getTeamGroups()
+            const weekColumns = getWeekViewColumns()
+            const columnWidth = getColumnWidth(teamGroups.length)
+            const totalColumns = weekColumns.length
+
+            if (totalColumns === 0) {
+              return (
+                <div className="bg-white shadow rounded-lg p-8 text-center text-gray-500">
+                  フィルターで全ての班が非表示になっています。
+                  <br />
+                  表示フィルターから班を選択してください。
                 </div>
-                {getWeekDays().map((date) => {
-                  const dateStr = formatDateString(date)
-                  return (
+              )
+            }
+
+            return (
+              <div className="bg-white shadow rounded-lg overflow-hidden">
+                <div className="overflow-x-auto">
+                  <div style={{ minWidth: `calc(60px + ${totalColumns} * ${columnWidth})` }}>
+                    {/* ヘッダー: 2行 */}
+                    {/* 1行目: 班名 */}
                     <div
-                      key={date.toISOString()}
-                      className={`p-3 text-center border-r border-gray-200 last:border-r-0 cursor-pointer hover:bg-gray-100 ${
-                        dateStr === selectedDateForAdd ? 'bg-blue-200 ring-2 ring-inset ring-blue-500' : 'bg-gray-50'
-                      }`}
-                      onClick={() => handleDateSelect(date)}
-                      onDoubleClick={() => handleDateDoubleClick(date)}
+                      className="grid border-b border-gray-200"
+                      style={{
+                        gridTemplateColumns: `60px ${teamGroups.map(() => `repeat(7, ${columnWidth})`).join(' ')}`
+                      }}
                     >
-                      <div className={`text-sm font-medium ${
-                        isToday(date) ? 'text-blue-600' :
-                        dateStr === selectedDateForAdd ? 'text-blue-900' : 'text-gray-700'
-                      }`}>
-                        {formatDate(date)}
+                      <div className="p-3 bg-gray-50 border-r-2 border-gray-300 text-sm font-medium text-gray-700 sticky left-0 z-10">
+                        時間
+                      </div>
+                      {teamGroups.map(team => {
+                        const bgColorClass = team.color === 'blue' ? 'bg-blue-50' :
+                                            team.color === 'green' ? 'bg-green-50' :
+                                            team.color === 'purple' ? 'bg-purple-50' : 'bg-gray-50'
+                        const dotColorClass = team.color === 'blue' ? 'bg-blue-500' :
+                                             team.color === 'green' ? 'bg-green-500' :
+                                             team.color === 'purple' ? 'bg-purple-500' : 'bg-gray-500'
+
+                        return (
+                          <div
+                            key={team.teamId}
+                            className={`p-3 text-center border-r-2 border-gray-300 last:border-r-0 ${bgColorClass}`}
+                            style={{ gridColumn: `span 7` }}
+                          >
+                            <div className="flex items-center justify-center space-x-2">
+                              <div className={`w-3 h-3 rounded-full ${dotColorClass}`} />
+                              <span className="text-sm font-semibold text-gray-900">{team.displayName}</span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {/* 2行目: 日付 */}
+                    <div
+                      className="grid border-b-2 border-gray-300"
+                      style={{
+                        gridTemplateColumns: `60px repeat(${totalColumns}, ${columnWidth})`
+                      }}
+                    >
+                      <div className="bg-gray-50 border-r border-gray-200 sticky left-0 z-10" />
+                      {weekColumns.map((col, idx) => (
+                        <div
+                          key={`${col.teamId}-${col.dateStr}-${idx}`}
+                          className={`p-2 text-center text-xs border-r border-gray-200 cursor-pointer hover:bg-gray-100 ${
+                            col.dateStr === selectedDateForAdd ? 'bg-blue-200' : 'bg-gray-50'
+                          }`}
+                          onClick={() => handleDateSelect(col.date)}
+                          onDoubleClick={() => handleDateDoubleClick(col.date)}
+                        >
+                          <div className={`font-medium ${
+                            isToday(col.date) ? 'text-blue-600' : 'text-gray-700'
+                          }`}>
+                            {col.displayName}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* タイムグリッド: 全体を一つの相対配置コンテナに */}
+                    <div className="relative">
+                      {/* 時間行のグリッド（背景） */}
+                      {getHourlyTimeSlots().map((hour) => (
+                        <div
+                          key={hour}
+                          className="grid"
+                          style={{
+                            gridTemplateColumns: `60px repeat(${totalColumns}, ${columnWidth})`,
+                            height: '4rem'
+                          }}
+                        >
+                          {/* 時間列 */}
+                          <div className="border-r-2 border-b border-gray-200 bg-gray-50 p-2 flex items-start sticky left-0 z-10">
+                            <span className="text-xs text-gray-600 font-medium">{hour}</span>
+                          </div>
+
+                          {/* 各列（班×日）- 空のセル */}
+                          {weekColumns.map((col, colIdx) => (
+                            <div
+                              key={`${col.teamId}-${col.dateStr}-${colIdx}-${hour}`}
+                              className={`border-r border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
+                                col.dateStr === selectedDateForAdd ? 'bg-blue-50' : 'bg-white'
+                              }`}
+                              onClick={() => handleDateSelect(col.date)}
+                              onDoubleClick={() => handleDateDoubleClick(col.date)}
+                            />
+                          ))}
+                        </div>
+                      ))}
+
+                      {/* スケジュールと除外日の絶対配置レイヤー */}
+                      <div
+                        className="absolute inset-0 pointer-events-none grid"
+                        style={{
+                          gridTemplateColumns: `60px repeat(${totalColumns}, ${columnWidth})`
+                        }}
+                      >
+                        {/* 時間列の空スペース */}
+                        <div />
+
+                        {/* 各列（班×日）のスケジュール */}
+                        {weekColumns.map((col, colIdx) => {
+                          const columnSchedules = getSchedulesForColumn(col.teamId, col.dateStr)
+                          const columnExclusions = getExclusionsForColumn(col.teamId, col.dateStr)
+                          const layout = calculateSeparatedLayout(columnSchedules, columnExclusions)
+
+                          return (
+                            <div
+                              key={`${col.teamId}-${col.dateStr}-${colIdx}-overlay`}
+                              className="relative"
+                            >
+                              {/* 除外日バー */}
+                              {layout.exclusions.map((layoutItem) => {
+                                const exclusion = layoutItem.item
+                                const position = getExclusionPosition(exclusion)
+
+                                return (
+                                  <div
+                                    key={`exclusion-${exclusion.id}`}
+                                    className="absolute rounded-md border-2 border-dashed border-red-500 bg-red-50 shadow-sm pointer-events-auto"
+                                    style={{
+                                      top: position.top,
+                                      height: position.height,
+                                      left: `calc(0.25rem + ${layoutItem.left})`,
+                                      width: `calc(${layoutItem.width} - 0.5rem)`,
+                                      zIndex: layoutItem.zIndex
+                                    }}
+                                    title={`除外日: ${exclusion.contractor} - ${exclusion.teamName} - ${exclusion.reason}`}
+                                  >
+                                    <div className="p-1 text-xs">
+                                      <div className="flex items-center space-x-1">
+                                        <span className="text-red-700 font-bold text-[10px]">🚫</span>
+                                        <span className="font-bold text-red-800 truncate text-[10px]">{exclusion.reason}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )
+                              })}
+
+                              {/* スケジュールバー */}
+                              {layout.schedules.map((layoutItem) => {
+                                const schedule = layoutItem.item
+                                const position = getSchedulePosition(schedule.timeSlot)
+
+                                return (
+                                  <div
+                                    key={`${schedule.id}-${col.teamId}`}
+                                    className={`absolute rounded-md border shadow-sm cursor-pointer pointer-events-auto ${getContractorBarColor(col.contractorName)}`}
+                                    style={{
+                                      top: position.top,
+                                      height: position.height,
+                                      left: `calc(0.25rem + ${layoutItem.left})`,
+                                      width: `calc(${layoutItem.width} - 0.5rem)`,
+                                      zIndex: layoutItem.zIndex
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleEditSchedule(schedule)
+                                    }}
+                                  >
+                                    <div className="p-1 text-xs">
+                                      <div className="font-medium truncate text-[10px]">{schedule.customerName}</div>
+                                      <div className="truncate opacity-90 text-[9px]">{schedule.workType}</div>
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          )
+                        })}
                       </div>
                     </div>
-                  )
-                })}
-              </div>
-
-              {/* タイムスロット */}
-              <div className="relative">
-                <div className="grid grid-cols-8 gap-0">
-                  {/* 時間軸 */}
-                  <div className="border-r border-gray-200">
-                    {getHourlyTimeSlots().map((hour) => (
-                      <div key={hour} className="h-16 border-b border-gray-100 p-2 bg-gray-50">
-                        <div className="text-xs text-gray-600">{hour}</div>
-                      </div>
-                    ))}
                   </div>
-
-                  {/* 各日のカラム */}
-                  {getWeekDays().map((date) => {
-                    const dateStr = formatDateString(date)
-                    const daySchedules = getSchedulesForDate(date)
-                    const dayExclusions = filteredExclusions.filter(ex => ex.date === dateStr)
-                    const layoutItems = calculateOverlappingLayoutWithExclusions(daySchedules, dayExclusions)
-
-                    return (
-                      <div key={date.toISOString()} className={`relative border-r border-gray-200 last:border-r-0 ${
-                        dateStr === selectedDateForAdd ? 'bg-blue-50' : ''
-                      }`}>
-                        {/* 時間グリッド */}
-                        {getHourlyTimeSlots().map((hour) => (
-                          <div
-                            key={hour}
-                            className={`h-16 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                              dateStr === selectedDateForAdd ? 'bg-blue-50' : 'bg-white'
-                            }`}
-                            onClick={() => handleDateSelect(date)}
-                            onDoubleClick={() => handleDateDoubleClick(date)}
-                          />
-                        ))}
-
-                        {/* 予定と除外日のバー */}
-                        <div className="absolute inset-0 pointer-events-none">
-                          {layoutItems.map((layoutItem) => {
-                            const { item, width, left, zIndex } = layoutItem
-
-                            if (item.type === 'exclusion') {
-                              const exclusion = item.data
-                              const position = getExclusionPosition(exclusion)
-                              return (
-                                <div
-                                  key={`exclusion-${exclusion.id}`}
-                                  className="absolute rounded-md border-2 border-dashed border-red-500 bg-red-50 shadow-sm pointer-events-auto"
-                                  style={{
-                                    top: position.top,
-                                    height: position.height,
-                                    left: `calc(0.25rem + ${left})`,
-                                    width: `calc(${width} - 0.5rem)`,
-                                    zIndex: zIndex
-                                  }}
-                                  title={`除外日: ${exclusion.contractor} - ${exclusion.teamName} - ${exclusion.reason}`}
-                                >
-                                  <div className="p-1 text-xs">
-                                    <div className="flex items-center space-x-1">
-                                      <span className="text-red-700 font-bold">🚫</span>
-                                      <span className="font-bold text-red-800 truncate">{exclusion.contractor} - {exclusion.teamName}</span>
-                                    </div>
-                                    <div className="text-red-700 font-medium truncate">{getTimeLabel(exclusion)}</div>
-                                    <div className="text-red-600 truncate italic">{exclusion.reason}</div>
-                                  </div>
-                                </div>
-                              )
-                            } else {
-                              const schedule = item.data
-                              const position = getSchedulePosition(schedule.timeSlot)
-                              return (
-                                <div
-                                  key={schedule.id}
-                                  className={`absolute rounded-md border shadow-sm cursor-pointer pointer-events-auto ${getContractorBarColor(schedule.contractor)}`}
-                                  style={{
-                                    top: position.top,
-                                    height: position.height,
-                                    left: `calc(0.25rem + ${left})`,
-                                    width: `calc(${width} - 0.5rem)`,
-                                    zIndex: zIndex
-                                  }}
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleEditSchedule(schedule)
-                                  }}
-                                >
-                                  <div className="p-1 text-xs">
-                                    <div className="font-medium truncate">{schedule.customerName}</div>
-                                    <div className="truncate opacity-90">{schedule.workType}</div>
-                                    <div className="truncate opacity-75">{schedule.address}</div>
-                                    <div className="truncate opacity-75">{schedule.timeSlot}</div>
-                                  </div>
-                                </div>
-                              )
-                            }
-                          })}
-                        </div>
-                      </div>
-                    )
-                  })}
                 </div>
               </div>
-            </div>
-          )}
+            )
+          })()}
 
           {/* 日表示 - 列分けレイアウト */}
           {viewMode === 'day' && (
@@ -1424,12 +1758,14 @@ export default function SchedulePage() {
                       <div className="text-sm text-gray-900">{editingSchedule.address}</div>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">工事班</label>
-                      <div className="text-sm text-gray-900">{editingSchedule.contractor}</div>
-                    </div>
-                    <div>
                       <label className="block text-xs font-medium text-gray-600 mb-1">工事内容</label>
                       <div className="text-sm text-gray-900">{editingSchedule.workType}</div>
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">現在の担当班</label>
+                      <div className="text-sm text-gray-900">
+                        {editingSchedule.assignedTeams.map(t => `${t.contractorName} - ${t.teamName}`).join(', ')}
+                      </div>
                     </div>
                     <div className="col-span-2">
                       <label className="block text-xs font-medium text-gray-600 mb-1">時間</label>
@@ -1468,31 +1804,75 @@ export default function SchedulePage() {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">担当業者</label>
+                {/* 班の選択セクション */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">担当班（複数選択可）</label>
+                  <div className="border border-gray-300 rounded-md p-3 bg-gray-50">
+                    {/* 選択済みの班 */}
+                    {selectedTeamsForEdit.length > 0 ? (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {selectedTeamsForEdit.map(team => (
+                          <div
+                            key={team.teamId}
+                            className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+                          >
+                            <span>{team.contractorName} - {team.teamName}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveTeam(team.teamId)}
+                              className="ml-2 text-blue-600 hover:text-blue-800"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-500 mb-3">班が選択されていません</div>
+                    )}
+
+                    {/* 班の追加セレクトボックス */}
                     <select
-                      value={editingSchedule.contractor}
-                      onChange={(e) => setEditingSchedule({...editingSchedule, contractor: e.target.value as typeof contractors[number]})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          handleAddTeam(e.target.value)
+                          e.target.value = ''
+                        }
+                      }}
+                      className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
                     >
-                      {contractors.map(contractor => (
-                        <option key={contractor} value={contractor}>{contractor}</option>
-                      ))}
+                      <option value="">班を追加...</option>
+                      {getContractors().map(contractor => {
+                        const teams = getTeams().filter(t => t.contractorId === contractor.id && t.isActive)
+                        return (
+                          <optgroup key={contractor.id} label={contractor.name}>
+                            {teams.map(team => (
+                              <option
+                                key={team.id}
+                                value={team.id}
+                                disabled={selectedTeamsForEdit.some(t => t.teamId === team.id)}
+                              >
+                                {team.teamName}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )
+                      })}
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">ステータス</label>
-                    <select
-                      value={editingSchedule.status}
-                      onChange={(e) => setEditingSchedule({...editingSchedule, status: e.target.value as typeof statuses[number]})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
-                    >
-                      {statuses.map(status => (
-                        <option key={status} value={status}>{status}</option>
-                      ))}
-                    </select>
-                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">ステータス</label>
+                  <select
+                    value={editingSchedule.status}
+                    onChange={(e) => setEditingSchedule({...editingSchedule, status: e.target.value as typeof statuses[number]})}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
+                  >
+                    {statuses.map(status => (
+                      <option key={status} value={status}>{status}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">備考</label>
@@ -1588,7 +1968,7 @@ export default function SchedulePage() {
                     <option value="放送波人工事">放送波人工事</option>
                   </select>
                 </div>
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">工事日</label>
                     <input
@@ -1616,16 +1996,62 @@ export default function SchedulePage() {
                       className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">担当業者</label>
+                </div>
+
+                {/* 班の選択セクション */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">担当班（複数選択可） *</label>
+                  <div className="border border-gray-300 rounded-md p-3 bg-gray-50">
+                    {/* 選択済みの班 */}
+                    {selectedTeamsForEdit.length > 0 ? (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {selectedTeamsForEdit.map(team => (
+                          <div
+                            key={team.teamId}
+                            className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+                          >
+                            <span>{team.contractorName} - {team.teamName}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveTeam(team.teamId)}
+                              className="ml-2 text-blue-600 hover:text-blue-800"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-red-600 mb-3">※ 班を最低1つ選択してください</div>
+                    )}
+
+                    {/* 班の追加セレクトボックス */}
                     <select
-                      value={newSchedule.contractor}
-                      onChange={(e) => setNewSchedule({...newSchedule, contractor: e.target.value as typeof contractors[number]})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white"
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          handleAddTeam(e.target.value)
+                          e.target.value = ''
+                        }
+                      }}
+                      className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
                     >
-                      {contractors.map(contractor => (
-                        <option key={contractor} value={contractor}>{contractor}</option>
-                      ))}
+                      <option value="">班を追加...</option>
+                      {getContractors().map(contractor => {
+                        const teams = getTeams().filter(t => t.contractorId === contractor.id && t.isActive)
+                        return (
+                          <optgroup key={contractor.id} label={contractor.name}>
+                            {teams.map(team => (
+                              <option
+                                key={team.id}
+                                value={team.id}
+                                disabled={selectedTeamsForEdit.some(t => t.teamId === team.id)}
+                              >
+                                {team.teamName}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )
+                      })}
                     </select>
                   </div>
                 </div>
@@ -1652,8 +2078,8 @@ export default function SchedulePage() {
                 </button>
                 <button
                   onClick={handleSaveNewSchedule}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                  disabled={!newSchedule.customerName || !newSchedule.address}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  disabled={!newSchedule.customerName || !newSchedule.address || selectedTeamsForEdit.length === 0}
                 >
                   登録
                 </button>
