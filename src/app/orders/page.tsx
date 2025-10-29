@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useState } from 'react'
-import { DocumentArrowUpIcon, EyeIcon, MapIcon, ClockIcon, PlusIcon, CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import React, { useState, useMemo, useEffect } from 'react'
+import { DocumentArrowUpIcon, EyeIcon, MapIcon, ClockIcon, PlusIcon, CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, FunnelIcon } from '@heroicons/react/24/outline'
 import Layout from '@/components/Layout'
 import CalendarPicker from '@/components/CalendarPicker'
+import { getContractors, getTeams } from '@/lib/contractors'
 
 interface AppointmentHistory {
   id: string
@@ -25,6 +26,42 @@ interface ExclusionEntry {
   startTime?: string
   endTime?: string
 }
+
+// 週表示の列定義
+interface WeekViewColumn {
+  teamId: string
+  teamName: string
+  contractorId: string
+  contractorName: string
+  color: string
+  date: Date
+  dateStr: string
+  displayName: string
+  teamDisplayName: string
+}
+
+// 週表示の班グループ
+interface TeamGroup {
+  teamId: string
+  teamName: string
+  contractorName: string
+  color: string
+  displayName: string
+  columnCount: number
+}
+
+// フィルター定義
+interface TeamFilter {
+  contractorId: string
+  contractorName: string
+  teamId: string
+  teamName: string
+  isVisible: boolean
+  color: string
+}
+
+// カレンダー表示モード
+type CalendarViewMode = 'month' | 'week'
 
 interface OrderData {
   orderNumber: string
@@ -96,6 +133,9 @@ const sampleSchedules = [
     contractorId: 'contractor-1',
     teamId: 'team-1',
     teamName: 'A班',
+    assignedTeams: [
+      { contractorId: 'contractor-1', contractorName: '直営班', teamId: 'team-1', teamName: 'A班' }
+    ],
     status: '予定',
     customerCode: '2025091000001',
     customerName: '田中太郎',
@@ -109,6 +149,9 @@ const sampleSchedules = [
     contractorId: 'contractor-2',
     teamId: 'team-3',
     teamName: '1班',
+    assignedTeams: [
+      { contractorId: 'contractor-2', contractorName: '栄光電気', teamId: 'team-3', teamName: '1班' }
+    ],
     status: '作業中',
     customerCode: '2025091000002',
     customerName: '山田花子',
@@ -122,6 +165,9 @@ const sampleSchedules = [
     contractorId: 'contractor-3',
     teamId: 'team-4',
     teamName: '第1班',
+    assignedTeams: [
+      { contractorId: 'contractor-3', contractorName: 'スライヴ', teamId: 'team-4', teamName: '第1班' }
+    ],
     status: '予定',
     customerCode: '2025091000003',
     customerName: '佐藤花子',
@@ -135,6 +181,9 @@ const sampleSchedules = [
     contractorId: 'contractor-1',
     teamId: 'team-2',
     teamName: 'B班',
+    assignedTeams: [
+      { contractorId: 'contractor-1', contractorName: '直営班', teamId: 'team-2', teamName: 'B班' }
+    ],
     status: '予定',
     customerCode: '2025091000004',
     customerName: '山田次郎',
@@ -145,6 +194,12 @@ const sampleSchedules = [
     assignedDate: '2025-10-02',
     timeSlot: '09:00-11:00',
     contractor: '栄光電気',
+    contractorId: 'contractor-2',
+    teamId: 'team-3',
+    teamName: '1班',
+    assignedTeams: [
+      { contractorId: 'contractor-2', contractorName: '栄光電気', teamId: 'team-3', teamName: '1班' }
+    ],
     status: '予定',
     customerCode: '2025091000005',
     customerName: '鈴木一郎',
@@ -155,6 +210,12 @@ const sampleSchedules = [
     assignedDate: '2025-10-02',
     timeSlot: '14:00-16:00',
     contractor: 'スライヴ',
+    contractorId: 'contractor-3',
+    teamId: 'team-4',
+    teamName: '第1班',
+    assignedTeams: [
+      { contractorId: 'contractor-3', contractorName: 'スライヴ', teamId: 'team-4', teamName: '第1班' }
+    ],
     status: '予定',
     customerCode: '2025091000006',
     customerName: '高橋美咲',
@@ -165,6 +226,12 @@ const sampleSchedules = [
     assignedDate: '2025-10-03',
     timeSlot: '終日',
     contractor: '直営班',
+    contractorId: 'contractor-1',
+    teamId: 'team-1',
+    teamName: 'A班',
+    assignedTeams: [
+      { contractorId: 'contractor-1', contractorName: '直営班', teamId: 'team-1', teamName: 'A班' }
+    ],
     status: '作業中',
     customerCode: '2025091000007',
     customerName: '渡辺健一',
@@ -269,6 +336,12 @@ export default function OrdersPage() {
   const [appointmentEndTime, setAppointmentEndTime] = useState<string>('')
   const [selectedScheduleDate, setSelectedScheduleDate] = useState<string | null>(null)
   const [scheduleCalendarDate, setScheduleCalendarDate] = useState<Date>(new Date())
+
+  // 週表示とフィルター用の状態
+  const [calendarViewMode, setCalendarViewMode] = useState<CalendarViewMode>('month')
+  const [teamFilters, setTeamFilters] = useState<TeamFilter[]>([])
+  const [showFilterPanel, setShowFilterPanel] = useState(false)
+
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const mapFileInputRef = React.useRef<HTMLInputElement>(null)
 
@@ -541,7 +614,7 @@ export default function OrdersPage() {
 
   // スケジュール日付選択
   const handleScheduleDateClick = (date: Date) => {
-    const dateStr = date.toISOString().slice(0, 10)
+    const dateStr = formatDateString(date)
     setSelectedScheduleDate(dateStr)
   }
 
@@ -575,6 +648,13 @@ export default function OrdersPage() {
     setScheduleCalendarDate(newDate)
   }
 
+  // スケジュールカレンダーの週移動
+  const navigateScheduleWeek = (direction: 'prev' | 'next') => {
+    const newDate = new Date(scheduleCalendarDate)
+    newDate.setDate(newDate.getDate() + (direction === 'next' ? 7 : -7))
+    setScheduleCalendarDate(newDate)
+  }
+
   // 除外日の時間タイプを表示用テキストに変換
   const getExclusionTimeText = (exclusion: ExclusionEntry) => {
     switch (exclusion.timeType) {
@@ -590,6 +670,264 @@ export default function OrdersPage() {
         return ''
     }
   }
+
+  // フィルター初期化
+  useEffect(() => {
+    const contractors = getContractors()
+    const teams = getTeams()
+    const colorMap: Record<string, string> = {
+      'contractor-1': 'blue',
+      'contractor-2': 'green',
+      'contractor-3': 'purple'
+    }
+
+    const filters: TeamFilter[] = teams.map(team => {
+      const contractor = contractors.find(c => c.id === team.contractorId)
+      return {
+        contractorId: team.contractorId,
+        contractorName: contractor?.name || '',
+        teamId: team.id,
+        teamName: team.teamName,
+        isVisible: true,
+        color: colorMap[team.contractorId] || 'gray'
+      }
+    })
+
+    setTeamFilters(filters)
+  }, [])
+
+  // 日付フォーマット関数
+  const formatDateString = (date: Date) => {
+    const year = date.getFullYear()
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const day = date.getDate().toString().padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  const formatDate = (date: Date) => {
+    const month = date.getMonth() + 1
+    const day = date.getDate()
+    const weekDays = ['日', '月', '火', '水', '木', '金', '土']
+    const weekDay = weekDays[date.getDay()]
+    return `${month}/${day}(${weekDay})`
+  }
+
+  // 週の日付を取得
+  const getWeekDays = () => {
+    const startOfWeek = new Date(scheduleCalendarDate)
+    const day = startOfWeek.getDay()
+    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1)
+    startOfWeek.setDate(diff)
+
+    const days: Date[] = []
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startOfWeek)
+      date.setDate(startOfWeek.getDate() + i)
+      days.push(date)
+    }
+    return days
+  }
+
+  // 週範囲表示用のラベルを取得
+  const getWeekRangeLabel = (): string => {
+    const weekDays = getWeekDays()
+    const startDate = weekDays[0]
+    const endDate = weekDays[6]
+
+    const startMonth = startDate.getMonth() + 1
+    const startDay = startDate.getDate()
+    const endMonth = endDate.getMonth() + 1
+    const endDay = endDate.getDate()
+    const year = startDate.getFullYear()
+
+    // 同じ月の場合
+    if (startMonth === endMonth) {
+      return `${year}年${startMonth}月${startDay}日 - ${endDay}日`
+    }
+    // 異なる月の場合
+    return `${year}年${startMonth}月${startDay}日 - ${endMonth}月${endDay}日`
+  }
+
+  // 週表示用: 班グループを取得
+  const getTeamGroups = (): TeamGroup[] => {
+    return teamFilters
+      .filter(f => f.isVisible)
+      .map(f => ({
+        teamId: f.teamId,
+        teamName: f.teamName,
+        contractorName: f.contractorName,
+        color: f.color,
+        displayName: `${f.contractorName}-${f.teamName}`,
+        columnCount: 7
+      }))
+  }
+
+  // 週表示用: 列を取得
+  const getWeekViewColumns = (): WeekViewColumn[] => {
+    const columns: WeekViewColumn[] = []
+    const visibleTeams = teamFilters.filter(f => f.isVisible)
+    const weekDays = getWeekDays()
+
+    visibleTeams.forEach(team => {
+      weekDays.forEach(date => {
+        columns.push({
+          teamId: team.teamId,
+          teamName: team.teamName,
+          contractorId: team.contractorId,
+          contractorName: team.contractorName,
+          color: team.color,
+          date,
+          dateStr: formatDateString(date),
+          displayName: formatDate(date),
+          teamDisplayName: `${team.contractorName}-${team.teamName}`
+        })
+      })
+    })
+
+    return columns
+  }
+
+  // 週表示用: 列幅を計算
+  const getColumnWidth = (visibleTeamCount: number): string => {
+    if (visibleTeamCount === 1) return '150px'
+    if (visibleTeamCount === 2) return '120px'
+    if (visibleTeamCount === 3) return '100px'
+    return '90px'
+  }
+
+  // 時間スロット取得
+  const getHourlyTimeSlots = () => {
+    const slots: string[] = []
+    for (let hour = 9; hour <= 18; hour++) {
+      slots.push(`${hour.toString().padStart(2, '0')}:00`)
+    }
+    return slots
+  }
+
+  // 除外日の時間スロットを取得
+  const getExclusionTimeSlot = (exclusion: ExclusionEntry): string => {
+    switch (exclusion.timeType) {
+      case 'all_day':
+        return '09:00-18:00'
+      case 'am':
+        return '09:00-12:00'
+      case 'pm':
+        return '12:00-18:00'
+      case 'custom':
+        return `${exclusion.startTime}-${exclusion.endTime}`
+      default:
+        return '09:00-18:00'
+    }
+  }
+
+  // 時間位置計算
+  const calculateTopPosition = (timeSlot: string): string => {
+    if (timeSlot === '終日') return '0rem'
+
+    const [startTime] = timeSlot.split('-')
+    const [hour, minute] = startTime.split(':').map(Number)
+    const minutesFromStart = (hour - 9) * 60 + minute
+    return `${(minutesFromStart / 60) * 4}rem`
+  }
+
+  const calculateHeight = (timeSlot: string): string => {
+    if (timeSlot === '終日') return '36rem'
+
+    const [startTime, endTime] = timeSlot.split('-')
+    const [startHour, startMinute] = startTime.split(':').map(Number)
+    const [endHour, endMinute] = endTime.split(':').map(Number)
+
+    const startMinutes = startHour * 60 + startMinute
+    const endMinutes = endHour * 60 + endMinute
+    const durationMinutes = endMinutes - startMinutes
+
+    return `${Math.max((durationMinutes / 60) * 4, 2)}rem`
+  }
+
+  // 左右分離レイアウト計算
+  const calculateSeparatedLayout = (schedules: any[], exclusions: ExclusionEntry[], teamId: string, dateStr: string) => {
+    const daySchedules = schedules.filter(s =>
+      s.assignedDate === dateStr &&
+      s.assignedTeams?.some((t: any) => t.teamId === teamId)
+    )
+    const dayExclusions = exclusions.filter(e =>
+      e.date === dateStr && e.teamId === teamId
+    )
+
+    if (dayExclusions.length > 0 && daySchedules.length > 0) {
+      return {
+        exclusions: dayExclusions.map(e => ({
+          data: e,
+          width: '50%',
+          left: '0%'
+        })),
+        schedules: daySchedules.map(s => ({
+          data: s,
+          width: '50%',
+          left: '50%'
+        }))
+      }
+    }
+
+    return {
+      exclusions: dayExclusions.map(e => ({
+        data: e,
+        width: '100%',
+        left: '0%'
+      })),
+      schedules: daySchedules.map(s => ({
+        data: s,
+        width: '100%',
+        left: '0%'
+      }))
+    }
+  }
+
+  // フィルター関連の関数
+  const getContractorCheckState = (contractorId: string): 'all' | 'some' | 'none' => {
+    const contractorTeams = teamFilters.filter(f => f.contractorId === contractorId)
+    const visibleCount = contractorTeams.filter(f => f.isVisible).length
+
+    if (visibleCount === 0) return 'none'
+    if (visibleCount === contractorTeams.length) return 'all'
+    return 'some'
+  }
+
+  const handleToggleAll = (checked: boolean) => {
+    setTeamFilters(prev => prev.map(f => ({ ...f, isVisible: checked })))
+  }
+
+  const handleToggleContractor = (contractorId: string, checked: boolean) => {
+    setTeamFilters(prev =>
+      prev.map(f => f.contractorId === contractorId ? { ...f, isVisible: checked } : f)
+    )
+  }
+
+  const handleToggleTeam = (teamId: string, checked: boolean) => {
+    setTeamFilters(prev =>
+      prev.map(f => f.teamId === teamId ? { ...f, isVisible: checked } : f)
+    )
+  }
+
+  // フィルタリング済みデータ
+  const filteredSchedules = useMemo(() => {
+    return sampleSchedules.filter(schedule => {
+      if (teamFilters.length === 0) return true
+      return schedule.assignedTeams?.some(assignedTeam =>
+        teamFilters.some(f => f.teamId === assignedTeam.teamId && f.isVisible)
+      )
+    })
+  }, [teamFilters])
+
+  const filteredExclusions = useMemo(() => {
+    return sampleExclusions.filter(exclusion => {
+      if (teamFilters.length === 0) return true
+      return teamFilters.some(f => f.teamId === exclusion.teamId && f.isVisible)
+    })
+  }, [teamFilters])
+
+  const visibleFilterCount = teamFilters.filter(f => f.isVisible).length
+  const totalFilterCount = teamFilters.length
 
 
   return (
@@ -913,24 +1251,145 @@ export default function OrdersPage() {
 
               {/* カレンダーナビゲーション */}
               <div className="flex items-center justify-between mb-3">
-                <button
-                  onClick={() => navigateScheduleMonth('prev')}
-                  className="p-2 hover:bg-gray-100 rounded-md"
-                >
-                  <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
-                </button>
-                <h4 className="text-lg font-semibold text-gray-900">
-                  {scheduleCalendarDate.getFullYear()}年{scheduleCalendarDate.getMonth() + 1}月
-                </h4>
-                <button
-                  onClick={() => navigateScheduleMonth('next')}
-                  className="p-2 hover:bg-gray-100 rounded-md"
-                >
-                  <ChevronRightIcon className="h-5 w-5 text-gray-600" />
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => calendarViewMode === 'month' ? navigateScheduleMonth('prev') : navigateScheduleWeek('prev')}
+                    className="p-2 hover:bg-gray-100 rounded-md"
+                  >
+                    <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
+                  </button>
+                  <h4 className="text-lg font-semibold text-gray-900">
+                    {calendarViewMode === 'month'
+                      ? `${scheduleCalendarDate.getFullYear()}年${scheduleCalendarDate.getMonth() + 1}月`
+                      : getWeekRangeLabel()
+                    }
+                  </h4>
+                  <button
+                    onClick={() => calendarViewMode === 'month' ? navigateScheduleMonth('next') : navigateScheduleWeek('next')}
+                    className="p-2 hover:bg-gray-100 rounded-md"
+                  >
+                    <ChevronRightIcon className="h-5 w-5 text-gray-600" />
+                  </button>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  {/* 表示モード切り替え */}
+                  <div className="flex items-center space-x-1 bg-gray-100 p-1 rounded-md">
+                    <button
+                      onClick={() => setCalendarViewMode('month')}
+                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                        calendarViewMode === 'month'
+                          ? 'bg-white text-blue-600 shadow-sm'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      📅 月
+                    </button>
+                    <button
+                      onClick={() => setCalendarViewMode('week')}
+                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                        calendarViewMode === 'week'
+                          ? 'bg-white text-blue-600 shadow-sm'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      📊 週
+                    </button>
+                  </div>
+
+                  {/* フィルターボタン */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowFilterPanel(!showFilterPanel)}
+                      className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      <FunnelIcon className="h-4 w-4 mr-2" />
+                      フィルター
+                      {visibleFilterCount < totalFilterCount && (
+                        <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full">
+                          {visibleFilterCount}/{totalFilterCount}
+                        </span>
+                      )}
+                    </button>
+
+                    {/* フィルターパネル */}
+                    {showFilterPanel && (
+                      <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-20 max-h-96 overflow-y-auto">
+                        <div className="p-3 space-y-2">
+                          {/* すべて選択 */}
+                          <div className="flex items-center pb-2 border-b border-gray-200">
+                            <input
+                              type="checkbox"
+                              checked={visibleFilterCount === totalFilterCount}
+                              onChange={(e) => handleToggleAll(e.target.checked)}
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <label className="ml-2 text-sm font-medium text-gray-900">
+                              すべて選択
+                              <span className="ml-2 text-xs text-gray-500">
+                                ({visibleFilterCount}/{totalFilterCount})
+                              </span>
+                            </label>
+                          </div>
+
+                          {/* 協力会社ごとのフィルター */}
+                          {Array.from(new Set(teamFilters.map(f => f.contractorId))).map(contractorId => {
+                            const contractorTeams = teamFilters.filter(f => f.contractorId === contractorId)
+                            const checkState = getContractorCheckState(contractorId)
+                            const colorClass = contractorTeams[0]?.color === 'blue' ? 'text-blue-600' :
+                                             contractorTeams[0]?.color === 'green' ? 'text-green-600' :
+                                             contractorTeams[0]?.color === 'purple' ? 'text-purple-600' : 'text-gray-600'
+
+                            return (
+                              <div key={contractorId} className="space-y-1">
+                                <div className="flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={checkState !== 'none'}
+                                    ref={el => {
+                                      if (el) el.indeterminate = checkState === 'some'
+                                    }}
+                                    onChange={(e) => handleToggleContractor(contractorId, e.target.checked)}
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                  />
+                                  <label className="ml-2 text-sm font-medium text-gray-900 flex items-center">
+                                    <span className={`mr-2 ${colorClass}`}>●</span>
+                                    {contractorTeams[0]?.contractorName}
+                                    <span className="ml-2 text-xs text-gray-500">
+                                      ({contractorTeams.filter(t => t.isVisible).length}/{contractorTeams.length})
+                                    </span>
+                                  </label>
+                                </div>
+
+                                {/* 班フィルター */}
+                                <div className="ml-6 space-y-1">
+                                  {contractorTeams.map(team => (
+                                    <div key={team.teamId} className="flex items-center">
+                                      <input
+                                        type="checkbox"
+                                        checked={team.isVisible}
+                                        onChange={(e) => handleToggleTeam(team.teamId, e.target.checked)}
+                                        className="h-3 w-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                      />
+                                      <label className="ml-2 text-sm text-gray-700">
+                                        {team.teamName}
+                                      </label>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              {/* カレンダー表示 */}
+              {/* 月表示 */}
+              {calendarViewMode === 'month' && (
+              <>
               <div className="bg-white border rounded-lg overflow-hidden mb-3">
                 <div className="grid grid-cols-7 gap-0 border-b border-gray-200">
                   {['日', '月', '火', '水', '木', '金', '土'].map((day, index) => (
@@ -957,8 +1416,8 @@ export default function OrdersPage() {
 
                     return days.map((date, index) => {
                       const dateStr = date.toISOString().slice(0, 10)
-                      const daySchedules = sampleSchedules.filter(schedule => schedule.assignedDate === dateStr)
-                      const dayExclusions = sampleExclusions.filter(exclusion => exclusion.date === dateStr)
+                      const daySchedules = filteredSchedules.filter(schedule => schedule.assignedDate === dateStr)
+                      const dayExclusions = filteredExclusions.filter(exclusion => exclusion.date === dateStr)
                       const isCurrentMonth = date.getMonth() === scheduleCalendarDate.getMonth()
                       const isToday = date.toDateString() === today.toDateString()
 
@@ -1031,7 +1490,7 @@ export default function OrdersPage() {
                     📅 {selectedScheduleDate} の詳細スケジュール
                   </h5>
                   <div className="space-y-2">
-                    {sampleSchedules
+                    {filteredSchedules
                       .filter(schedule => schedule.assignedDate === selectedScheduleDate)
                       .map((schedule, index) => (
                         <div key={index} className={`p-3 rounded-lg border ${
@@ -1075,7 +1534,7 @@ export default function OrdersPage() {
                       ))}
 
                     {/* 除外日の詳細表示 */}
-                    {sampleExclusions
+                    {filteredExclusions
                       .filter(exclusion => exclusion.date === selectedScheduleDate)
                       .map((exclusion, index) => (
                         <div key={`exclusion-detail-${index}`} className="p-3 rounded-lg border-2 border-dashed border-red-300 bg-red-50">
@@ -1091,8 +1550,8 @@ export default function OrdersPage() {
                         </div>
                       ))}
 
-                    {sampleSchedules.filter(schedule => schedule.assignedDate === selectedScheduleDate).length === 0 &&
-                     sampleExclusions.filter(exclusion => exclusion.date === selectedScheduleDate).length === 0 && (
+                    {filteredSchedules.filter(schedule => schedule.assignedDate === selectedScheduleDate).length === 0 &&
+                     filteredExclusions.filter(exclusion => exclusion.date === selectedScheduleDate).length === 0 && (
                       <div className="text-center py-3">
                         <p className="text-xs text-gray-500">✅ この日は予定がありません</p>
                         <p className="text-[10px] text-gray-400 mt-1">アポイント設定に最適です</p>
@@ -1101,6 +1560,170 @@ export default function OrdersPage() {
                   </div>
                 </div>
               )}
+            </>
+            )}
+
+              {/* 週表示 */}
+              {calendarViewMode === 'week' && (() => {
+                const teamGroups = getTeamGroups()
+                const weekColumns = getWeekViewColumns()
+                const columnWidth = getColumnWidth(teamGroups.length)
+                const totalColumns = weekColumns.length
+
+                if (teamGroups.length === 0) {
+                  return (
+                    <div className="text-center py-8 text-gray-500">
+                      フィルターで班を選択してください
+                    </div>
+                  )
+                }
+
+                return (
+                  <div className="bg-white shadow rounded-lg overflow-hidden">
+                    <div className="overflow-x-auto">
+                      {/* 2段ヘッダー */}
+                      <div className="grid border-b-2 border-gray-300" style={{gridTemplateColumns: `60px repeat(${totalColumns}, ${columnWidth})`}}>
+                        {/* 第1行: 左上の空白 + 班名（7列span） */}
+                        <div className="bg-gray-100 border-r border-gray-300" /> {/* 時刻列ヘッダー */}
+                        {teamGroups.map((group, idx) => (
+                          <div
+                            key={group.teamId}
+                            className={`text-center font-semibold text-sm py-2 border-r border-gray-300 ${
+                              group.color === 'blue' ? 'bg-blue-100 text-blue-900' :
+                              group.color === 'green' ? 'bg-green-100 text-green-900' :
+                              group.color === 'purple' ? 'bg-purple-100 text-purple-900' : 'bg-gray-100'
+                            }`}
+                            style={{gridColumn: `span ${group.columnCount}`}}
+                          >
+                            {group.displayName}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* 第2行: 時刻列ヘッダー + 日付（各1列） */}
+                      <div className="grid border-b border-gray-300" style={{gridTemplateColumns: `60px repeat(${totalColumns}, ${columnWidth})`}}>
+                        <div className="bg-gray-50 text-center text-xs font-medium text-gray-600 py-2 border-r border-gray-300">
+                          時刻
+                        </div>
+                        {weekColumns.map((col, idx) => (
+                          <div
+                            key={`${col.teamId}-${col.dateStr}`}
+                            className="bg-gray-50 text-center text-xs font-medium text-gray-700 py-2 border-r border-gray-300"
+                          >
+                            {col.displayName}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* タイムグリッド */}
+                      <div className="relative">
+                        {/* 背景: 時間行 */}
+                        {getHourlyTimeSlots().map((hour, hourIdx) => (
+                          <div
+                            key={hour}
+                            className="grid border-b border-gray-100"
+                            style={{gridTemplateColumns: `60px repeat(${totalColumns}, ${columnWidth})`, height: '4rem'}}
+                          >
+                            {/* 時刻セル */}
+                            <div className="bg-gray-50 text-center text-xs text-gray-600 py-1 border-r-2 border-gray-300 flex items-start justify-center">
+                              {hour}
+                            </div>
+                            {/* 空の列セル */}
+                            {weekColumns.map((col, colIdx) => (
+                              <div
+                                key={`${col.teamId}-${col.dateStr}-${hour}`}
+                                className="border-r border-gray-200"
+                              />
+                            ))}
+                          </div>
+                        ))}
+
+                        {/* 前景: スケジュールと除外日の絶対配置レイヤー */}
+                        <div
+                          className="absolute inset-0 pointer-events-none grid"
+                          style={{gridTemplateColumns: `60px repeat(${totalColumns}, ${columnWidth})`}}
+                        >
+                          <div /> {/* 時刻列のスペーサー */}
+                          {weekColumns.map((col) => {
+                            const layout = calculateSeparatedLayout(filteredSchedules, filteredExclusions, col.teamId, col.dateStr)
+
+                            return (
+                              <div key={`${col.teamId}-${col.dateStr}-overlay`} className="relative border-r border-gray-200">
+                                {/* 除外日 */}
+                                {layout.exclusions.map((item, idx) => {
+                                  const timeSlot = getExclusionTimeSlot(item.data)
+                                  return (
+                                    <div
+                                      key={`exclusion-${item.data.id}-${idx}`}
+                                      className="absolute border-2 border-dashed border-red-500 bg-red-50 rounded p-1 overflow-hidden pointer-events-auto cursor-pointer hover:opacity-90"
+                                      style={{
+                                        top: calculateTopPosition(timeSlot),
+                                        height: calculateHeight(timeSlot),
+                                        width: item.width,
+                                        left: item.left,
+                                        zIndex: 10
+                                      }}
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleScheduleDateClick(col.date)
+                                      }}
+                                    >
+                                      <div className="text-[10px] text-red-700 font-medium italic truncate">
+                                        🚫 {getExclusionTimeText(item.data)}
+                                      </div>
+                                      <div className="text-[9px] text-red-600 italic truncate">
+                                        {item.data.reason}
+                                      </div>
+                                    </div>
+                                  )
+                                })}
+
+                                {/* スケジュール */}
+                                {layout.schedules.map((item, idx) => {
+                                  const bgColorClass = col.color === 'blue' ? 'bg-blue-500' :
+                                                      col.color === 'green' ? 'bg-green-500' :
+                                                      col.color === 'purple' ? 'bg-purple-500' : 'bg-gray-500'
+
+                                  return (
+                                    <div
+                                      key={`schedule-${item.data.customerCode}-${idx}`}
+                                      className={`absolute ${bgColorClass} text-white rounded p-1 overflow-hidden pointer-events-auto cursor-pointer hover:opacity-90`}
+                                      style={{
+                                        top: calculateTopPosition(item.data.timeSlot),
+                                        height: calculateHeight(item.data.timeSlot),
+                                        width: item.width,
+                                        left: item.left,
+                                        zIndex: 5
+                                      }}
+                                      title={`${item.data.customerName} - ${item.data.address}`}
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleScheduleDateClick(col.date)
+                                      }}
+                                    >
+                                      <div className="text-[10px] font-semibold truncate">
+                                        {item.data.timeSlot}
+                                      </div>
+                                      <div className="text-[9px] truncate">
+                                        {item.data.customerName}
+                                      </div>
+                                      {item.data.workType && (
+                                        <div className="text-[8px] truncate opacity-90">
+                                          {item.data.workType}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()}
             </div>
 
             {/* 顧客情報 */}

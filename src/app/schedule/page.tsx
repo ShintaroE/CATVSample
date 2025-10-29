@@ -595,6 +595,26 @@ export default function SchedulePage() {
     return days
   }
 
+  // 週範囲表示用のラベルを取得
+  const getWeekRangeLabel = (): string => {
+    const weekDays = getWeekDays()
+    const startDate = weekDays[0]
+    const endDate = weekDays[6]
+
+    const startMonth = startDate.getMonth() + 1
+    const startDay = startDate.getDate()
+    const endMonth = endDate.getMonth() + 1
+    const endDay = endDate.getDate()
+    const year = startDate.getFullYear()
+
+    // 同じ月の場合
+    if (startMonth === endMonth) {
+      return `${year}年${startMonth}月${startDay}日 - ${endDay}日`
+    }
+    // 異なる月の場合
+    return `${year}年${startMonth}月${startDay}日 - ${endMonth}月${endDay}日`
+  }
+
   // 日付をYYYY-MM-DD形式の文字列に変換（タイムゾーン考慮）
   const formatDateString = (date: Date) => {
     const year = date.getFullYear()
@@ -1142,7 +1162,7 @@ export default function SchedulePage() {
                     <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
                   </button>
                   <h2 className="text-xl font-semibold text-gray-900 min-w-40 text-center">
-                    {viewMode === 'day' ? formatDate(currentDate) : formatMonthYear(currentDate)}
+                    {viewMode === 'day' ? formatDate(currentDate) : viewMode === 'week' ? getWeekRangeLabel() : formatMonthYear(currentDate)}
                   </h2>
                   <button
                     onClick={() => navigateDate('next')}
