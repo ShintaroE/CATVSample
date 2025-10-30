@@ -5,6 +5,7 @@ import {
   PencilSquareIcon,
 } from '@heroicons/react/24/outline'
 import { AttachmentRequest, AttachmentStatus, AssigneeType } from '@/features/applications/types'
+import { Badge, BadgeVariant } from '@/shared/components/ui'
 
 interface AttachmentTabProps {
   data: AttachmentRequest[]
@@ -31,20 +32,14 @@ export default function AttachmentTab({ data, onEdit }: AttachmentTabProps) {
     })
   }, [data, orderFilter, customerFilter, statusFilter, assigneeFilter])
 
-  const getStatusBadge = (status: AttachmentStatus) => {
-    const colors = {
-      受付: 'bg-blue-100 text-blue-800',
-      提出済: 'bg-yellow-100 text-yellow-800',
-      許可: 'bg-green-100 text-green-800',
-      取下げ: 'bg-gray-200 text-gray-800',
+  const getStatusBadge = (status: AttachmentStatus): BadgeVariant => {
+    const variantMap: Record<AttachmentStatus, BadgeVariant> = {
+      受付: 'info',
+      提出済: 'warning',
+      許可: 'success',
+      取下げ: 'default',
     }
-    return (
-      <span
-        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${colors[status]}`}
-      >
-        {status}
-      </span>
-    )
+    return variantMap[status]
   }
 
   return (
@@ -134,7 +129,11 @@ export default function AttachmentTab({ data, onEdit }: AttachmentTabProps) {
                   </td>
                   <td className="px-3 py-2 text-gray-900">{r.submittedAt || '-'}</td>
                   <td className="px-3 py-2 text-gray-900">{r.approvedAt || '-'}</td>
-                  <td className="px-3 py-2">{getStatusBadge(r.status)}</td>
+                  <td className="px-3 py-2">
+                    <Badge variant={getStatusBadge(r.status)} size="sm">
+                      {r.status}
+                    </Badge>
+                  </td>
                   <td className="px-3 py-2">
                     {r.withdrawNeeded ? (
                       <span className="text-red-600 text-xs font-semibold">要</span>

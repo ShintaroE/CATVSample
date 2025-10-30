@@ -5,6 +5,7 @@ import {
   PencilSquareIcon,
 } from '@heroicons/react/24/outline'
 import { SurveyRequest, SurveyStatus, AssigneeType } from '@/features/applications/types'
+import { Badge, BadgeVariant } from '@/shared/components/ui'
 
 interface SurveyTabProps {
   data: SurveyRequest[]
@@ -31,20 +32,14 @@ export default function SurveyTab({ data, onEdit }: SurveyTabProps) {
     })
   }, [data, orderFilter, customerFilter, statusFilter, assigneeFilter])
 
-  const getStatusBadge = (status: SurveyStatus) => {
-    const colors = {
-      未着手: 'bg-gray-100 text-gray-800',
-      調査中: 'bg-yellow-100 text-yellow-800',
-      完了: 'bg-green-100 text-green-800',
-      キャンセル: 'bg-red-100 text-red-800',
+  const getStatusBadge = (status: SurveyStatus): BadgeVariant => {
+    const variantMap: Record<SurveyStatus, BadgeVariant> = {
+      未着手: 'default',
+      調査中: 'warning',
+      完了: 'success',
+      キャンセル: 'danger',
     }
-    return (
-      <span
-        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${colors[status]}`}
-      >
-        {status}
-      </span>
-    )
+    return variantMap[status]
   }
 
   return (
@@ -132,7 +127,11 @@ export default function SurveyTab({ data, onEdit }: SurveyTabProps) {
                       <span className="text-gray-900">{r.contractorName} - {r.teamName}</span>
                     )}
                   </td>
-                  <td className="px-3 py-2">{getStatusBadge(r.status)}</td>
+                  <td className="px-3 py-2">
+                    <Badge variant={getStatusBadge(r.status)} size="sm">
+                      {r.status}
+                    </Badge>
+                  </td>
                   <td className="px-3 py-2 text-gray-900">{r.requestedAt || '-'}</td>
                   <td className="px-3 py-2 text-gray-900">{r.scheduledDate || '-'}</td>
                   <td className="px-3 py-2 text-gray-900">{r.completedAt || '-'}</td>

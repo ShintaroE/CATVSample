@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { ComputerDesktopIcon } from '@heroicons/react/24/outline'
+import { Input, Button } from '@/shared/components/ui'
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')
@@ -50,33 +51,23 @@ export default function LoginPage() {
           <h2 className="text-xl font-semibold text-gray-900 mb-6">ログイン</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                ユーザー名
-              </label>
-              <input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
-                placeholder="ユーザー名を入力"
-              />
-            </div>
+            <Input
+              label="ユーザー名"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="ユーザー名を入力"
+              fullWidth
+            />
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                パスワード
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
-                placeholder="パスワードを入力"
-              />
-            </div>
+            <Input
+              label="パスワード"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="パスワードを入力"
+              fullWidth
+            />
 
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
@@ -84,12 +75,14 @@ export default function LoginPage() {
               </div>
             )}
 
-            <button
+            <Button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium"
+              variant="primary"
+              size="md"
+              fullWidth
             >
               ログイン
-            </button>
+            </Button>
           </form>
 
           {/* デモアカウント情報 */}

@@ -2,6 +2,7 @@ import React from 'react'
 import Image from 'next/image'
 import { ProgressEntry } from '@/features/applications/types'
 import { ClockIcon } from '@heroicons/react/24/outline'
+import { Badge } from '@/shared/components/ui'
 
 interface ProgressHistoryProps {
   history: ProgressEntry[]
@@ -51,9 +52,9 @@ export default function ProgressHistory({ history }: ProgressHistoryProps) {
               </div>
               <div className="mb-2">
                 <span className="text-xs text-gray-500">ステータス: </span>
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                <Badge variant="info" size="sm">
                   {entry.status}
-                </span>
+                </Badge>
               </div>
               {entry.comment && (
                 <p className="text-sm text-gray-700 whitespace-pre-wrap">
