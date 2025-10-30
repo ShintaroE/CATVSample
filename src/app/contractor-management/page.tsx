@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import { PlusIcon, PencilIcon, TrashIcon, EyeIcon, EyeSlashIcon, KeyIcon, UserGroupIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
-import Layout from '@/components/Layout'
-import { Admin, Contractor, Team } from '@/types/contractor'
+import Layout from '@/shared/components/layout/Layout'
+import { Admin, Contractor, Team } from '@/features/contractor/types'
 import {
   getAdmins,
   addAdmin,
@@ -18,7 +18,7 @@ import {
   updateTeam,
   deleteTeam,
   initializeDefaultData
-} from '@/lib/contractors'
+} from '@/features/contractor/lib/contractorStorage'
 import { generateSimplePassword } from '@/lib/password-generator'
 
 export default function ContractorManagementPage() {

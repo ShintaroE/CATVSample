@@ -1,9 +1,5 @@
-import { Admin, Contractor, Team } from '@/types/contractor'
-
-// ローカルストレージのキー
-const ADMINS_KEY = 'admins'
-const CONTRACTORS_KEY = 'contractors'
-const TEAMS_KEY = 'teams'
+import { Admin, Contractor, Team } from '../types'
+import { STORAGE_KEYS } from '@/shared/utils/constants'
 
 // ========== 管理者関連の操作 ==========
 
@@ -11,7 +7,7 @@ const TEAMS_KEY = 'teams'
 export const getAdmins = (): Admin[] => {
   if (typeof window === 'undefined') return []
   try {
-    const data = localStorage.getItem(ADMINS_KEY)
+    const data = localStorage.getItem(STORAGE_KEYS.ADMINS)
     return data ? JSON.parse(data) : []
   } catch (error) {
     console.error('Failed to load admins:', error)
@@ -23,7 +19,7 @@ export const getAdmins = (): Admin[] => {
 export const saveAdmins = (admins: Admin[]): void => {
   if (typeof window === 'undefined') return
   try {
-    localStorage.setItem(ADMINS_KEY, JSON.stringify(admins))
+    localStorage.setItem(STORAGE_KEYS.ADMINS, JSON.stringify(admins))
   } catch (error) {
     console.error('Failed to save admins:', error)
   }
@@ -71,7 +67,7 @@ export const getAdminByUsername = (username: string): Admin | undefined => {
 export const getContractors = (): Contractor[] => {
   if (typeof window === 'undefined') return []
   try {
-    const data = localStorage.getItem(CONTRACTORS_KEY)
+    const data = localStorage.getItem(STORAGE_KEYS.CONTRACTORS)
     return data ? JSON.parse(data) : []
   } catch (error) {
     console.error('Failed to load contractors:', error)
@@ -83,7 +79,7 @@ export const getContractors = (): Contractor[] => {
 export const saveContractors = (contractors: Contractor[]): void => {
   if (typeof window === 'undefined') return
   try {
-    localStorage.setItem(CONTRACTORS_KEY, JSON.stringify(contractors))
+    localStorage.setItem(STORAGE_KEYS.CONTRACTORS, JSON.stringify(contractors))
   } catch (error) {
     console.error('Failed to save contractors:', error)
   }
@@ -130,11 +126,13 @@ export const getContractorByUsername = (username: string): Contractor | undefine
   return contractors.find(c => c.username === username)
 }
 
+// ========== 班関連の操作 ==========
+
 // 班の取得
 export const getTeams = (): Team[] => {
   if (typeof window === 'undefined') return []
   try {
-    const data = localStorage.getItem(TEAMS_KEY)
+    const data = localStorage.getItem(STORAGE_KEYS.TEAMS)
     return data ? JSON.parse(data) : []
   } catch (error) {
     console.error('Failed to load teams:', error)
@@ -146,7 +144,7 @@ export const getTeams = (): Team[] => {
 export const saveTeams = (teams: Team[]): void => {
   if (typeof window === 'undefined') return
   try {
-    localStorage.setItem(TEAMS_KEY, JSON.stringify(teams))
+    localStorage.setItem(STORAGE_KEYS.TEAMS, JSON.stringify(teams))
   } catch (error) {
     console.error('Failed to save teams:', error)
   }
@@ -187,6 +185,8 @@ export const getTeamById = (id: string): Team | undefined => {
   const teams = getTeams()
   return teams.find(t => t.id === id)
 }
+
+// ========== 初期データセットアップ ==========
 
 // 初期データのセットアップ（既存のデータがない場合のみ）
 export const initializeDefaultData = (): void => {

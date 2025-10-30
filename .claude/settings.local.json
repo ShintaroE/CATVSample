@@ -4,7 +4,15 @@
       "Bash(npx tsc:*)",
       "Bash(npm run dev:*)",
       "Bash(npm run lint)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(tree:*)",
+      "Bash(find:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nrefactor: プロジェクト構造をコロケーション原則に基づき再編成\n\n## 変更概要\nプロジェクト全体をコロケーション原則に基づいてリファクタリングし、保守性と開発効率を向上させました。\n\n## 主な変更\n\n### 新しいディレクトリ構造\n\n#### features/ - ドメイン機能モジュール\n- **features/auth/** - 認証機能\n  - AuthProvider.tsx（旧 contexts/AuthContext.tsx から移動）\n  - useAuth.ts（カスタムフック分離）\n  - authStorage.ts（localStorage操作分離）\n  - types/index.ts（型定義）\n\n- **features/contractor/** - 協力会社・班管理機能\n  - contractorStorage.ts（旧 lib/contractors.ts から移動）\n  - types/index.ts（旧 types/contractor.ts から移動）\n\n#### shared/ - 汎用共有機能\n- **shared/components/layout/**\n  - Layout/index.tsx（旧 components/Layout.tsx から移動）\n  - Sidebar/index.tsx（旧 components/Sidebar.tsx から移動）\n\n- **shared/utils/**\n  - formatters.ts（日付・数値フォーマット関数）\n  - validators.ts（バリデーション関数）\n  - constants.ts（アプリ全体の定数定義）\n\n### インポートパスの更新\nすべてのページおよびコンポーネントのインポート文を新しい構造に対応:\n- `@/contexts/AuthContext` → `@/features/auth/hooks/useAuth`\n- `@/components/Layout` → `@/shared/components/layout/Layout`\n- `@/lib/contractors` → `@/features/contractor/lib/contractorStorage`\n- `@/types/contractor` → `@/features/contractor/types`\n\n### 削除されたファイル\n- src/contexts/（フォルダ全体）\n- src/components/Layout.tsx\n- src/components/Sidebar.tsx\n- src/lib/contractors.ts\n- src/types/contractor.ts\n\n## 改善効果\n\n### 1. コロケーションの実現\n関連するコード（型、コンポーネント、ロジック）を同じ場所に配置し、\n機能単位での変更が容易になりました。\n\n### 2. 保守性の向上\n- 各機能の責務が明確化\n- インポート文が整理され、依存関係が可視化\n- 新機能追加時の配置場所が明確\n\n### 3. 再利用性の向上\n- 汎用ユーティリティ関数の集約\n- 定数定義の一元管理\n- 型安全性の向上\n\n### 4. スケーラビリティ\n今後の機能追加時に、features/ 配下に新しいドメイン機能を\n追加するだけで済む拡張性の高い構造を実現\n\n## テスト結果\n✅ ビルド成功（エラーなし）\n✅ 型チェック成功\n✅ 全ページの静的生成成功\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git log:*)",
+      "Bash(git reset:*)",
+      "Bash(git stash:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

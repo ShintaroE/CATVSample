@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import Layout from '@/components/Layout'
+import Layout from '@/shared/components/layout/Layout'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import {
   RequestType,
@@ -16,7 +16,7 @@ import {
   getNextSerialNumber,
   initializeApplicationData,
 } from '@/lib/applications'
-import { getContractors, getTeams } from '@/lib/contractors'
+import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
 import SurveyTab from './components/SurveyTab'
 import AttachmentTab from './components/AttachmentTab'
 import ConstructionTab from './components/ConstructionTab'

@@ -1,3 +1,7 @@
+/**
+ * 協力会社・班関連の型定義
+ */
+
 // 管理者の基本情報
 export interface Admin {
   id: string
@@ -28,16 +32,7 @@ export interface Team {
   isActive: boolean
 }
 
-// 認証ユーザー（協力会社単位でログイン）
-export interface User {
-  id: string
-  name: string
-  contractor: string
-  contractorId: string
-  role: 'admin' | 'contractor'
-}
-
-// 除外日エントリー（拡張版）
+// 除外日エントリー
 export interface ExclusionEntry {
   id: string
   date: string
@@ -51,7 +46,7 @@ export interface ExclusionEntry {
   endTime?: string
 }
 
-// スケジュール項目（拡張版）
+// スケジュール項目
 export interface ScheduleItem {
   id: string
   assignedDate: string

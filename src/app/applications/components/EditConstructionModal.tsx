@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { ConstructionRequest, ConstructionStatus, ConstructionResult, ConstructionWorkProgress } from '@/types/application'
-import { Contractor, Team } from '@/types/contractor'
-import { getTeamsByContractorId } from '@/lib/contractors'
+import { Contractor, Team } from '@/features/contractor/types'
+import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 
 interface EditConstructionModalProps {
   item: ConstructionRequest

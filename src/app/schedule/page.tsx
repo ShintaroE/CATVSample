@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
-import Layout from '@/components/Layout'
-import { getContractors, getTeams } from '@/lib/contractors'
+import Layout from '@/shared/components/layout/Layout'
+import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
 
 interface AssignedTeam {
   contractorId: string

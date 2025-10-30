@@ -1,11 +1,11 @@
 'use client'
 
 import React, { useState, useMemo, useEffect } from 'react'
-import Layout from '@/components/Layout'
-import { useAuth } from '@/contexts/AuthContext'
+import Layout from '@/shared/components/layout/Layout'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { getTeamsByContractorId } from '@/lib/contractors'
-import { Team, ExclusionEntry } from '@/types/contractor'
+import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
+import { Team, ExclusionEntry } from '@/features/contractor/types'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,

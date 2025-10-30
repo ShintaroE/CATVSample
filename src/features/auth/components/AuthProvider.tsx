@@ -1,15 +1,9 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect } from 'react'
-import { User } from '@/types/contractor'
-import { getContractorByUsername, getAdminByUsername } from '@/lib/contractors'
-
-interface AuthContextType {
-  user: User | null
-  login: (username: string, password: string) => boolean
-  logout: () => void
-  isAuthenticated: boolean
-}
+import React, { createContext, useState, useEffect } from 'react'
+import { User, AuthContextType } from '../types'
+import { authStorage } from '../lib/authStorage'
+import { getContractorByUsername, getAdminByUsername, initializeDefaultData } from '@/features/contractor/lib/contractorStorage'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -19,21 +13,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // 初期データのセットアップ
-    import('@/lib/contractors').then(({ initializeDefaultData }) => {
-      initializeDefaultData()
-    })
+    initializeDefaultData()
 
     // ローカルストレージからユーザー情報を復元
-    try {
-      const savedUser = localStorage.getItem('user')
-      if (savedUser) {
-        setUser(JSON.parse(savedUser))
-      }
-    } catch (error) {
-      console.error('Failed to load user from localStorage:', error)
-    } finally {
-      setIsLoading(false)
+    const savedUser = authStorage.getUser()
+    if (savedUser) {
+      setUser(savedUser)
     }
+    setIsLoading(false)
   }, [])
 
   const login = (username: string, password: string): boolean => {
@@ -55,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: 'admin',
       }
       setUser(adminUser)
-      localStorage.setItem('user', JSON.stringify(adminUser))
+      authStorage.saveUser(adminUser)
       return true
     }
 
@@ -78,13 +65,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       role: 'contractor',
     }
     setUser(contractorUser)
-    localStorage.setItem('user', JSON.stringify(contractorUser))
+    authStorage.saveUser(contractorUser)
     return true
   }
 
   const logout = () => {
     setUser(null)
-    localStorage.removeItem('user')
+    authStorage.removeUser()
   }
 
   return (
@@ -101,10 +88,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
+export { AuthContext }
