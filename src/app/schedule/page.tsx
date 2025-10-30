@@ -79,7 +79,6 @@ interface TeamFilter {
   color: string
 }
 
-const contractors = ['直営班', '栄光電気', 'スライヴ'] as const
 const statuses = ['予定', '作業中', '完了', '延期'] as const
 
 // 日表示の定数
@@ -838,11 +837,6 @@ export default function SchedulePage() {
     return start1 < end2 && start2 < end1
   }
 
-  // 予定と除外日を統合した型
-  type CalendarItem =
-    | { type: 'schedule'; data: ScheduleItem; timeSlot: string }
-    | { type: 'exclusion'; data: ExclusionEntry; timeSlot: string }
-
   // 同じ種類のアイテムの重複を計算（ヘルパー関数）
   const calculateOverlappingPositions = <T extends { timeSlot: string }>(items: T[]) => {
     return items.map((item, index) => {
@@ -907,42 +901,6 @@ export default function SchedulePage() {
     }
   }
 
-  // 重複する予定・除外日の位置とサイズを計算（統合版）
-  const calculateOverlappingLayoutWithExclusions = (schedules: ScheduleItem[], exclusions: ExclusionEntry[]) => {
-    // 予定と除外日を統合
-    const items: CalendarItem[] = [
-      ...schedules.map(s => ({ type: 'schedule' as const, data: s, timeSlot: s.timeSlot })),
-      ...exclusions.map(e => ({ type: 'exclusion' as const, data: e, timeSlot: getExclusionTimeSlot(e) }))
-    ]
-
-    const result = items.map((item, index) => {
-      const overlapping: CalendarItem[] = []
-      let position = 0
-
-      // このアイテムと重複する他のアイテムを検索
-      for (let i = 0; i < items.length; i++) {
-        if (i !== index && isTimeOverlapping(item.timeSlot, items[i].timeSlot)) {
-          overlapping.push(items[i])
-          if (i < index) position++
-        }
-      }
-
-      const totalOverlapping = overlapping.length + 1
-      const width = totalOverlapping > 1 ? `${100 / totalOverlapping}%` : '100%'
-      const left = totalOverlapping > 1 ? `${(position * 100) / totalOverlapping}%` : '0%'
-
-      return {
-        item,
-        width,
-        left,
-        zIndex: totalOverlapping - position
-      }
-    })
-
-    return result
-  }
-
-
   const handleEditSchedule = (schedule: ScheduleItem) => {
     setEditingSchedule(schedule)
     setSelectedTeamsForEdit(schedule.assignedTeams || [])
@@ -964,12 +922,12 @@ export default function SchedulePage() {
     if (!editingSchedule) return
 
     const timeSlot = endTime === startTime ? '終日' : `${startTime}-${endTime}`
-    const updatedSchedule = {
+    const updatedSchedule: ScheduleItem = {
       ...editingSchedule,
       timeSlot,
       assignedTeams: selectedTeamsForEdit,
       // 後方互換性のため、最初の班を主担当として設定
-      contractor: selectedTeamsForEdit[0]?.contractorName as any || editingSchedule.contractor,
+      contractor: (selectedTeamsForEdit[0]?.contractorName || editingSchedule.contractor) as ScheduleItem['contractor'],
       contractorId: selectedTeamsForEdit[0]?.contractorId || editingSchedule.contractorId,
       teamId: selectedTeamsForEdit[0]?.teamId,
       teamName: selectedTeamsForEdit[0]?.teamName
@@ -1006,7 +964,7 @@ export default function SchedulePage() {
       customerName: newSchedule.customerName!,
       address: newSchedule.address!,
       workType: newSchedule.workType || '個別対応',
-      contractor: selectedTeamsForEdit[0]?.contractorName as any || '直営班',
+      contractor: (selectedTeamsForEdit[0]?.contractorName || '直営班') as ScheduleItem['contractor'],
       contractorId: selectedTeamsForEdit[0]?.contractorId || 'contractor-1',
       teamId: selectedTeamsForEdit[0]?.teamId,
       teamName: selectedTeamsForEdit[0]?.teamName,

@@ -63,6 +63,27 @@ interface TeamFilter {
 // カレンダー表示モード
 type CalendarViewMode = 'month' | 'week'
 
+// スケジュールデータ型定義
+interface ScheduleData {
+  assignedDate: string
+  timeSlot: string
+  contractor: string
+  contractorId: string
+  teamId: string
+  teamName: string
+  assignedTeams?: Array<{
+    teamId: string
+    teamName: string
+    contractorId: string
+    contractorName: string
+  }>
+  status: string
+  customerCode: string
+  customerName: string
+  address: string
+  workType: string
+}
+
 interface OrderData {
   orderNumber: string
   orderSource: string
@@ -845,10 +866,10 @@ export default function OrdersPage() {
   }
 
   // 左右分離レイアウト計算
-  const calculateSeparatedLayout = (schedules: any[], exclusions: ExclusionEntry[], teamId: string, dateStr: string) => {
+  const calculateSeparatedLayout = (schedules: ScheduleData[], exclusions: ExclusionEntry[], teamId: string, dateStr: string) => {
     const daySchedules = schedules.filter(s =>
       s.assignedDate === dateStr &&
-      s.assignedTeams?.some((t: any) => t.teamId === teamId)
+      s.assignedTeams?.some((t) => t.teamId === teamId)
     )
     const dayExclusions = exclusions.filter(e =>
       e.date === dateStr && e.teamId === teamId
@@ -1507,7 +1528,7 @@ export default function OrdersPage() {
                       <div className="grid border-b-2 border-gray-300" style={{gridTemplateColumns: `60px repeat(${totalColumns}, ${columnWidth})`}}>
                         {/* 第1行: 左上の空白 + 班名（7列span） */}
                         <div className="bg-gray-100 border-r border-gray-300" /> {/* 時刻列ヘッダー */}
-                        {teamGroups.map((group, idx) => (
+                        {teamGroups.map((group) => (
                           <div
                             key={group.teamId}
                             className={`text-center font-semibold text-sm py-2 border-r border-gray-300 ${
@@ -1527,7 +1548,7 @@ export default function OrdersPage() {
                         <div className="bg-gray-50 text-center text-xs font-medium text-gray-600 py-2 border-r border-gray-300">
                           時刻
                         </div>
-                        {weekColumns.map((col, idx) => (
+                        {weekColumns.map((col) => (
                           <div
                             key={`${col.teamId}-${col.dateStr}`}
                             className="bg-gray-50 text-center text-xs font-medium text-gray-700 py-2 border-r border-gray-300"
@@ -1540,7 +1561,7 @@ export default function OrdersPage() {
                       {/* タイムグリッド */}
                       <div className="relative">
                         {/* 背景: 時間行 */}
-                        {getHourlyTimeSlots().map((hour, hourIdx) => (
+                        {getHourlyTimeSlots().map((hour) => (
                           <div
                             key={hour}
                             className="grid border-b border-gray-100"
@@ -1551,7 +1572,7 @@ export default function OrdersPage() {
                               {hour}
                             </div>
                             {/* 空の列セル */}
-                            {weekColumns.map((col, colIdx) => (
+                            {weekColumns.map((col) => (
                               <div
                                 key={`${col.teamId}-${col.dateStr}-${hour}`}
                                 className="border-r border-gray-200"
