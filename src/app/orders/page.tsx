@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { DocumentArrowUpIcon, EyeIcon, MapIcon, ClockIcon, PlusIcon, CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, FunnelIcon } from '@heroicons/react/24/outline'
 import Layout from '@/shared/components/layout/Layout'
-import CalendarPicker from '@/components/CalendarPicker'
+import CalendarPicker from '@/features/calendar/components/CalendarPicker'
 import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
 
 interface AppointmentHistory {

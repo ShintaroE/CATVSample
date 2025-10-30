@@ -2,32 +2,18 @@
 
 import React, { useState } from 'react'
 import { ChevronLeftIcon, ChevronRightIcon, CalendarDaysIcon } from '@heroicons/react/24/outline'
-
-interface ExclusionEntry {
-  id: string
-  date: string
-  reason: string
-  contractor: string
-  timeType: 'all_day' | 'am' | 'pm' | 'custom'
-  startTime?: string
-  endTime?: string
-}
-
-interface CalendarPickerProps {
-  selectedDate?: string
-  onDateSelect: (date: string) => void
-  onClose: () => void
-  existingSchedules?: Array<{
-    assignedDate: string
-    timeSlot: string
-    contractor: string
-    status: string
-    customerName?: string
-    address?: string
-    workType?: string
-  }>
-  exclusions?: ExclusionEntry[]
-}
+import { CalendarPickerProps } from '../../types'
+import {
+  getMonthDays,
+  navigateMonth,
+  isToday,
+  isCurrentMonth,
+  isSelectedDate,
+  formatMonthYear,
+  getWeekdayNames,
+  getExclusionTimeText
+} from '../../lib/dateUtils'
+import { formatDateString } from '@/shared/utils/formatters'
 
 export default function CalendarPicker({
   selectedDate,
@@ -41,52 +27,9 @@ export default function CalendarPicker({
   )
   const [internalSelectedDate, setInternalSelectedDate] = useState<string | null>(selectedDate || null)
 
-  // 月表示用の日付配列を生成
-  const getMonthDays = () => {
-    const year = currentDate.getFullYear()
-    const month = currentDate.getMonth()
-    const firstDay = new Date(year, month, 1)
-    const startDate = new Date(firstDay)
-    startDate.setDate(startDate.getDate() - firstDay.getDay()) // 日曜日から開始
-
-    const days = []
-    for (let i = 0; i < 42; i++) { // 6週間分
-      const date = new Date(startDate)
-      date.setDate(startDate.getDate() + i)
-      days.push(date)
-    }
-    return days
-  }
-
   // カレンダーナビゲーション
-  const navigateDate = (direction: 'prev' | 'next') => {
-    const newDate = new Date(currentDate)
-    newDate.setMonth(newDate.getMonth() + (direction === 'next' ? 1 : -1))
-    setCurrentDate(newDate)
-  }
-
-  // 日付をYYYY-MM-DD形式の文字列に変換
-  const formatDateString = (date: Date) => {
-    const year = date.getFullYear()
-    const month = (date.getMonth() + 1).toString().padStart(2, '0')
-    const day = date.getDate().toString().padStart(2, '0')
-    return `${year}-${month}-${day}`
-  }
-
-  // 除外日の時間タイプを表示用テキストに変換
-  const getExclusionTimeText = (exclusion: ExclusionEntry) => {
-    switch (exclusion.timeType) {
-      case 'all_day':
-        return '終日'
-      case 'am':
-        return '午前'
-      case 'pm':
-        return '午後'
-      case 'custom':
-        return `${exclusion.startTime}-${exclusion.endTime}`
-      default:
-        return ''
-    }
+  const handleNavigate = (direction: 'prev' | 'next') => {
+    setCurrentDate(navigateMonth(currentDate, direction))
   }
 
   // 日付をクリックした時の処理
@@ -101,23 +44,6 @@ export default function CalendarPicker({
       onDateSelect(internalSelectedDate)
       onClose()
     }
-  }
-
-  const formatMonthYear = (date: Date) => {
-    return `${date.getFullYear()}年${date.getMonth() + 1}月`
-  }
-
-  const isToday = (date: Date) => {
-    const today = new Date()
-    return date.toDateString() === today.toDateString()
-  }
-
-  const isSelected = (date: Date) => {
-    return date.toISOString().slice(0, 10) === internalSelectedDate
-  }
-
-  const isCurrentMonth = (date: Date) => {
-    return date.getMonth() === currentDate.getMonth()
   }
 
   return (
@@ -140,7 +66,7 @@ export default function CalendarPicker({
         {/* カレンダーナビゲーション */}
         <div className="flex items-center justify-between mb-4">
           <button
-            onClick={() => navigateDate('prev')}
+            onClick={() => handleNavigate('prev')}
             className="p-2 hover:bg-gray-100 rounded-md"
           >
             <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
@@ -149,7 +75,7 @@ export default function CalendarPicker({
             {formatMonthYear(currentDate)}
           </h4>
           <button
-            onClick={() => navigateDate('next')}
+            onClick={() => handleNavigate('next')}
             className="p-2 hover:bg-gray-100 rounded-md"
           >
             <ChevronRightIcon className="h-5 w-5 text-gray-600" />
@@ -159,7 +85,7 @@ export default function CalendarPicker({
         {/* 月表示カレンダー */}
         <div className="bg-white border rounded-lg overflow-hidden">
           <div className="grid grid-cols-7 gap-0 border-b border-gray-200">
-            {['日', '月', '火', '水', '木', '金', '土'].map((day, index) => (
+            {getWeekdayNames().map((day, index) => (
               <div key={day} className={`p-3 text-center text-sm font-medium ${
                 index === 0 ? 'text-red-600' : index === 6 ? 'text-blue-600' : 'text-gray-700'
               } bg-gray-50 border-r border-gray-200 last:border-r-0`}>
@@ -168,7 +94,7 @@ export default function CalendarPicker({
             ))}
           </div>
           <div className="grid grid-cols-7 gap-0">
-            {getMonthDays().map((date, index) => {
+            {getMonthDays(currentDate).map((date, index) => {
               const dateStr = formatDateString(date)
               const daySchedules = existingSchedules.filter(schedule => schedule.assignedDate === dateStr)
               const dayExclusions = exclusions.filter(exclusion => exclusion.date === dateStr)
@@ -176,14 +102,14 @@ export default function CalendarPicker({
                 <div
                   key={index}
                   className={`min-h-24 p-2 border-r border-b border-gray-200 last:border-r-0 cursor-pointer hover:bg-blue-50 ${
-                    !isCurrentMonth(date) ? 'bg-gray-50' : 'bg-white'
-                  } ${isSelected(date) ? 'bg-blue-100 border-blue-300' : ''} ${
+                    !isCurrentMonth(date, currentDate) ? 'bg-gray-50' : 'bg-white'
+                  } ${isSelectedDate(date, internalSelectedDate) ? 'bg-blue-100 border-blue-300' : ''} ${
                     isToday(date) ? 'ring-2 ring-blue-500' : ''
                   }`}
                   onClick={() => handleDateClick(date)}
                 >
                   <div className={`text-sm font-medium mb-1 ${
-                    !isCurrentMonth(date) ? 'text-gray-400' :
+                    !isCurrentMonth(date, currentDate) ? 'text-gray-400' :
                     isToday(date) ? 'text-blue-600' : 'text-gray-900'
                   }`}>
                     {date.getDate()}
@@ -211,7 +137,9 @@ export default function CalendarPicker({
                         key={`exclusion-${idx}`}
                         className="text-xs p-1 rounded truncate bg-red-50 border border-red-200"
                       >
-                        <div className="font-medium text-red-700">🚫 {getExclusionTimeText(exclusion)}</div>
+                        <div className="font-medium text-red-700">
+                          🚫 {getExclusionTimeText(exclusion.timeType, exclusion.startTime, exclusion.endTime)}
+                        </div>
                         <div className="truncate text-red-600">{exclusion.contractor}</div>
                       </div>
                     ))}
@@ -285,7 +213,9 @@ export default function CalendarPicker({
                 .map((exclusion, index) => (
                   <div key={`exclusion-detail-${index}`} className="p-3 rounded-lg border-2 border-dashed border-red-300 bg-red-50">
                     <div className="flex justify-between items-start mb-2">
-                      <span className="font-medium text-sm text-red-700">🚫 {getExclusionTimeText(exclusion)}</span>
+                      <span className="font-medium text-sm text-red-700">
+                        🚫 {getExclusionTimeText(exclusion.timeType, exclusion.startTime, exclusion.endTime)}
+                      </span>
                       <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-800">
                         {exclusion.contractor}
                       </span>
