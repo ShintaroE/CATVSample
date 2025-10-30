@@ -17,6 +17,7 @@ import {
   workContentOptions,
 } from './types'
 import { sampleExclusions, sampleSchedules, sampleOrders } from './data/sampleData'
+import { Button, Textarea } from '@/shared/components/ui'
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<OrderData[]>(sampleOrders)
@@ -845,13 +846,13 @@ export default function OrdersPage() {
                         地図PDFをアップロード
                       </button>
                       {selectedOrder.mapPdfPath && (
-                        <button
+                        <Button
                           onClick={() => handleViewMap(selectedOrder)}
-                          className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                          variant="primary"
                         >
                           <MapIcon className="h-4 w-4 mr-2" />
                           地図を表示
-                        </button>
+                        </Button>
                       )}
                     </div>
                     {selectedOrder.mapPdfPath && (
@@ -910,12 +911,12 @@ export default function OrdersPage() {
             </div>
 
             <div className="mt-6 flex justify-end">
-              <button
+              <Button
                 onClick={handleCloseDetails}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                variant="secondary"
               >
                 閉じる
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -1444,13 +1445,13 @@ export default function OrdersPage() {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h4 className="text-md font-medium text-gray-900">アポイント履歴</h4>
-                <button
+                <Button
                   onClick={handleAddAppointment}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                  variant="primary"
                 >
                   <PlusIcon className="h-4 w-4 mr-1" />
                   新規追加
-                </button>
+                </Button>
               </div>
 
               <div className="space-y-3">
@@ -1499,28 +1500,27 @@ export default function OrdersPage() {
                             <option value="不通">不通</option>
                           </select>
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">会話内容</label>
-                          <textarea
-                            value={editingAppointment.content}
-                            onChange={(e) => setEditingAppointment({...editingAppointment, content: e.target.value})}
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
-                            rows={3}
-                          />
-                        </div>
+                        <Textarea
+                          label="会話内容"
+                          value={editingAppointment.content}
+                          onChange={(e) => setEditingAppointment({...editingAppointment, content: e.target.value})}
+                          rows={3}
+                        />
                         <div className="flex space-x-2">
-                          <button
+                          <Button
                             onClick={handleSaveAppointment}
-                            className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                            variant="primary"
+                            size="sm"
                           >
                             保存
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             onClick={() => setEditingAppointment(null)}
-                            className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400"
+                            variant="secondary"
+                            size="sm"
                           >
                             キャンセル
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     ) : (
@@ -1604,32 +1604,31 @@ export default function OrdersPage() {
                           <option value="不通">不通</option>
                         </select>
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">会話内容</label>
-                        <textarea
-                          value={editingAppointment.content}
-                          onChange={(e) => setEditingAppointment({...editingAppointment, content: e.target.value})}
-                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white"
-                          rows={3}
-                          placeholder="アポイント内容を入力してください"
-                        />
-                      </div>
+                      <Textarea
+                        label="会話内容"
+                        value={editingAppointment.content}
+                        onChange={(e) => setEditingAppointment({...editingAppointment, content: e.target.value})}
+                        rows={3}
+                        placeholder="アポイント内容を入力してください"
+                      />
                       <div className="flex space-x-2">
-                        <button
+                        <Button
                           onClick={handleSaveAppointment}
-                          className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                          variant="primary"
+                          size="sm"
                         >
                           追加
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           onClick={() => {
                             setEditingAppointment(null)
                             setIsAddingAppointment(false)
                           }}
-                          className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400"
+                          variant="secondary"
+                          size="sm"
                         >
                           キャンセル
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -1638,12 +1637,12 @@ export default function OrdersPage() {
             </div>
 
             <div className="mt-6 flex justify-end">
-              <button
+              <Button
                 onClick={handleCloseAppointmentModal}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                variant="secondary"
               >
                 閉じる
-              </button>
+              </Button>
             </div>
           </div>
         </div>
