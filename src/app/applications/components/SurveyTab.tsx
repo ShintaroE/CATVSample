@@ -4,7 +4,7 @@ import {
   FunnelIcon,
   PencilSquareIcon,
 } from '@heroicons/react/24/outline'
-import { SurveyRequest, SurveyStatus, AssigneeType } from '@/types/application'
+import { SurveyRequest, SurveyStatus, AssigneeType } from '@/features/applications/types'
 
 interface SurveyTabProps {
   data: SurveyRequest[]

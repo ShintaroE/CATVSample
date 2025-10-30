@@ -4,7 +4,7 @@ import {
   FunnelIcon,
   PencilSquareIcon,
 } from '@heroicons/react/24/outline'
-import { ConstructionRequest, ConstructionStatus, AssigneeType } from '@/types/application'
+import { ConstructionRequest, ConstructionStatus, AssigneeType } from '@/features/applications/types'
 
 interface ConstructionTabProps {
   data: ConstructionRequest[]

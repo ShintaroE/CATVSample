@@ -1,6 +1,6 @@
 import React from 'react'
 import Image from 'next/image'
-import { ProgressEntry } from '@/types/application'
+import { ProgressEntry } from '@/features/applications/types'
 import { ClockIcon } from '@heroicons/react/24/outline'
 
 interface ProgressHistoryProps {

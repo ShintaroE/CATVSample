@@ -5,7 +5,7 @@ import {
   AttachmentRequest,
   ConstructionRequest,
   AssigneeType,
-} from '@/types/application'
+} from '@/features/applications/types'
 import { Contractor, Team } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 
