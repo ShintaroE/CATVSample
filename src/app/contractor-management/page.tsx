@@ -20,6 +20,7 @@ import {
   initializeDefaultData
 } from '@/features/contractor/lib/contractorStorage'
 import { generateSimplePassword } from '@/lib/password-generator'
+import { Button, Input } from '@/shared/components/ui'
 
 export default function ContractorManagementPage() {
   const [admins, setAdmins] = useState<Admin[]>([])
@@ -348,8 +349,9 @@ export default function ContractorManagementPage() {
           <div className="mb-6">
             <div className="border-b border-gray-200">
               <nav className="-mb-px flex space-x-8">
-                <button
+                <Button
                   onClick={() => setActiveTab('admins')}
+                  variant="ghost"
                   className={`${
                     activeTab === 'admins'
                       ? 'border-blue-500 text-blue-600'
@@ -358,9 +360,10 @@ export default function ContractorManagementPage() {
                 >
                   <ShieldCheckIcon className="h-5 w-5 mr-2" />
                   管理者アカウント
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => setActiveTab('contractors')}
+                  variant="ghost"
                   className={`${
                     activeTab === 'contractors'
                       ? 'border-blue-500 text-blue-600'
@@ -369,7 +372,7 @@ export default function ContractorManagementPage() {
                 >
                   <UserGroupIcon className="h-5 w-5 mr-2" />
                   協力会社・班管理
-                </button>
+                </Button>
               </nav>
             </div>
           </div>
@@ -382,13 +385,13 @@ export default function ContractorManagementPage() {
                   <h3 className="text-lg leading-6 font-medium text-gray-900">
                     管理者一覧
                   </h3>
-                  <button
+                  <Button
                     onClick={handleOpenAddAdminModal}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                    variant="primary"
                   >
                     <PlusIcon className="h-5 w-5 mr-2" />
                     新規管理者を追加
-                  </button>
+                  </Button>
                 </div>
 
                 <div className="overflow-x-auto">
@@ -429,53 +432,59 @@ export default function ContractorManagementPage() {
                               <span className="font-mono">
                                 {visibleAdminPasswords.has(admin.id) ? admin.password : '••••••••••'}
                               </span>
-                              <button
+                              <Button
                                 onClick={() => toggleAdminPasswordVisibility(admin.id)}
-                                className="text-gray-400 hover:text-gray-600"
+                                variant="ghost"
+                                size="sm"
                               >
                                 {visibleAdminPasswords.has(admin.id) ? (
                                   <EyeSlashIcon className="h-4 w-4" />
                                 ) : (
                                   <EyeIcon className="h-4 w-4" />
                                 )}
-                              </button>
-                              <button
+                              </Button>
+                              <Button
                                 onClick={() => handleRegenerateAdminPassword(admin)}
-                                className="text-blue-600 hover:text-blue-800"
+                                variant="ghost"
+                                size="sm"
                                 title="パスワード再生成"
                               >
                                 <KeyIcon className="h-4 w-4" />
-                              </button>
+                              </Button>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {new Date(admin.createdAt).toLocaleDateString('ja-JP')}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <button
+                            <Button
                               onClick={() => handleToggleAdminActive(admin)}
+                              variant="ghost"
+                              size="sm"
                               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                 admin.isActive
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-red-100 text-red-800'
+                                  ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                  : 'bg-red-100 text-red-800 hover:bg-red-200'
                               }`}
                             >
                               {admin.isActive ? '● アクティブ' : '● 無効'}
-                            </button>
+                            </Button>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                            <button
+                            <Button
                               onClick={() => handleEditAdmin(admin)}
-                              className="text-blue-600 hover:text-blue-900"
+                              variant="ghost"
+                              size="sm"
                             >
                               <PencilIcon className="h-4 w-4 inline" />
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                               onClick={() => handleDeleteAdmin(admin)}
-                              className="text-red-600 hover:text-red-900"
+                              variant="ghost"
+                              size="sm"
                             >
                               <TrashIcon className="h-4 w-4 inline" />
-                            </button>
+                            </Button>
                           </td>
                         </tr>
                       ))}
@@ -499,13 +508,13 @@ export default function ContractorManagementPage() {
                   <h3 className="text-lg leading-6 font-medium text-gray-900">
                     協力会社一覧
                   </h3>
-                  <button
+                  <Button
                     onClick={() => setShowAddContractorModal(true)}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                    variant="primary"
                   >
                     <PlusIcon className="h-5 w-5 mr-2" />
                     新規協力会社を追加
-                  </button>
+                  </Button>
                 </div>
 
               <div className="space-y-4">
@@ -517,12 +526,13 @@ export default function ContractorManagementPage() {
                     <div key={contractor.id} className="border rounded-lg">
                       <div className="bg-gray-50 px-4 py-3 flex justify-between items-center">
                         <div className="flex items-center space-x-4">
-                          <button
+                          <Button
                             onClick={() => toggleContractor(contractor.id)}
-                            className="text-gray-600 hover:text-gray-900"
+                            variant="ghost"
+                            size="sm"
                           >
                             <span className="text-xl">{isExpanded ? '▼' : '▶'}</span>
-                          </button>
+                          </Button>
                           <h4 className="text-lg font-medium text-gray-900">
                             {contractor.name}
                           </h4>
@@ -537,20 +547,22 @@ export default function ContractorManagementPage() {
                           )}
                         </div>
                         <div className="flex space-x-2">
-                          <button
+                          <Button
                             onClick={() => handleEditContractor(contractor)}
-                            className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                            variant="secondary"
+                            size="sm"
                           >
                             <PencilIcon className="h-4 w-4 mr-1" />
                             編集
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             onClick={() => handleDeleteContractor(contractor)}
-                            className="inline-flex items-center px-3 py-1 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
+                            variant="danger"
+                            size="sm"
                           >
                             <TrashIcon className="h-4 w-4 mr-1" />
                             削除
-                          </button>
+                          </Button>
                         </div>
                       </div>
 
@@ -572,36 +584,41 @@ export default function ContractorManagementPage() {
                               <span className="ml-2 text-gray-900 font-mono">
                                 {visiblePasswords.has(contractor.id) ? contractor.password : '••••••••'}
                               </span>
-                              <button
+                              <Button
                                 onClick={() => togglePasswordVisibility(contractor.id)}
-                                className="text-gray-600 hover:text-gray-900"
+                                variant="ghost"
+                                size="sm"
                               >
                                 {visiblePasswords.has(contractor.id) ? (
                                   <EyeSlashIcon className="h-4 w-4" />
                                 ) : (
                                   <EyeIcon className="h-4 w-4" />
                                 )}
-                              </button>
-                              <button
+                              </Button>
+                              <Button
                                 onClick={() => handleRegeneratePassword(contractor)}
-                                className="inline-flex items-center px-2 py-1 text-xs font-medium rounded text-blue-700 bg-blue-50 hover:bg-blue-100"
+                                variant="ghost"
+                                size="sm"
+                                className="text-blue-700 bg-blue-50 hover:bg-blue-100"
                               >
                                 <KeyIcon className="h-3 w-3 mr-1" />
                                 再発行
-                              </button>
+                              </Button>
                             </div>
                           </div>
 
                           <div className="border-t pt-4">
                             <div className="flex justify-between items-center mb-3">
                               <h5 className="text-md font-medium text-gray-900">班一覧</h5>
-                              <button
+                              <Button
                                 onClick={() => handleAddTeam(contractor.id)}
-                                className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+                                variant="primary"
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700"
                               >
                                 <PlusIcon className="h-4 w-4 mr-1" />
                                 班を追加
-                              </button>
+                              </Button>
                             </div>
 
                             <div className="bg-gray-50 rounded-md p-4">
@@ -614,18 +631,22 @@ export default function ContractorManagementPage() {
                                     >
                                       <span className="font-medium text-gray-900">{team.teamName}</span>
                                       <div className="flex space-x-2">
-                                        <button
+                                        <Button
                                           onClick={() => handleEditTeam(team)}
-                                          className="text-blue-600 hover:text-blue-900 text-sm"
+                                          variant="ghost"
+                                          size="sm"
+                                          className="text-blue-600 hover:text-blue-900"
                                         >
                                           編集
-                                        </button>
-                                        <button
+                                        </Button>
+                                        <Button
                                           onClick={() => handleDeleteTeam(team)}
-                                          className="text-red-600 hover:text-red-900 text-sm"
+                                          variant="ghost"
+                                          size="sm"
+                                          className="text-red-600 hover:text-red-900"
                                         >
                                           削除
-                                        </button>
+                                        </Button>
                                       </div>
                                     </div>
                                   ))}
@@ -662,26 +683,20 @@ export default function ContractorManagementPage() {
                 <h3 className="text-lg font-medium text-gray-900">新規管理者を追加</h3>
               </div>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">管理者名</label>
-                  <input
-                    type="text"
-                    value={newAdminName}
-                    onChange={(e) => setNewAdminName(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
-                    placeholder="例：田中太郎"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">ユーザー名</label>
-                  <input
-                    type="text"
-                    value={newAdminUsername}
-                    onChange={(e) => setNewAdminUsername(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
-                    placeholder="例：tanaka"
-                  />
-                </div>
+                <Input
+                  label="管理者名"
+                  type="text"
+                  value={newAdminName}
+                  onChange={(e) => setNewAdminName(e.target.value)}
+                  placeholder="例：田中太郎"
+                />
+                <Input
+                  label="ユーザー名"
+                  type="text"
+                  value={newAdminUsername}
+                  onChange={(e) => setNewAdminUsername(e.target.value)}
+                  placeholder="例：tanaka"
+                />
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-sm font-medium text-gray-700">パスワード</label>
@@ -698,47 +713,48 @@ export default function ContractorManagementPage() {
                   {isAutoGenerateAdminPassword ? (
                     <div>
                       <div className="flex space-x-2">
-                        <input
+                        <Input
                           type="text"
                           value={newAdminPassword}
                           readOnly
-                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-900 font-mono"
+                          className="bg-gray-50 font-mono"
                         />
-                        <button
+                        <Button
                           onClick={handleGenerateAdminPassword}
-                          className="mt-1 px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm whitespace-nowrap"
+                          variant="secondary"
+                          size="sm"
+                          className="mt-1 whitespace-nowrap"
                         >
                           再生成
-                        </button>
+                        </Button>
                       </div>
                       <p className="mt-1 text-xs text-gray-500">
                         ※このパスワードを管理者に共有してください
                       </p>
                     </div>
                   ) : (
-                    <input
+                    <Input
                       type="text"
                       value={newAdminPassword}
                       onChange={(e) => setNewAdminPassword(e.target.value)}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
                       placeholder="パスワードを入力してください"
                     />
                   )}
                 </div>
               </div>
               <div className="mt-6 flex justify-end space-x-2">
-                <button
+                <Button
                   onClick={() => setShowAddAdminModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  variant="secondary"
                 >
                   キャンセル
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleAddAdmin}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  variant="primary"
                 >
                   追加
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -752,24 +768,18 @@ export default function ContractorManagementPage() {
                 <h3 className="text-lg font-medium text-gray-900">管理者を編集</h3>
               </div>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">管理者名</label>
-                  <input
-                    type="text"
-                    value={editAdminName}
-                    onChange={(e) => setEditAdminName(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">ユーザー名</label>
-                  <input
-                    type="text"
-                    value={editAdminUsername}
-                    onChange={(e) => setEditAdminUsername(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
-                  />
-                </div>
+                <Input
+                  label="管理者名"
+                  type="text"
+                  value={editAdminName}
+                  onChange={(e) => setEditAdminName(e.target.value)}
+                />
+                <Input
+                  label="ユーザー名"
+                  type="text"
+                  value={editAdminUsername}
+                  onChange={(e) => setEditAdminUsername(e.target.value)}
+                />
                 <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
                   <p className="text-xs text-yellow-800">
                     パスワードを変更する場合は、パスワード再生成ボタンを使用してください
@@ -777,18 +787,18 @@ export default function ContractorManagementPage() {
                 </div>
               </div>
               <div className="mt-6 flex justify-end space-x-2">
-                <button
+                <Button
                   onClick={() => setShowEditAdminModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  variant="secondary"
                 >
                   キャンセル
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleSaveEditAdmin}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  variant="primary"
                 >
                   保存
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -802,58 +812,54 @@ export default function ContractorManagementPage() {
                 <h3 className="text-lg font-medium text-gray-900">新規協力会社を追加</h3>
               </div>
               <div className="space-y-4">
+                <Input
+                  label="協力会社名"
+                  type="text"
+                  value={newContractorName}
+                  onChange={(e) => setNewContractorName(e.target.value)}
+                  placeholder="例：○○建設"
+                />
+                <Input
+                  label="ユーザー名"
+                  type="text"
+                  value={newContractorUsername}
+                  onChange={(e) => setNewContractorUsername(e.target.value)}
+                  placeholder="例：username"
+                />
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">協力会社名</label>
-                  <input
-                    type="text"
-                    value={newContractorName}
-                    onChange={(e) => setNewContractorName(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
-                    placeholder="例：○○建設"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">ユーザー名</label>
-                  <input
-                    type="text"
-                    value={newContractorUsername}
-                    onChange={(e) => setNewContractorUsername(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
-                    placeholder="例：username"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">パスワード</label>
-                  <div className="mt-1 flex space-x-2">
-                    <input
+                  <label className="block text-sm font-medium text-gray-700 mb-1">パスワード</label>
+                  <div className="flex space-x-2">
+                    <Input
                       type="text"
                       value={newContractorPassword}
                       onChange={(e) => setNewContractorPassword(e.target.value)}
-                      className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm font-mono bg-white text-gray-900"
                       placeholder="パスワード"
+                      className="font-mono"
                     />
-                    <button
+                    <Button
                       onClick={handleGeneratePassword}
-                      className="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                      variant="secondary"
+                      size="sm"
+                      className="whitespace-nowrap"
                     >
                       生成
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
               <div className="mt-6 flex justify-end space-x-2">
-                <button
+                <Button
                   onClick={() => setShowAddContractorModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  variant="secondary"
                 >
                   キャンセル
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleAddContractor}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  variant="primary"
                 >
                   追加
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -867,38 +873,32 @@ export default function ContractorManagementPage() {
                 <h3 className="text-lg font-medium text-gray-900">協力会社を編集</h3>
               </div>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">協力会社名</label>
-                  <input
-                    type="text"
-                    value={editContractorName}
-                    onChange={(e) => setEditContractorName(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">ユーザー名</label>
-                  <input
-                    type="text"
-                    value={editContractorUsername}
-                    onChange={(e) => setEditContractorUsername(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
-                  />
-                </div>
+                <Input
+                  label="協力会社名"
+                  type="text"
+                  value={editContractorName}
+                  onChange={(e) => setEditContractorName(e.target.value)}
+                />
+                <Input
+                  label="ユーザー名"
+                  type="text"
+                  value={editContractorUsername}
+                  onChange={(e) => setEditContractorUsername(e.target.value)}
+                />
               </div>
               <div className="mt-6 flex justify-end space-x-2">
-                <button
+                <Button
                   onClick={() => setShowEditContractorModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  variant="secondary"
                 >
                   キャンセル
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleSaveEditContractor}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  variant="primary"
                 >
                   保存
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -912,30 +912,28 @@ export default function ContractorManagementPage() {
                 <h3 className="text-lg font-medium text-gray-900">班を追加</h3>
               </div>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">班名</label>
-                  <input
-                    type="text"
-                    value={newTeamName}
-                    onChange={(e) => setNewTeamName(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
-                    placeholder="例：A班、1班、第1班"
-                  />
-                </div>
+                <Input
+                  label="班名"
+                  type="text"
+                  value={newTeamName}
+                  onChange={(e) => setNewTeamName(e.target.value)}
+                  placeholder="例：A班、1班、第1班"
+                />
               </div>
               <div className="mt-6 flex justify-end space-x-2">
-                <button
+                <Button
                   onClick={() => setShowAddTeamModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  variant="secondary"
                 >
                   キャンセル
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleSaveTeam}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                  variant="primary"
+                  className="bg-green-600 hover:bg-green-700"
                 >
                   追加
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -949,29 +947,26 @@ export default function ContractorManagementPage() {
                 <h3 className="text-lg font-medium text-gray-900">班を編集</h3>
               </div>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">班名</label>
-                  <input
-                    type="text"
-                    value={editTeamName}
-                    onChange={(e) => setEditTeamName(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
-                  />
-                </div>
+                <Input
+                  label="班名"
+                  type="text"
+                  value={editTeamName}
+                  onChange={(e) => setEditTeamName(e.target.value)}
+                />
               </div>
               <div className="mt-6 flex justify-end space-x-2">
-                <button
+                <Button
                   onClick={() => setShowEditTeamModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  variant="secondary"
                 >
                   キャンセル
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleSaveEditTeam}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  variant="primary"
                 >
                   保存
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -994,12 +989,12 @@ export default function ContractorManagementPage() {
                 </p>
               </div>
               <div className="flex justify-end">
-                <button
+                <Button
                   onClick={() => setShowPasswordModal(false)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  variant="primary"
                 >
                   閉じる
-                </button>
+                </Button>
               </div>
             </div>
           </div>
