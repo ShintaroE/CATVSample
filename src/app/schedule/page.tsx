@@ -18,6 +18,7 @@ import {
   BUSINESS_END_HOUR,
 } from './types'
 import { sampleSchedules, sampleExclusions } from './data/sampleData'
+import { Button, Input, Textarea } from '@/shared/components/ui'
 
 const statuses = STATUSES
 
@@ -1041,9 +1042,9 @@ export default function SchedulePage() {
               </div>
 
               <div className="flex items-center space-x-2">
-                <button
+                <Button
                   onClick={handleAddSchedule}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  variant="primary"
                 >
                   <PlusIcon className="h-4 w-4 mr-2" />
                   {selectedDateForAdd ? (
@@ -1051,14 +1052,14 @@ export default function SchedulePage() {
                   ) : (
                     '新規登録'
                   )}
-                </button>
+                </Button>
                 {selectedDateForAdd && (
-                  <button
+                  <Button
                     onClick={() => setSelectedDateForAdd(null)}
-                    className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                    variant="secondary"
                   >
                     選択解除
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -1643,30 +1644,27 @@ export default function SchedulePage() {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">備考</label>
-                  <textarea
-                    value={editingSchedule.memo || ''}
-                    onChange={(e) => setEditingSchedule({...editingSchedule, memo: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
-                    rows={3}
-                  />
-                </div>
+                <Textarea
+                  label="備考"
+                  value={editingSchedule.memo || ''}
+                  onChange={(e) => setEditingSchedule({...editingSchedule, memo: e.target.value})}
+                  rows={3}
+                />
               </div>
 
               <div className="mt-6 flex justify-end space-x-3">
-                <button
+                <Button
                   onClick={() => setShowEditModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  variant="secondary"
                 >
                   キャンセル
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleSaveSchedule}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  variant="primary"
                 >
                   保存
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -1693,37 +1691,28 @@ export default function SchedulePage() {
 
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">受注番号</label>
-                    <input
-                      type="text"
-                      value={newSchedule.orderNumber || ''}
-                      onChange={(e) => setNewSchedule({...newSchedule, orderNumber: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white"
-                      placeholder="自動生成されます"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">顧客名 *</label>
-                    <input
-                      type="text"
-                      value={newSchedule.customerName || ''}
-                      onChange={(e) => setNewSchedule({...newSchedule, customerName: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white"
-                      required
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">住所 *</label>
-                  <input
+                  <Input
+                    label="受注番号"
                     type="text"
-                    value={newSchedule.address || ''}
-                    onChange={(e) => setNewSchedule({...newSchedule, address: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white"
+                    value={newSchedule.orderNumber || ''}
+                    onChange={(e) => setNewSchedule({...newSchedule, orderNumber: e.target.value})}
+                    placeholder="自動生成されます"
+                  />
+                  <Input
+                    label="顧客名 *"
+                    type="text"
+                    value={newSchedule.customerName || ''}
+                    onChange={(e) => setNewSchedule({...newSchedule, customerName: e.target.value})}
                     required
                   />
                 </div>
+                <Input
+                  label="住所 *"
+                  type="text"
+                  value={newSchedule.address || ''}
+                  onChange={(e) => setNewSchedule({...newSchedule, address: e.target.value})}
+                  required
+                />
                 <div>
                   <label className="block text-sm font-medium text-gray-700">工事内容</label>
                   <select
@@ -1824,34 +1813,31 @@ export default function SchedulePage() {
                     </select>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">備考</label>
-                  <textarea
-                    value={newSchedule.memo || ''}
-                    onChange={(e) => setNewSchedule({...newSchedule, memo: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white"
-                    rows={3}
-                  />
-                </div>
+                <Textarea
+                  label="備考"
+                  value={newSchedule.memo || ''}
+                  onChange={(e) => setNewSchedule({...newSchedule, memo: e.target.value})}
+                  rows={3}
+                />
               </div>
 
               <div className="mt-6 flex justify-end space-x-3">
-                <button
+                <Button
                   onClick={() => {
                     setShowAddModal(false)
                     setSelectedDateForAdd(null)
                   }}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  variant="secondary"
                 >
                   キャンセル
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleSaveNewSchedule}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  variant="primary"
                   disabled={!newSchedule.customerName || !newSchedule.address || selectedTeamsForEdit.length === 0}
                 >
                   登録
-                </button>
+                </Button>
               </div>
             </div>
           </div>
