@@ -12,6 +12,7 @@ import {
   PlusIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline'
+import { Button, Textarea } from '@/shared/components/ui'
 
 // サンプルデータ
 const initialExclusions: ExclusionEntry[] = [
@@ -205,13 +206,13 @@ export default function MyExclusionsPage() {
                 <h1 className="text-3xl font-bold text-gray-900">除外日管理</h1>
                 <p className="mt-1 text-sm text-gray-600">所属: {user.contractor}</p>
               </div>
-              <button
+              <Button
                 onClick={() => openAddModal()}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                variant="primary"
               >
                 <PlusIcon className="h-5 w-5 mr-2" />
                 除外日を追加
-              </button>
+              </Button>
             </div>
           </div>
         </header>
@@ -222,21 +223,25 @@ export default function MyExclusionsPage() {
             <div className="px-4 py-5 sm:p-6">
               {/* カレンダーヘッダー */}
               <div className="flex items-center justify-between mb-4">
-                <button
+                <Button
                   onClick={() => changeMonth('prev')}
-                  className="p-2 hover:bg-gray-100 rounded-md"
+                  variant="ghost"
+                  size="sm"
+                  className="p-2"
                 >
                   <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
-                </button>
+                </Button>
                 <h2 className="text-xl font-semibold text-gray-900">
                   {currentMonth.getFullYear()}年{currentMonth.getMonth() + 1}月
                 </h2>
-                <button
+                <Button
                   onClick={() => changeMonth('next')}
-                  className="p-2 hover:bg-gray-100 rounded-md"
+                  variant="ghost"
+                  size="sm"
+                  className="p-2"
                 >
                   <ChevronRightIcon className="h-5 w-5 text-gray-600" />
-                </button>
+                </Button>
               </div>
 
               {/* カレンダーグリッド */}
@@ -341,13 +346,15 @@ export default function MyExclusionsPage() {
                             {exclusion.reason}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <button
+                            <Button
                               onClick={() => handleDeleteExclusion(exclusion.id)}
-                              className="inline-flex items-center text-red-600 hover:text-red-900"
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-900"
                             >
                               <TrashIcon className="h-4 w-4 mr-1" />
                               削除
-                            </button>
+                            </Button>
                           </td>
                         </tr>
                       ))}
@@ -468,31 +475,28 @@ export default function MyExclusionsPage() {
                   </div>
                 )}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">理由</label>
-                  <textarea
-                    value={newReason}
-                    onChange={(e) => setNewReason(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
-                    rows={3}
-                    placeholder="除外理由を入力してください"
-                  />
-                </div>
+                <Textarea
+                  label="理由"
+                  value={newReason}
+                  onChange={(e) => setNewReason(e.target.value)}
+                  placeholder="除外理由を入力してください"
+                  rows={3}
+                />
               </div>
 
               <div className="mt-6 flex justify-end space-x-2">
-                <button
+                <Button
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  variant="secondary"
                 >
                   キャンセル
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleAddExclusion}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  variant="primary"
                 >
                   追加
-                </button>
+                </Button>
               </div>
             </div>
           </div>

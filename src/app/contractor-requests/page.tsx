@@ -21,6 +21,7 @@ import {
 } from '@/features/applications/lib/applicationStorage'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { ClipboardDocumentListIcon } from '@heroicons/react/24/outline'
+import { Button, Textarea } from '@/shared/components/ui'
 
 type TabType = 'survey' | 'attachment' | 'construction'
 
@@ -165,11 +166,12 @@ export default function ContractorRequestsPage() {
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8">
             {(Object.keys(TAB_LABELS) as TabType[]).map((tab) => (
-              <button
+              <Button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
+                variant="ghost"
                 className={`
-                  whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
+                  whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm rounded-none
                   ${
                     activeTab === tab
                       ? 'border-blue-500 text-blue-600'
@@ -178,7 +180,7 @@ export default function ContractorRequestsPage() {
                 `}
               >
                 {TAB_LABELS[tab]}
-              </button>
+              </Button>
             ))}
           </nav>
         </div>
@@ -218,12 +220,14 @@ export default function ContractorRequestsPage() {
                       {request.lastUpdatedByName || '-'}
                     </td>
                     <td className="px-3 py-2 text-right">
-                      <button
+                      <Button
                         onClick={() => handleOpenProgress(request)}
-                        className="inline-flex items-center px-2 py-1 rounded border text-blue-600 hover:bg-blue-50 text-xs"
+                        variant="ghost"
+                        size="sm"
+                        className="text-blue-600 hover:bg-blue-50 border"
                       >
                         進捗更新
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -309,34 +313,30 @@ function ProgressUpdateModal({
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                進捗コメント
-              </label>
-              <textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md bg-white text-gray-900 min-h-[100px]"
-                placeholder="作業内容や気づいた点を入力してください"
-                required
-              />
-            </div>
+            <Textarea
+              label="進捗コメント"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="作業内容や気づいた点を入力してください"
+              required
+              className="min-h-[100px]"
+            />
           </div>
 
           <div className="px-5 py-4 border-t flex items-center justify-end gap-2">
-            <button
+            <Button
               type="button"
               onClick={onClose}
-              className="px-3 py-2 rounded-md border bg-white text-gray-700 hover:bg-gray-50"
+              variant="secondary"
             >
               キャンセル
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className="px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
+              variant="primary"
             >
               更新
-            </button>
+            </Button>
           </div>
         </form>
       </div>
