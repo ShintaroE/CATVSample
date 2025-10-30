@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { ComputerDesktopIcon } from '@heroicons/react/24/outline'
 
 export default function LoginPage() {

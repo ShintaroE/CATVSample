@@ -6,8 +6,8 @@ import {
   ConstructionRequest,
   AssigneeType,
 } from '@/types/application'
-import { Contractor, Team } from '@/types/contractor'
-import { getTeamsByContractorId } from '@/lib/contractors'
+import { Contractor, Team } from '@/features/contractor/types'
+import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 
 interface NewRequestModalProps {
   defaultTab: RequestType

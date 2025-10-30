@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import Layout from '@/components/Layout'
-import { useAuth } from '@/contexts/AuthContext'
+import Layout from '@/shared/components/layout/Layout'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import {
   RequestType,
   SurveyRequest,
@@ -19,7 +19,7 @@ import {
   updateApplication,
   addProgressEntry,
 } from '@/lib/applications'
-import { getTeamsByContractorId } from '@/lib/contractors'
+import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { ClipboardDocumentListIcon } from '@heroicons/react/24/outline'
 
 type TabType = 'survey' | 'attachment' | 'construction'
