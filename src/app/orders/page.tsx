@@ -1482,84 +1482,6 @@ export default function OrdersPage() {
                   <p>📅 日付をクリックして詳細スケジュールを確認できます</p>
                 </div>
               </div>
-
-              {/* 選択日の詳細スケジュール表示 */}
-              {selectedScheduleDate && (
-                <div className="border-t pt-3">
-                  <h5 className="text-sm font-medium text-gray-900 mb-2">
-                    📅 {selectedScheduleDate} の詳細スケジュール
-                  </h5>
-                  <div className="space-y-2">
-                    {filteredSchedules
-                      .filter(schedule => schedule.assignedDate === selectedScheduleDate)
-                      .map((schedule, index) => (
-                        <div key={index} className={`p-3 rounded-lg border ${
-                          schedule.contractor === '直営班' ? 'bg-blue-50 border-blue-200' :
-                          schedule.contractor === '栄光電気' ? 'bg-green-50 border-green-200' :
-                          'bg-purple-50 border-purple-200'
-                        }`}>
-                          <div className="flex justify-between items-start mb-2">
-                            <span className="font-medium text-xs">{schedule.timeSlot}</span>
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                              schedule.contractor === '直営班' ? 'bg-blue-100 text-blue-800' :
-                              schedule.contractor === '栄光電気' ? 'bg-green-100 text-green-800' :
-                              'bg-purple-100 text-purple-800'
-                            }`}>
-                              {schedule.contractor}{schedule.teamName ? ` - ${schedule.teamName}` : ''}
-                            </span>
-                          </div>
-                          <div className="space-y-1">
-                            {schedule.customerCode && (
-                              <div className="text-[10px] text-gray-700">
-                                <span className="font-medium">顧客コード:</span> {schedule.customerCode}
-                              </div>
-                            )}
-                            {schedule.customerName && (
-                              <div className="text-[10px] text-gray-700">
-                                <span className="font-medium">名前:</span> {schedule.customerName}
-                              </div>
-                            )}
-                            {schedule.address && (
-                              <div className="text-[10px] text-gray-600">
-                                <span className="font-medium">場所:</span> {schedule.address}
-                              </div>
-                            )}
-                            {schedule.workType && (
-                              <div className="text-[10px] text-gray-600">
-                                <span className="font-medium">工事内容:</span> {schedule.workType}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-
-                    {/* 除外日の詳細表示 */}
-                    {filteredExclusions
-                      .filter(exclusion => exclusion.date === selectedScheduleDate)
-                      .map((exclusion, index) => (
-                        <div key={`exclusion-detail-${index}`} className="p-3 rounded-lg border-2 border-dashed border-red-300 bg-red-50">
-                          <div className="flex justify-between items-start mb-2">
-                            <span className="font-medium text-xs text-red-700">🚫 {getExclusionTimeText(exclusion)}</span>
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-800">
-                              {exclusion.contractor} - {exclusion.teamName}
-                            </span>
-                          </div>
-                          <div className="text-[10px] text-red-600 italic">
-                            除外理由: {exclusion.reason}
-                          </div>
-                        </div>
-                      ))}
-
-                    {filteredSchedules.filter(schedule => schedule.assignedDate === selectedScheduleDate).length === 0 &&
-                     filteredExclusions.filter(exclusion => exclusion.date === selectedScheduleDate).length === 0 && (
-                      <div className="text-center py-3">
-                        <p className="text-xs text-gray-500">✅ この日は予定がありません</p>
-                        <p className="text-[10px] text-gray-400 mt-1">アポイント設定に最適です</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
             </>
             )}
 
@@ -1724,6 +1646,84 @@ export default function OrdersPage() {
                   </div>
                 )
               })()}
+
+              {/* 共通: 選択日の詳細スケジュール表示 */}
+              {selectedScheduleDate && (
+                <div className="border-t pt-3 mt-3">
+                  <h5 className="text-sm font-medium text-gray-900 mb-2">
+                    📅 {selectedScheduleDate} の詳細スケジュール
+                  </h5>
+                  <div className="space-y-2">
+                    {filteredSchedules
+                      .filter(schedule => schedule.assignedDate === selectedScheduleDate)
+                      .map((schedule, index) => (
+                        <div key={index} className={`p-3 rounded-lg border ${
+                          schedule.contractor === '直営班' ? 'bg-blue-50 border-blue-200' :
+                          schedule.contractor === '栄光電気' ? 'bg-green-50 border-green-200' :
+                          'bg-purple-50 border-purple-200'
+                        }`}>
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="font-medium text-xs">{schedule.timeSlot}</span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                              schedule.contractor === '直営班' ? 'bg-blue-100 text-blue-800' :
+                              schedule.contractor === '栄光電気' ? 'bg-green-100 text-green-800' :
+                              'bg-purple-100 text-purple-800'
+                            }`}>
+                              {schedule.contractor}{schedule.teamName ? ` - ${schedule.teamName}` : ''}
+                            </span>
+                          </div>
+                          <div className="space-y-1">
+                            {schedule.customerCode && (
+                              <div className="text-[10px] text-gray-700">
+                                <span className="font-medium">顧客コード:</span> {schedule.customerCode}
+                              </div>
+                            )}
+                            {schedule.customerName && (
+                              <div className="text-[10px] text-gray-700">
+                                <span className="font-medium">名前:</span> {schedule.customerName}
+                              </div>
+                            )}
+                            {schedule.address && (
+                              <div className="text-[10px] text-gray-600">
+                                <span className="font-medium">場所:</span> {schedule.address}
+                              </div>
+                            )}
+                            {schedule.workType && (
+                              <div className="text-[10px] text-gray-600">
+                                <span className="font-medium">工事内容:</span> {schedule.workType}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+
+                    {/* 除外日の詳細表示 */}
+                    {filteredExclusions
+                      .filter(exclusion => exclusion.date === selectedScheduleDate)
+                      .map((exclusion, index) => (
+                        <div key={`exclusion-detail-${index}`} className="p-3 rounded-lg border-2 border-dashed border-red-300 bg-red-50">
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="font-medium text-xs text-red-700">🚫 {getExclusionTimeText(exclusion)}</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-800">
+                              {exclusion.contractor} - {exclusion.teamName}
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-red-600 italic">
+                            除外理由: {exclusion.reason}
+                          </div>
+                        </div>
+                      ))}
+
+                    {filteredSchedules.filter(schedule => schedule.assignedDate === selectedScheduleDate).length === 0 &&
+                     filteredExclusions.filter(exclusion => exclusion.date === selectedScheduleDate).length === 0 && (
+                      <div className="text-center py-3">
+                        <p className="text-xs text-gray-500">✅ この日は予定がありません</p>
+                        <p className="text-[10px] text-gray-400 mt-1">アポイント設定に最適です</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 顧客情報 */}
