@@ -4,6 +4,7 @@ import React, { createContext, useState, useEffect } from 'react'
 import { User, AuthContextType } from '../types'
 import { authStorage } from '../lib/authStorage'
 import { getContractorByUsername, getAdminByUsername, initializeDefaultData } from '@/features/contractor/lib/contractorStorage'
+import { initializeApplicationData } from '@/features/applications/lib/applicationStorage'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -14,6 +15,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // 初期データのセットアップ
     initializeDefaultData()
+    initializeApplicationData()
 
     // ローカルストレージからユーザー情報を復元
     const savedUser = authStorage.getUser()

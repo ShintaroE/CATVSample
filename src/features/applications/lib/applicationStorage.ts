@@ -4,7 +4,8 @@ import {
   AttachmentRequest,
   ConstructionRequest,
   RequestType,
-} from '@/types/application'
+  ProgressEntry,
+} from '../types'
 
 // ローカルストレージのキー
 const STORAGE_KEYS = {
@@ -112,7 +113,7 @@ export const getConstructionRequests = (): ConstructionRequest[] =>
 export const addProgressEntry = <T extends ApplicationRequest>(
   type: RequestType,
   id: string,
-  entry: Omit<import('@/types/application').ProgressEntry, 'id'>
+  entry: Omit<ProgressEntry, 'id'>
 ): void => {
   const applications = getApplications<T>(type)
   const index = applications.findIndex((a) => a.id === id)
@@ -140,7 +141,7 @@ export const addProgressEntry = <T extends ApplicationRequest>(
 export const getProgressHistory = (
   type: RequestType,
   id: string
-): import('@/types/application').ProgressEntry[] => {
+): ProgressEntry[] => {
   const application = getApplicationById(type, id)
   return application?.progressHistory || []
 }

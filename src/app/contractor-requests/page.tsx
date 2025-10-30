@@ -13,12 +13,12 @@ import {
   SurveyStatus,
   AttachmentStatus,
   ConstructionStatus,
-} from '@/types/application'
+} from '@/features/applications/types'
 import {
   getApplications,
   updateApplication,
   addProgressEntry,
-} from '@/lib/applications'
+} from '@/features/applications/lib/applicationStorage'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { ClipboardDocumentListIcon } from '@heroicons/react/24/outline'
 

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { AttachmentRequest, AttachmentStatus, AttachmentDetail, AttachmentPreparationStatus } from '@/types/application'
+import { AttachmentRequest, AttachmentStatus, AttachmentDetail, AttachmentPreparationStatus } from '@/features/applications/types'
 import { Contractor, Team } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 

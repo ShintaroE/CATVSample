@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { ConstructionRequest, ConstructionStatus, ConstructionResult, ConstructionWorkProgress } from '@/types/application'
+import { ConstructionRequest, ConstructionStatus, ConstructionResult, ConstructionWorkProgress } from '@/features/applications/types'
 import { Contractor, Team } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 

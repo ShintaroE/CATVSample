@@ -8,14 +8,14 @@ import {
   SurveyRequest,
   AttachmentRequest,
   ConstructionRequest,
-} from '@/types/application'
+} from '@/features/applications/types'
 import {
   getApplications,
   addApplication,
   updateApplication,
   getNextSerialNumber,
   initializeApplicationData,
-} from '@/lib/applications'
+} from '@/features/applications/lib/applicationStorage'
 import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
 import SurveyTab from './components/SurveyTab'
 import AttachmentTab from './components/AttachmentTab'
