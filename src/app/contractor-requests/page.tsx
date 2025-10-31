@@ -22,6 +22,10 @@ import {
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { ClipboardDocumentListIcon } from '@heroicons/react/24/outline'
 import { Button, Textarea } from '@/shared/components/ui'
+import FileAttachmentsComponent from '@/app/applications/components/FileAttachments'
+import RequestNotesComponent from '@/app/applications/components/RequestNotes'
+import { AttachedFile } from '@/features/applications/types'
+import { downloadFile } from '@/features/applications/lib/applicationStorage'
 
 type TabType = 'survey' | 'attachment' | 'construction'
 
@@ -266,11 +270,72 @@ function ProgressUpdateModal({
   onClose: () => void
   onSave: (type: RequestType, id: string, status: string, comment: string) => void
 }) {
+  const { user } = useAuth()
   const [status, setStatus] = useState<string>(request.status)
   const [comment, setComment] = useState('')
+  const [formData, setFormData] = useState<ApplicationRequest>(request)
+  const [uploadingFiles, setUploadingFiles] = useState(false)
+
+  const handleFileUpload = async (files: File[]) => {
+    if (!user) return
+    setUploadingFiles(true)
+    try {
+      const newFiles = await Promise.all(
+        files.map(async (file) => {
+          const reader = new FileReader()
+          return new Promise<{ name: string; size: number; type: string; data: string }>((resolve) => {
+            reader.onload = () => resolve({ name: file.name, size: file.size, type: file.type, data: reader.result as string })
+            reader.readAsDataURL(file)
+          })
+        })
+      )
+      const existingAttachments = formData.attachments || { fromAdmin: [], fromContractor: [] }
+      setFormData((prev) => ({
+        ...prev,
+        attachments: {
+          ...existingAttachments,
+          fromContractor: [
+            ...existingAttachments.fromContractor,
+            ...newFiles.map((f, i) => ({
+              id: `temp-${Date.now()}-${i}`,
+              fileName: f.name,
+              fileSize: f.size,
+              fileType: f.type,
+              fileData: f.data,
+              uploadedBy: user.id,
+              uploadedByName: user.name,
+              uploadedByRole: 'contractor' as const,
+              uploadedAt: new Date().toISOString(),
+            })),
+          ],
+        },
+      }))
+    } catch (error) {
+      console.error('File upload failed:', error)
+    } finally {
+      setUploadingFiles(false)
+    }
+  }
+
+  const handleFileDelete = (fileId: string) => {
+    const existingAttachments = formData.attachments || { fromAdmin: [], fromContractor: [] }
+    setFormData((prev) => ({
+      ...prev,
+      attachments: {
+        ...existingAttachments,
+        fromContractor: existingAttachments.fromContractor.filter((f) => f.id !== fileId),
+      },
+    }))
+  }
+
+  const handleFileDownload = (file: AttachedFile) => { downloadFile(file) }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    // ファイル添付も含めて更新
+    updateApplication(request.type, request.id, {
+      attachments: formData.attachments,
+    })
     onSave(request.type, request.id, status, comment)
   }
 
@@ -297,6 +362,13 @@ function ProgressUpdateModal({
 
         <form onSubmit={handleSubmit}>
           <div className="px-5 py-4 space-y-4">
+            {/* 管理者からの指示事項 */}
+            <RequestNotesComponent
+              userRole="contractor"
+              notes={request.requestNotes}
+              isEditing={false}
+            />
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">ステータス</label>
               <select
@@ -321,6 +393,19 @@ function ProgressUpdateModal({
               required
               className="min-h-[100px]"
             />
+
+            {/* ファイル添付 */}
+            <div className="border-t pt-4">
+              <FileAttachmentsComponent
+                userRole="contractor"
+                attachments={formData.attachments || { fromAdmin: [], fromContractor: [] }}
+                isEditing={true}
+                onFileUpload={handleFileUpload}
+                onFileDelete={handleFileDelete}
+                onFileDownload={handleFileDownload}
+                uploadingFiles={uploadingFiles}
+              />
+            </div>
           </div>
 
           <div className="px-5 py-4 border-t flex items-center justify-end gap-2">

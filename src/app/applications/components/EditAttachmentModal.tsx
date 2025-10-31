@@ -1,7 +1,11 @@
 import React, { useState, useMemo } from 'react'
-import { AttachmentRequest, AttachmentStatus, AttachmentDetail, AttachmentPreparationStatus } from '@/features/applications/types'
+import { AttachmentRequest, AttachmentStatus, AttachmentDetail, AttachmentPreparationStatus, AttachedFile } from '@/features/applications/types'
 import { Contractor, Team } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
+import { downloadFile } from '@/features/applications/lib/applicationStorage'
+import { useAuth } from '@/features/auth/hooks/useAuth'
+import FileAttachmentsComponent from './FileAttachments'
+import RequestNotesComponent from './RequestNotes'
 
 interface EditAttachmentModalProps {
   item: AttachmentRequest
@@ -18,7 +22,9 @@ export default function EditAttachmentModal({
   onClose,
   onSave,
 }: EditAttachmentModalProps) {
+  const { user } = useAuth()
   const [formData, setFormData] = useState<Partial<AttachmentRequest>>(item)
+  const [uploadingFiles, setUploadingFiles] = useState(false)
 
   const availableTeams = useMemo(() => {
     if (formData.assigneeType === 'internal') {
@@ -63,6 +69,72 @@ export default function EditAttachmentModal({
 
       return newData
     })
+  }
+
+  const handleFileUpload = async (files: File[]) => {
+    if (!user) return
+    setUploadingFiles(true)
+    try {
+      const newFiles = await Promise.all(
+        files.map(async (file) => {
+          const reader = new FileReader()
+          return new Promise<{ name: string; size: number; type: string; data: string }>((resolve) => {
+            reader.onload = () => resolve({ name: file.name, size: file.size, type: file.type, data: reader.result as string })
+            reader.readAsDataURL(file)
+          })
+        })
+      )
+      const existingAttachments = formData.attachments || { fromAdmin: [], fromContractor: [] }
+      const uploadedByRole = user.role as 'admin' | 'contractor'
+      const targetArray = uploadedByRole === 'admin' ? 'fromAdmin' : 'fromContractor'
+      setFormData((prev) => ({
+        ...prev,
+        attachments: {
+          ...existingAttachments,
+          [targetArray]: [
+            ...existingAttachments[targetArray],
+            ...newFiles.map((f, i) => ({
+              id: `temp-${Date.now()}-${i}`,
+              fileName: f.name,
+              fileSize: f.size,
+              fileType: f.type,
+              fileData: f.data,
+              uploadedBy: user.id,
+              uploadedByName: user.name,
+              uploadedByRole,
+              uploadedAt: new Date().toISOString(),
+            })),
+          ],
+        },
+      }))
+    } catch (error) {
+      console.error('File upload failed:', error)
+    } finally {
+      setUploadingFiles(false)
+    }
+  }
+
+  const handleFileDelete = (fileId: string) => {
+    if (!user) return
+    const uploadedByRole = user.role as 'admin' | 'contractor'
+    const targetArray = uploadedByRole === 'admin' ? 'fromAdmin' : 'fromContractor'
+    const existingAttachments = formData.attachments || { fromAdmin: [], fromContractor: [] }
+    setFormData((prev) => ({
+      ...prev,
+      attachments: {
+        ...existingAttachments,
+        [targetArray]: existingAttachments[targetArray].filter((f) => f.id !== fileId),
+      },
+    }))
+  }
+
+  const handleFileDownload = (file: AttachedFile) => { downloadFile(file) }
+
+  const handleNotesChange = (notes: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      requestNotes: { ...prev.requestNotes, adminNotes: notes },
+    }))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -265,8 +337,32 @@ export default function EditAttachmentModal({
                   value={formData.notes || ''}
                   onChange={(e) => handleChange('notes', e.target.value)}
                   className="w-full px-3 py-2 border rounded-md bg-white text-gray-900 min-h-[72px]"
+                  placeholder="その他の情報（任意）"
                 />
               </FormField>
+            </div>
+
+            {/* 依頼時の備考 */}
+            <div className="sm:col-span-2 border-t pt-4">
+              <RequestNotesComponent
+                userRole={user?.role || 'admin'}
+                notes={formData.requestNotes}
+                isEditing={user?.role === 'admin'}
+                onChange={handleNotesChange}
+              />
+            </div>
+
+            {/* ファイル添付 */}
+            <div className="sm:col-span-2 border-t pt-4">
+              <FileAttachmentsComponent
+                userRole={user?.role || 'admin'}
+                attachments={formData.attachments || { fromAdmin: [], fromContractor: [] }}
+                isEditing={true}
+                onFileUpload={handleFileUpload}
+                onFileDelete={handleFileDelete}
+                onFileDownload={handleFileDownload}
+                uploadingFiles={uploadingFiles}
+              />
             </div>
           </div>
 

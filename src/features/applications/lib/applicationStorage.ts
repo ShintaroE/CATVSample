@@ -5,6 +5,7 @@ import {
   ConstructionRequest,
   RequestType,
   ProgressEntry,
+  AttachedFile,
 } from '../types'
 
 // ローカルストレージのキー
@@ -144,6 +145,180 @@ export const getProgressHistory = (
 ): ProgressEntry[] => {
   const application = getApplicationById(type, id)
   return application?.progressHistory || []
+}
+
+// ========== ファイル添付管理 ==========
+
+// FileをBase64文字列に変換
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result as string
+      resolve(result)
+    }
+    reader.onerror = (error) => reject(error)
+    reader.readAsDataURL(file)
+  })
+}
+
+// Base64文字列からダウンロード可能なリンクを生成してダウンロード
+export const downloadFile = (file: AttachedFile): void => {
+  try {
+    const link = document.createElement('a')
+    link.href = file.fileData
+    link.download = file.fileName
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } catch (error) {
+    console.error('Failed to download file:', error)
+  }
+}
+
+// ファイルを依頼に添付
+export const uploadFileToRequest = async <T extends ApplicationRequest>(
+  type: RequestType,
+  requestId: string,
+  file: File,
+  uploadedBy: string,
+  uploadedByName: string,
+  uploadedByRole: 'admin' | 'contractor',
+  description?: string
+): Promise<void> => {
+  try {
+    const applications = getApplications<T>(type)
+    const index = applications.findIndex((a) => a.id === requestId)
+
+    if (index === -1) {
+      throw new Error('Application not found')
+    }
+
+    // FileをBase64に変換
+    const fileData = await fileToBase64(file)
+
+    // AttachedFileオブジェクト作成
+    const attachedFile: AttachedFile = {
+      id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+      fileData,
+      uploadedBy,
+      uploadedByName,
+      uploadedByRole,
+      uploadedAt: new Date().toISOString(),
+      description,
+    }
+
+    // 既存のattachmentsを取得または初期化
+    const currentAttachments = applications[index].attachments || {
+      fromAdmin: [],
+      fromContractor: [],
+    }
+
+    // ロールに応じて適切な配列に追加
+    if (uploadedByRole === 'admin') {
+      currentAttachments.fromAdmin = [
+        ...currentAttachments.fromAdmin,
+        attachedFile,
+      ]
+    } else {
+      currentAttachments.fromContractor = [
+        ...currentAttachments.fromContractor,
+        attachedFile,
+      ]
+    }
+
+    // 更新
+    applications[index] = {
+      ...applications[index],
+      attachments: currentAttachments,
+      updatedAt: new Date().toISOString(),
+    }
+
+    saveApplications(type, applications)
+  } catch (error) {
+    console.error('Failed to upload file:', error)
+    throw error
+  }
+}
+
+// ファイルを削除
+export const deleteFileFromRequest = <T extends ApplicationRequest>(
+  type: RequestType,
+  requestId: string,
+  fileId: string,
+  source: 'admin' | 'contractor'
+): void => {
+  try {
+    const applications = getApplications<T>(type)
+    const index = applications.findIndex((a) => a.id === requestId)
+
+    if (index === -1) {
+      throw new Error('Application not found')
+    }
+
+    const currentAttachments = applications[index].attachments
+    if (!currentAttachments) {
+      return
+    }
+
+    // ソースに応じて該当ファイルを削除
+    if (source === 'admin') {
+      currentAttachments.fromAdmin = currentAttachments.fromAdmin.filter(
+        (f) => f.id !== fileId
+      )
+    } else {
+      currentAttachments.fromContractor = currentAttachments.fromContractor.filter(
+        (f) => f.id !== fileId
+      )
+    }
+
+    // 更新
+    applications[index] = {
+      ...applications[index],
+      attachments: currentAttachments,
+      updatedAt: new Date().toISOString(),
+    }
+
+    saveApplications(type, applications)
+  } catch (error) {
+    console.error('Failed to delete file:', error)
+    throw error
+  }
+}
+
+// 依頼時の備考を更新（管理者のみ）
+export const updateRequestNotes = <T extends ApplicationRequest>(
+  type: RequestType,
+  requestId: string,
+  adminNotes: string
+): void => {
+  try {
+    const applications = getApplications<T>(type)
+    const index = applications.findIndex((a) => a.id === requestId)
+
+    if (index === -1) {
+      throw new Error('Application not found')
+    }
+
+    const currentNotes = applications[index].requestNotes || {}
+
+    applications[index] = {
+      ...applications[index],
+      requestNotes: {
+        ...currentNotes,
+        adminNotes,
+      },
+      updatedAt: new Date().toISOString(),
+    }
+
+    saveApplications(type, applications)
+  } catch (error) {
+    console.error('Failed to update request notes:', error)
+    throw error
+  }
 }
 
 // ========== 初期データセットアップ ==========

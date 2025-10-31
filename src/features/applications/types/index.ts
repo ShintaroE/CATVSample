@@ -53,6 +53,10 @@ export interface RequestBase {
   progressHistory?: ProgressEntry[] // 進捗履歴
   lastUpdatedBy?: string // 最終更新者
   lastUpdatedByName?: string // 最終更新者名
+
+  // ファイル添付・備考機能（新規追加）
+  attachments?: FileAttachments // ファイル添付管理
+  requestNotes?: RequestNotes // 依頼時の備考
 }
 
 // 調査結果
@@ -139,3 +143,38 @@ export interface ConstructionRequest extends RequestBase {
 }
 
 export type ApplicationRequest = SurveyRequest | AttachmentRequest | ConstructionRequest
+
+// ========== ファイル添付機能の型定義 ==========
+
+/**
+ * 添付ファイル情報
+ */
+export interface AttachedFile {
+  id: string                    // ファイルID
+  fileName: string              // ファイル名
+  fileSize: number              // ファイルサイズ（バイト）
+  fileType: string              // MIMEタイプ (e.g., "application/pdf", "image/jpeg")
+  fileData: string              // Base64エンコードされたファイルデータ
+  uploadedBy: string            // アップロード者ID
+  uploadedByName: string        // アップロード者名
+  uploadedByRole: 'admin' | 'contractor'  // アップロード者のロール
+  uploadedAt: string            // アップロード日時 (ISO 8601)
+  description?: string          // ファイルの説明（任意）
+}
+
+/**
+ * ファイル添付管理
+ * 依頼側（admin）と協力会社（contractor）で送受信を分離
+ */
+export interface FileAttachments {
+  fromAdmin: AttachedFile[]     // 管理者がアップロードしたファイル
+  fromContractor: AttachedFile[] // 協力会社がアップロードしたファイル
+}
+
+/**
+ * 依頼時の備考情報
+ */
+export interface RequestNotes {
+  adminNotes?: string           // 管理者からの備考（依頼時に記入）
+  contractorNotes?: string      // 協力会社からの備考（任意）
+}

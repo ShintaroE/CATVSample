@@ -5,9 +5,15 @@ import {
   AttachmentRequest,
   ConstructionRequest,
   AssigneeType,
+  FileAttachments,
+  RequestNotes,
+  AttachedFile,
 } from '@/features/applications/types'
 import { Contractor, Team } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
+import { useAuth } from '@/features/auth/hooks/useAuth'
+import FileAttachmentsComponent from './FileAttachments'
+import RequestNotesComponent from './RequestNotes'
 
 interface NewRequestModalProps {
   defaultTab: RequestType
@@ -27,12 +33,21 @@ export default function NewRequestModal({
   onClose,
   onCreate,
 }: NewRequestModalProps) {
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<RequestType>(defaultTab)
   const [formData, setFormData] = useState<Record<string, string | boolean | string[] | undefined>>({
     assigneeType: 'internal' as AssigneeType,
     contractorId: '',
     teamId: '',
   })
+  const [attachments, setAttachments] = useState<FileAttachments>({
+    fromAdmin: [],
+    fromContractor: [],
+  })
+  const [requestNotes, setRequestNotes] = useState<RequestNotes>({
+    adminNotes: '',
+  })
+  const [uploadingFiles, setUploadingFiles] = useState(false)
 
   // 協力会社選択時に利用可能な班を取得
   const availableTeams = useMemo(() => {
@@ -87,9 +102,77 @@ export default function NewRequestModal({
     })
   }
 
+  const handleFileUpload = async (files: File[]) => {
+    if (!user) return
+
+    setUploadingFiles(true)
+    try {
+      // 新規作成時は一時的にattachments stateに保存
+      // 実際のアップロードは登録時に行う
+      const newFiles = await Promise.all(
+        files.map(async (file) => {
+          const reader = new FileReader()
+          return new Promise<{ name: string; size: number; type: string; data: string }>((resolve) => {
+            reader.onload = () => {
+              resolve({
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                data: reader.result as string,
+              })
+            }
+            reader.readAsDataURL(file)
+          })
+        })
+      )
+
+      setAttachments((prev) => ({
+        ...prev,
+        fromAdmin: [
+          ...prev.fromAdmin,
+          ...newFiles.map((f, i) => ({
+            id: `temp-${Date.now()}-${i}`,
+            fileName: f.name,
+            fileSize: f.size,
+            fileType: f.type,
+            fileData: f.data,
+            uploadedBy: user.id,
+            uploadedByName: user.name,
+            uploadedByRole: 'admin' as const,
+            uploadedAt: new Date().toISOString(),
+          })),
+        ],
+      }))
+    } catch (error) {
+      console.error('File upload failed:', error)
+    } finally {
+      setUploadingFiles(false)
+    }
+  }
+
+  const handleFileDelete = (fileId: string) => {
+    setAttachments((prev) => ({
+      ...prev,
+      fromAdmin: prev.fromAdmin.filter((f) => f.id !== fileId),
+    }))
+  }
+
+  const handleFileDownload = (file: AttachedFile) => {
+    const link = document.createElement('a')
+    link.href = file.fileData
+    link.download = file.fileName
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onCreate(activeTab, formData)
+    onCreate(activeTab, {
+      ...formData,
+      attachments,
+      requestNotes,
+    })
   }
 
   const TAB_LABELS: Record<RequestType, string> = {
@@ -343,12 +426,37 @@ export default function NewRequestModal({
               </>
             )}
 
-            <div className="sm:col-span-2">
-              <FormField label="備考">
+            {/* 依頼時の備考 */}
+            <div className="sm:col-span-2 border-t pt-4">
+              <RequestNotesComponent
+                userRole="admin"
+                notes={requestNotes}
+                isEditing={true}
+                onChange={(notes) => setRequestNotes({ adminNotes: notes })}
+              />
+            </div>
+
+            {/* ファイル添付 */}
+            <div className="sm:col-span-2 border-t pt-4">
+              <FileAttachmentsComponent
+                userRole="admin"
+                attachments={attachments}
+                isEditing={true}
+                onFileUpload={handleFileUpload}
+                onFileDelete={handleFileDelete}
+                onFileDownload={handleFileDownload}
+                uploadingFiles={uploadingFiles}
+              />
+            </div>
+
+            {/* その他の備考（従来の備考フィールド） */}
+            <div className="sm:col-span-2 border-t pt-4">
+              <FormField label="その他備考">
                 <textarea
                   value={(formData.notes as string) || ''}
                   onChange={(e) => handleChange('notes', e.target.value)}
                   className="w-full px-3 py-2 border rounded-md bg-white text-gray-900 min-h-[72px]"
+                  placeholder="その他の情報（任意）"
                 />
               </FormField>
             </div>
