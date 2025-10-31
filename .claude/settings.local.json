@@ -8,7 +8,14 @@
       "Bash(git branch:*)",
       "Bash(for file in src/app/schedule/page.tsx src/app/orders/page.tsx src/app/my-exclusions/page.tsx src/app/contractor-management/page.tsx src/app/contractor-requests/page.tsx)",
       "Bash(do echo \"=== $file ===\")",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npm run build:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr view:*)"
     ],
     "deny": [],
     "ask": []
