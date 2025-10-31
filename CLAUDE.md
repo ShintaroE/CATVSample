@@ -26,33 +26,100 @@ This is a Next.js 15 application for CATV management built with:
 - **Development Tools**: ESLint with Next.js config
 
 ### Directory Structure
+
+**Current structure follows Colocation Principle** - organizing code by feature with related files grouped together.
+
 ```
 src/
-├── app/                     # App Router pages
-│   ├── applications/        # 申請番号管理ページ（3タブ: 現地調査・共架添架・工事依頼）
-│   │   └── components/      # 申請管理用コンポーネント
-│   ├── contractor-requests/ # 協力会社専用依頼一覧・進捗更新ページ
-│   ├── orders/             # 工事依頼管理ページ（小川オーダー表形式）
-│   ├── schedule/           # 工事日程調整ページ（Outlookライクカレンダー）
-│   ├── my-exclusions/      # 協力会社用除外日管理ページ（認証済みユーザー）
-│   ├── contractor-management/ # 協力会社・班管理ページ（管理者専用）
-│   ├── login/              # ログインページ
-│   ├── layout.tsx          # Root layout with AuthProvider
-│   ├── page.tsx            # ダッシュボードページ（KPI表示）
-│   └── globals.css         # Global styles (Tailwind)
-├── components/
-│   ├── Layout.tsx          # Main layout wrapper with sidebar & auth check
-│   ├── Sidebar.tsx         # Navigation sidebar with role-based menus
-│   └── CalendarPicker.tsx  # Reusable calendar component
-├── contexts/
-│   └── AuthContext.tsx     # Authentication context provider
-├── lib/
-│   ├── contractors.ts      # Contractor & team CRUD operations (localStorage)
-│   ├── applications.ts     # Application request CRUD & progress tracking
-│   └── password-generator.ts # Password generation utility
-└── types/
-    ├── contractor.ts       # TypeScript interfaces for contractor system
-    └── application.ts      # TypeScript interfaces for application requests
+├── shared/                          # Layer 1: App-wide shared utilities
+│   ├── components/
+│   │   ├── layout/
+│   │   │   ├── Layout/index.tsx    # Main layout with auth check
+│   │   │   └── Sidebar/index.tsx   # Navigation sidebar
+│   │   └── ui/                     # Shared UI component library
+│   │       ├── Button.tsx          # Unified button component
+│   │       ├── Badge.tsx           # Status badges
+│   │       ├── Modal.tsx           # Modal wrapper
+│   │       ├── Input.tsx           # Form input with label
+│   │       └── Textarea.tsx        # Form textarea with label
+│   └── utils/                      # Domain-agnostic utilities
+│       ├── formatters.ts           # Date/number formatting
+│       ├── validators.ts           # Validation functions
+│       ├── constants.ts            # App-wide constants
+│       └── password.ts             # Password generation
+│
+├── features/                        # Layer 2: Domain feature modules
+│   ├── auth/
+│   │   ├── hooks/useAuth.ts        # Authentication hook
+│   │   ├── lib/authStorage.ts      # localStorage operations
+│   │   └── types/index.ts          # Auth-related types
+│   ├── contractor/
+│   │   ├── lib/contractorStorage.ts # Contractor/Team CRUD
+│   │   └── types/index.ts          # Contractor interfaces
+│   ├── applications/
+│   │   ├── lib/applicationStorage.ts # Application request CRUD
+│   │   └── types/index.ts          # Application types
+│   └── calendar/
+│       ├── components/CalendarPicker/ # Reusable calendar
+│       ├── lib/dateUtils.ts        # Calendar-specific date ops
+│       └── types/index.ts          # Calendar types
+│
+└── app/                             # Layer 3: Page-specific code
+    ├── applications/                # ✅ Well-structured
+    │   ├── page.tsx                 # Main page (222 lines)
+    │   └── components/              # 13 components + 2 folders
+    │       ├── SurveyTab.tsx
+    │       ├── AttachmentTab.tsx
+    │       ├── ConstructionTab.tsx
+    │       ├── NewRequestModal.tsx
+    │       ├── EditSurveyModal.tsx
+    │       ├── EditAttachmentModal.tsx
+    │       ├── EditConstructionModal.tsx
+    │       ├── ProgressHistory.tsx
+    │       ├── FileAttachments/     # File upload/download system
+    │       │   ├── index.tsx        # Main 2-column layout
+    │       │   ├── FileItem.tsx     # Individual file display
+    │       │   ├── FileList.tsx     # File list container
+    │       │   └── FileUploadZone.tsx # Drag & drop upload
+    │       └── RequestNotes/        # Admin instructions display
+    │           └── index.tsx        # Role-based notes component
+    │
+    ├── schedule/                    # ⏳ Refactoring planned (1,847 lines)
+    │   ├── page.tsx                 # Will be reduced to ~250 lines
+    │   ├── components/              # To be created
+    │   ├── hooks/                   # To be created
+    │   ├── lib/                     # To be created
+    │   ├── types/index.ts
+    │   └── data/sampleData.ts
+    │
+    ├── orders/                      # ⏳ Refactoring planned (1,664 lines)
+    │   ├── page.tsx                 # Will be reduced to ~200 lines
+    │   ├── components/              # To be created
+    │   ├── hooks/                   # To be created
+    │   ├── lib/                     # To be created
+    │   ├── types/index.ts
+    │   └── data/sampleData.ts
+    │
+    ├── contractor-management/       # ⏳ Refactoring planned (1,005 lines)
+    │   ├── page.tsx
+    │   ├── components/              # To be created
+    │   └── hooks/                   # To be created
+    │
+    ├── contractor-requests/         # ⏳ Refactoring planned (345 lines)
+    │   ├── page.tsx
+    │   ├── components/              # To be created
+    │   └── hooks/                   # To be created
+    │
+    ├── my-exclusions/               # ⏳ Refactoring planned (507 lines)
+    │   ├── page.tsx
+    │   ├── components/              # To be created
+    │   ├── hooks/                   # To be created
+    │   └── lib/                     # To be created
+    │
+    ├── login/page.tsx               # ✅ Simple (114 lines)
+    ├── page.tsx                     # ✅ Dashboard
+    ├── layout.tsx                   # Root layout
+    └── globals.css
 ```
 
 ### Key Features
@@ -129,6 +196,228 @@ This system is built for KCT (倉敷ケーブルテレビ) CATV construction man
 - Strict TypeScript configuration with ES2017 target
 - Path alias @/* configured to map to ./src/*
 - No tests configured yet
+
+## Code Organization Principles
+
+### Colocation Principle
+This codebase follows the **Colocation Principle** - keeping related code together by feature rather than by file type. This improves maintainability and makes the codebase easier to navigate.
+
+### Three-Layer Architecture for `lib/` Folders
+
+The codebase uses a three-layer structure for organizing business logic and utilities:
+
+#### Layer 1: `shared/utils/` - App-wide Utilities
+**Purpose**: Domain-agnostic, reusable utility functions used across the entire application.
+
+**Examples**:
+```typescript
+// shared/utils/formatters.ts
+export const formatDateString = (date: Date): string => {
+  // Used by all pages for consistent date formatting
+}
+
+// shared/utils/validators.ts
+export const isValidEmail = (email: string): boolean => {
+  // Generic email validation
+}
+
+// shared/utils/password.ts
+export const generateSimplePassword = (length: number = 10): string => {
+  // Password generation for account management
+}
+```
+
+**Characteristics**:
+- No domain knowledge (doesn't know about contractors, schedules, etc.)
+- Pure functions with clear input/output
+- Could be extracted to a shared npm package
+
+#### Layer 2: `features/*/lib/` - Domain Business Logic
+**Purpose**: Domain-specific business logic and data operations for reusable features.
+
+**Examples**:
+```typescript
+// features/contractor/lib/contractorStorage.ts
+export const getContractors = (): Contractor[] => {
+  // Contractor-specific CRUD operations
+}
+
+// features/calendar/lib/dateUtils.ts
+export const getWeekDays = (date: Date): Date[] => {
+  // Calendar-specific date operations
+}
+
+// features/applications/lib/applicationStorage.ts
+export const addProgressEntry = <T>(type: RequestType, id: string, entry: ProgressEntry): void => {
+  // Application request progress tracking
+}
+```
+
+**Characteristics**:
+- Domain-aware (uses domain types like Contractor, Application)
+- Reusable across multiple pages
+- Contains localStorage operations and data transformations
+
+#### Layer 3: `app/*/lib/` - Page-specific Logic
+**Purpose**: Logic that is tightly coupled to a specific page's UI and workflow.
+
+**Examples**:
+```typescript
+// app/schedule/lib/scheduleCalculations.ts
+export const calculateOverlappingLayout = (items: CalendarItem[]) => {
+  // Outlook-style overlapping layout calculation
+  // Only used in schedule page
+}
+
+// app/schedule/lib/colorUtils.ts
+export const getContractorColor = (contractorName: string): string => {
+  // Color mapping for schedule page display
+}
+
+// app/orders/lib/fileProcessing.ts
+export const processExcelFile = (file: File): Promise<OrderData[]> => {
+  // Excel parsing specific to orders page
+}
+```
+
+**Characteristics**:
+- Page-specific (not reused elsewhere)
+- Depends on page-specific types and UI structure
+- Contains display logic and specialized calculations
+
+### Decision Flow: Where to Put Code?
+
+```
+Does the logic work across multiple domains?
+  ├─ YES → shared/utils/
+  └─ NO → Is it specific to a domain feature?
+           ├─ YES → features/*/lib/
+           └─ NO → Is it only used on one page?
+                    └─ YES → app/*/lib/
+```
+
+### Component Organization Guidelines
+
+#### File Size Target
+- **1 component = 100-300 lines** (ideal)
+- **page.tsx = 150-250 lines** (after refactoring)
+- Files over 500 lines should be split
+
+#### Component Splitting Rules
+1. **By Responsibility**: One component = one clear purpose
+2. **By Reusability**: Shared components go to `shared/components/`, page-specific to `app/*/components/`
+3. **By Domain**: Feature-specific components go to `features/*/components/`
+
+#### Naming Conventions
+- Components: PascalCase (e.g., `AddScheduleModal.tsx`)
+- Hooks: camelCase with `use` prefix (e.g., `useScheduleData.ts`)
+- Utils: camelCase (e.g., `dateUtils.ts`, `scheduleCalculations.ts`)
+- Types: PascalCase interfaces in `types/index.ts`
+
+#### Folder Patterns
+
+**Index Pattern** (for single main component):
+```typescript
+// components/TeamFilter/index.tsx
+export { default } from './TeamFilter'
+
+// Usage
+import TeamFilter from '@/app/schedule/components/TeamFilter'
+```
+
+**Named Exports** (for multiple related components):
+```typescript
+// components/ScheduleModals/index.tsx
+export { AddScheduleModal } from './AddScheduleModal'
+export { EditScheduleModal } from './EditScheduleModal'
+
+// Usage
+import { AddScheduleModal, EditScheduleModal } from '@/app/schedule/components/ScheduleModals'
+```
+
+### Component Refactoring Status
+
+This project is undergoing systematic refactoring to improve maintainability:
+
+| Page | Status | Current Lines | Target Lines | Components |
+|------|--------|---------------|--------------|------------|
+| applications | ✅ Complete | 222 | - | 13 components (includes FileAttachments, RequestNotes) |
+| schedule | ⏳ Planned | 1,847 | ~250 | 10+ components |
+| orders | ⏳ Planned | 1,664 | ~200 | 10+ components |
+| contractor-management | ⏳ Planned | 1,005 | ~150 | 11+ components |
+| my-exclusions | ⏳ Planned | 507 | ~150 | 4+ components |
+| contractor-requests | ✅ Updated | 345 | - | Includes FileAttachments integration |
+| login | ✅ Simple | 114 | - | Already clean |
+
+**Refactoring Phases** (detailed WBS available in project documentation):
+1. **Phase 0**: Shared library cleanup (move password-generator to shared/utils/)
+2. **Phase 1**: Schedule page (highest priority - most complex)
+3. **Phase 2**: Orders page (second largest)
+4. **Phase 3**: Contractor management page
+5. **Phase 4**: My exclusions page
+6. **Phase 5**: Contractor requests page
+7. **Phase 6**: Final integration testing and documentation
+
+### Custom Hooks Patterns
+
+Extract stateful logic from page components:
+
+```typescript
+// hooks/useScheduleData.ts
+export function useScheduleData() {
+  const [schedules, setSchedules] = useState<ScheduleItem[]>([])
+
+  const addSchedule = useCallback((schedule: ScheduleItem) => {
+    setSchedules(prev => [...prev, schedule])
+  }, [])
+
+  return { schedules, addSchedule, updateSchedule, deleteSchedule }
+}
+
+// Usage in page.tsx
+const { schedules, addSchedule } = useScheduleData()
+```
+
+**Hook Naming**:
+- Data management: `useXxxData` (e.g., `useScheduleData`, `useOrders`)
+- UI state: `useXxxState` (e.g., `useModalState`, `useFilterState`)
+- Business logic: `useXxx` (e.g., `useTeamFilters`, `useCalendarNavigation`)
+
+### Import Path Conventions
+
+Always use TypeScript path aliases for cleaner imports:
+
+```typescript
+// ✅ Good: Using aliases
+import Layout from '@/shared/components/layout/Layout'
+import { useScheduleData } from '@/app/schedule/hooks/useScheduleData'
+import { getContractors } from '@/features/contractor/lib/contractorStorage'
+
+// ❌ Bad: Relative paths
+import Layout from '../../../shared/components/layout/Layout'
+```
+
+### When Creating New Pages
+
+Follow this structure for consistency:
+
+```
+app/new-page/
+├── page.tsx                 # Main page component (target: 150-250 lines)
+├── components/              # Page-specific components
+│   ├── SomeFeature/
+│   │   └── index.tsx
+│   └── SomeModal.tsx
+├── hooks/                   # Custom hooks for this page
+│   ├── usePageData.ts
+│   └── usePageLogic.ts
+├── lib/                     # Page-specific utilities (if needed)
+│   └── pageUtils.ts
+├── types/                   # Page-specific types
+│   └── index.ts
+└── data/                    # Sample/mock data
+    └── sampleData.ts
+```
 
 ## Authentication System
 
@@ -1165,3 +1454,185 @@ getProgressHistory(type, id): ProgressEntry[]
 4. **Status Auto-completion**: When status changes to "完了", `completedAt` is auto-set to current date
 5. **Progress Comments are Required**: Contractors must provide context when updating status
 6. **Type Safety**: Use type-specific functions when possible (getSurveyRequests, getAttachmentRequests, getConstructionRequests)
+
+## File Attachments & Request Notes System
+
+### Overview
+Bidirectional file attachment and request notes functionality for application management system. Allows admins and contractors to exchange files and communicate instructions.
+
+### Data Model
+
+#### AttachedFile Interface
+```typescript
+interface AttachedFile {
+  id: string                    // Unique file ID
+  fileName: string              // Original filename
+  fileSize: number              // File size in bytes
+  fileType: string              // MIME type (e.g., "application/pdf")
+  fileData: string              // Base64 encoded file data
+  uploadedBy: string            // User/contractor ID
+  uploadedByName: string        // Display name
+  uploadedByRole: 'admin' | 'contractor'
+  uploadedAt: string            // ISO 8601 timestamp
+  description?: string          // Optional file description
+}
+
+interface FileAttachments {
+  fromAdmin: AttachedFile[]     // Files uploaded by admin
+  fromContractor: AttachedFile[] // Files uploaded by contractor
+}
+
+interface RequestNotes {
+  adminNotes?: string           // Admin instructions to contractor
+  contractorNotes?: string      // Contractor notes (future use)
+}
+```
+
+### Key Components
+
+#### FileAttachments Component
+Location: `src/app/applications/components/FileAttachments/`
+
+**2-Column Layout**:
+- **Left (blue background)**: Received files (read-only)
+  - Admin sees: Files from contractor
+  - Contractor sees: Files from admin
+- **Right (green background)**: Sent files (with upload/delete)
+  - Admin sends to: Contractor
+  - Contractor submits to: Admin
+
+**Sub-components**:
+- `FileItem.tsx`: Individual file display with icons, size, date, download/delete actions
+- `FileList.tsx`: List container with empty state
+- `FileUploadZone.tsx`: Drag & drop upload area with validation
+- `index.tsx`: Main component with 2-column layout
+
+#### RequestNotes Component
+Location: `src/app/applications/components/RequestNotes/`
+
+**Role-based Display**:
+- **Admin**: Editable textarea for entering instructions
+- **Contractor**: Yellow box with read-only admin instructions
+
+### Storage Operations
+
+Located in: `src/features/applications/lib/applicationStorage.ts`
+
+```typescript
+// File operations
+uploadFileToRequest(type, requestId, file, uploadedBy, uploadedByName, uploadedByRole): Promise<void>
+  - Converts File to Base64
+  - Creates AttachedFile object
+  - Adds to appropriate array (fromAdmin or fromContractor)
+  - Saves to localStorage
+
+deleteFileFromRequest(type, requestId, fileId, source): void
+  - Removes file from specified source array
+  - Updates localStorage
+
+downloadFile(file: AttachedFile): void
+  - Creates download link from Base64 data
+  - Triggers browser download
+
+updateRequestNotes(type, requestId, adminNotes): void
+  - Updates request notes
+  - Admin-only operation
+```
+
+### Integration Points
+
+**Modals with File Attachments** (5 locations):
+1. `NewRequestModal.tsx` - Create request with initial files
+2. `EditSurveyModal.tsx` - Survey request editing
+3. `EditAttachmentModal.tsx` - Attachment request editing
+4. `EditConstructionModal.tsx` - Construction request editing
+5. `ContractorRequestsPage.tsx` - Progress update modal
+
+**Common Implementation Pattern**:
+```typescript
+const [formData, setFormData] = useState<ApplicationRequest>(item)
+const [uploadingFiles, setUploadingFiles] = useState(false)
+const { user } = useAuth()
+
+const handleFileUpload = async (files: File[]) => {
+  // Convert files to Base64
+  // Add to formData.attachments
+  // Update state
+}
+
+const handleFileDelete = (fileId: string) => {
+  // Remove from appropriate array
+  // Update state
+}
+
+const handleFileDownload = (file: AttachedFile) => {
+  downloadFile(file)
+}
+```
+
+### File Upload Specifications
+
+**Validation**:
+- Max file size: 10MB (default, configurable)
+- Max files per upload: 10 (default, configurable)
+- Supported types: Images, PDF, Excel (.xlsx, .xls), Word (.doc, .docx)
+
+**Upload Methods**:
+- Drag & drop
+- Click to select files
+- Multiple file selection supported
+
+**Visual Feedback**:
+- Upload progress indicator
+- Drag-over state highlighting
+- File type icons (PDF, image, Excel, Word)
+- File size formatting (KB/MB)
+
+### Workflow Examples
+
+#### Admin → Contractor File Send
+1. Admin creates/edits request in applications page
+2. Uploads files via FileAttachments component
+3. Files saved to `fromAdmin` array
+4. Contractor views request in contractor-requests page
+5. Sees files in left column (received files, blue background)
+6. Can download but not delete admin files
+
+#### Contractor → Admin File Submit
+1. Contractor opens progress update modal
+2. Uploads files via FileAttachments component
+3. Files saved to `fromContractor` array
+4. Admin views request in applications page
+5. Sees files in left column (received files from contractor)
+6. Can download but not delete contractor files
+
+#### Request Notes Usage
+1. Admin creates request
+2. Fills in RequestNotes textarea with instructions
+3. Example: "クロージャ番号CL-123付近を重点的に確認してください"
+4. Contractor opens progress update modal
+5. Sees yellow box with admin instructions at top
+6. Follows instructions and submits progress
+
+### localStorage Storage
+
+**File Storage**:
+- Files stored as Base64 strings in `attachments.fromAdmin` and `attachments.fromContractor`
+- Stored within request objects in `applications_survey`, `applications_attachment`, `applications_construction` keys
+- No separate file storage keys
+
+**Size Considerations**:
+- localStorage limit: ~5-10MB per domain (browser-dependent)
+- Base64 encoding increases file size by ~33%
+- Consider file size limits to avoid localStorage quota errors
+- 10MB original file → ~13.3MB Base64 → may exceed localStorage limits
+
+### Important Notes
+
+1. **Base64 Encoding**: All files converted to Base64 for localStorage storage
+2. **Bidirectional Access**: Each party can only delete their own files
+3. **Read-Only Received Files**: Files from other party are read-only
+4. **Role-Based UI**: Component automatically adjusts based on user.role
+5. **Modal Integration**: All 5 modals follow same pattern for consistency
+6. **localStorage Limits**: Monitor file sizes to avoid quota issues
+7. **No Backend**: All file data stored client-side in Base64 format
