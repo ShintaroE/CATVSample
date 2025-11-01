@@ -4,7 +4,7 @@ import {
   FunnelIcon,
   PencilSquareIcon,
 } from '@heroicons/react/24/outline'
-import { AttachmentRequest, AttachmentStatus, AssigneeType } from '@/features/applications/types'
+import { AttachmentRequest, AttachmentStatus, AssigneeType, AttachmentNeeded } from '@/features/applications/types'
 import { Badge, BadgeVariant } from '@/shared/components/ui'
 
 interface AttachmentTabProps {
@@ -35,11 +35,30 @@ export default function AttachmentTab({ data, onEdit }: AttachmentTabProps) {
   const getStatusBadge = (status: AttachmentStatus): BadgeVariant => {
     const variantMap: Record<AttachmentStatus, BadgeVariant> = {
       受付: 'info',
-      提出済: 'warning',
-      許可: 'success',
-      取下げ: 'default',
+      調査済み: 'warning',
+      完了: 'success',
     }
     return variantMap[status]
+  }
+
+  const getApplicationNeededBadge = (needed: AttachmentNeeded): BadgeVariant => {
+    const variantMap: Record<AttachmentNeeded, BadgeVariant> = {
+      必要: 'danger',
+      不要: 'success',
+      未確認: 'default',
+    }
+    return variantMap[needed]
+  }
+
+  const formatDateTime = (isoString?: string): string => {
+    if (!isoString) return '-'
+    const date = new Date(isoString)
+    const year = date.getFullYear()
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const day = date.getDate().toString().padStart(2, '0')
+    const hour = date.getHours().toString().padStart(2, '0')
+    const minute = date.getMinutes().toString().padStart(2, '0')
+    return `${year}-${month}-${day} ${hour}:${minute}`
   }
 
   return (
@@ -76,9 +95,8 @@ export default function AttachmentTab({ data, onEdit }: AttachmentTabProps) {
             >
               <option value="全て">全て</option>
               <option value="受付">受付</option>
-              <option value="提出済">提出済</option>
-              <option value="許可">許可</option>
-              <option value="取下げ">取下げ</option>
+              <option value="調査済み">調査済み</option>
+              <option value="完了">完了</option>
             </select>
           </div>
         </div>
@@ -109,6 +127,7 @@ export default function AttachmentTab({ data, onEdit }: AttachmentTabProps) {
                 <th className="px-3 py-2 font-medium whitespace-nowrap">提出日</th>
                 <th className="px-3 py-2 font-medium whitespace-nowrap">許可日</th>
                 <th className="px-3 py-2 font-medium whitespace-nowrap">状態</th>
+                <th className="px-3 py-2 font-medium whitespace-nowrap">申請有無</th>
                 <th className="px-3 py-2 font-medium whitespace-nowrap">取下げ</th>
                 <th className="px-3 py-2 font-medium text-right">操作</th>
               </tr>
@@ -135,6 +154,20 @@ export default function AttachmentTab({ data, onEdit }: AttachmentTabProps) {
                     </Badge>
                   </td>
                   <td className="px-3 py-2">
+                    {r.applicationReport ? (
+                      <div className="flex flex-col gap-1">
+                        <Badge variant={getApplicationNeededBadge(r.applicationReport.applicationNeeded)} size="sm">
+                          {r.applicationReport.applicationNeeded}
+                        </Badge>
+                        <span className="text-xs text-gray-500">
+                          {formatDateTime(r.applicationReport.reportedAt)}
+                        </span>
+                      </div>
+                    ) : (
+                      <Badge variant="default" size="sm">未確認</Badge>
+                    )}
+                  </td>
+                  <td className="px-3 py-2">
                     {r.withdrawNeeded ? (
                       <span className="text-red-600 text-xs font-semibold">要</span>
                     ) : (
@@ -153,7 +186,7 @@ export default function AttachmentTab({ data, onEdit }: AttachmentTabProps) {
               ))}
               {filtered.length === 0 && (
                 <tr className="bg-white">
-                  <td colSpan={10} className="px-3 py-10 text-center text-sm text-gray-500">
+                  <td colSpan={11} className="px-3 py-10 text-center text-sm text-gray-500">
                     条件に一致するデータがありません
                   </td>
                 </tr>

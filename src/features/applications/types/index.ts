@@ -6,8 +6,51 @@ export type AssigneeType = 'internal' | 'contractor' // 自社 or 協力会社
 
 // 各タブのステータス定義
 export type SurveyStatus = '未着手' | '調査中' | '完了' | 'キャンセル'
-export type AttachmentStatus = '受付' | '提出済' | '許可' | '取下げ'
-export type ConstructionStatus = '未着手' | '施工中' | '完了' | '保留'
+export type AttachmentStatus = '受付' | '調査済み' | '完了'
+export type ConstructionStatus = '未着手' | '施工中' | '完了' | '一部完了' | '中止' | '延期' | '保留'
+
+// ========== 協力会社報告機能の型定義 ==========
+
+/**
+ * 工事可否判定（現地調査依頼）
+ */
+export type SurveyFeasibility =
+  | '可能'           // 工事可能
+  | '条件付き可能'   // 条件付きで可能
+  | '要確認'         // 追加確認が必要
+  | '不可'           // 工事不可
+  | '未判定'         // まだ判定されていない（デフォルト）
+
+/**
+ * 工事可否判定結果
+ */
+export interface SurveyFeasibilityResult {
+  reportedAt: string              // 報告日時 (ISO 8601)
+  reportedBy: string              // 報告者ID（contractorId）
+  reportedByName: string          // 報告者名（協力会社名）
+  reportedByTeam?: string         // 報告者の班名
+  feasibility: SurveyFeasibility  // 判定結果
+}
+
+/**
+ * 申請有無（共架・添架依頼）
+ */
+export type AttachmentNeeded =
+  | '必要'    // 申請が必要
+  | '不要'    // 申請不要
+  | '未確認'  // まだ確認されていない（デフォルト）
+
+/**
+ * 申請有無報告
+ */
+export interface AttachmentApplicationReport {
+  reportedAt: string              // 報告日時 (ISO 8601)
+  reportedBy: string              // 報告者ID（contractorId）
+  reportedByName: string          // 報告者名（協力会社名）
+  reportedByTeam?: string         // 報告者の班名
+  applicationNeeded: AttachmentNeeded  // 申請有無
+}
+
 
 // 進捗履歴エントリ
 export interface ProgressEntry {
@@ -83,6 +126,7 @@ export interface SurveyRequest extends RequestBase {
   surveyItems?: string[] // 調査項目
   surveyResult?: SurveyResult // 調査結果
   intermediateReport?: SurveyIntermediateReport // 中間報告
+  feasibilityResult?: SurveyFeasibilityResult // 工事可否判定結果
 }
 
 // 申請内容詳細
@@ -111,6 +155,7 @@ export interface AttachmentRequest extends RequestBase {
   withdrawCreated?: boolean // 取下げ作成済
   detail?: AttachmentDetail
   preparationStatus?: AttachmentPreparationStatus // 申請準備状況
+  applicationReport?: AttachmentApplicationReport // 申請有無報告
 }
 
 // 工事結果
@@ -137,7 +182,10 @@ export interface ConstructionRequest extends RequestBase {
   type: 'construction'
   status: ConstructionStatus
   constructionType?: string // 工事種別
-  constructionDate?: string // 工事実施日
+  constructionDate?: string // 工事予定日 (YYYY-MM-DD)
+  constructionDateSetBy?: string // 工事日を設定した管理者のID
+  constructionDateSetByName?: string // 管理者名
+  constructionDateSetAt?: string // 設定日時 (ISO 8601)
   constructionResult?: ConstructionResult
   workProgress?: ConstructionWorkProgress // 施工進捗
 }

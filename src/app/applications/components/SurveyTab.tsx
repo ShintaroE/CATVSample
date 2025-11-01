@@ -4,7 +4,7 @@ import {
   FunnelIcon,
   PencilSquareIcon,
 } from '@heroicons/react/24/outline'
-import { SurveyRequest, SurveyStatus, AssigneeType } from '@/features/applications/types'
+import { SurveyRequest, SurveyStatus, AssigneeType, SurveyFeasibility } from '@/features/applications/types'
 import { Badge, BadgeVariant } from '@/shared/components/ui'
 
 interface SurveyTabProps {
@@ -40,6 +40,28 @@ export default function SurveyTab({ data, onEdit }: SurveyTabProps) {
       キャンセル: 'danger',
     }
     return variantMap[status]
+  }
+
+  const getFeasibilityBadge = (feasibility: SurveyFeasibility): BadgeVariant => {
+    const variantMap: Record<SurveyFeasibility, BadgeVariant> = {
+      可能: 'success',
+      条件付き可能: 'warning',
+      要確認: 'info',
+      不可: 'danger',
+      未判定: 'default',
+    }
+    return variantMap[feasibility]
+  }
+
+  const formatDateTime = (isoString?: string): string => {
+    if (!isoString) return '-'
+    const date = new Date(isoString)
+    const year = date.getFullYear()
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const day = date.getDate().toString().padStart(2, '0')
+    const hour = date.getHours().toString().padStart(2, '0')
+    const minute = date.getMinutes().toString().padStart(2, '0')
+    return `${year}-${month}-${day} ${hour}:${minute}`
   }
 
   return (
@@ -105,6 +127,7 @@ export default function SurveyTab({ data, onEdit }: SurveyTabProps) {
                 <th className="px-3 py-2 font-medium whitespace-nowrap">住所</th>
                 <th className="px-3 py-2 font-medium whitespace-nowrap">依頼先</th>
                 <th className="px-3 py-2 font-medium whitespace-nowrap">状態</th>
+                <th className="px-3 py-2 font-medium whitespace-nowrap">工事可否</th>
                 <th className="px-3 py-2 font-medium whitespace-nowrap">依頼日</th>
                 <th className="px-3 py-2 font-medium whitespace-nowrap">予定日</th>
                 <th className="px-3 py-2 font-medium whitespace-nowrap">完了日</th>
@@ -132,6 +155,20 @@ export default function SurveyTab({ data, onEdit }: SurveyTabProps) {
                       {r.status}
                     </Badge>
                   </td>
+                  <td className="px-3 py-2">
+                    {r.feasibilityResult ? (
+                      <div className="flex flex-col gap-1">
+                        <Badge variant={getFeasibilityBadge(r.feasibilityResult.feasibility)} size="sm">
+                          {r.feasibilityResult.feasibility}
+                        </Badge>
+                        <span className="text-xs text-gray-500">
+                          {formatDateTime(r.feasibilityResult.reportedAt)}
+                        </span>
+                      </div>
+                    ) : (
+                      <Badge variant="default" size="sm">未判定</Badge>
+                    )}
+                  </td>
                   <td className="px-3 py-2 text-gray-900">{r.requestedAt || '-'}</td>
                   <td className="px-3 py-2 text-gray-900">{r.scheduledDate || '-'}</td>
                   <td className="px-3 py-2 text-gray-900">{r.completedAt || '-'}</td>
@@ -147,7 +184,7 @@ export default function SurveyTab({ data, onEdit }: SurveyTabProps) {
               ))}
               {filtered.length === 0 && (
                 <tr className="bg-white">
-                  <td colSpan={10} className="px-3 py-10 text-center text-sm text-gray-500">
+                  <td colSpan={11} className="px-3 py-10 text-center text-sm text-gray-500">
                     条件に一致するデータがありません
                   </td>
                 </tr>
