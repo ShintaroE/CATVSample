@@ -139,6 +139,14 @@ export default function EditConstructionModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+
+    // 工事予定日が変更されている場合、設定者情報を記録
+    if (formData.constructionDate !== item.constructionDate && user) {
+      formData.constructionDateSetBy = user.id
+      formData.constructionDateSetByName = user.name
+      formData.constructionDateSetAt = new Date().toISOString()
+    }
+
     onSave(formData)
   }
 
@@ -290,6 +298,9 @@ export default function EditConstructionModal({
                   <option value="未着手">未着手</option>
                   <option value="施工中">施工中</option>
                   <option value="完了">完了</option>
+                  <option value="一部完了">一部完了</option>
+                  <option value="中止">中止</option>
+                  <option value="延期">延期</option>
                   <option value="保留">保留</option>
                 </select>
               </FormField>
@@ -306,6 +317,15 @@ export default function EditConstructionModal({
                   <option value="移設">移設</option>
                   <option value="その他">その他</option>
                 </select>
+              </FormField>
+
+              <FormField label="工事予定日">
+                <input
+                  type="date"
+                  value={formData.constructionDate || ''}
+                  onChange={(e) => handleChange('constructionDate', e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
+                />
               </FormField>
 
               <FormField label="依頼日">

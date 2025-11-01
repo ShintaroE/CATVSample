@@ -276,9 +276,8 @@ export default function EditAttachmentModal({
                 className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
               >
                 <option value="受付">受付</option>
-                <option value="提出済">提出済</option>
-                <option value="許可">許可</option>
-                <option value="取下げ">取下げ</option>
+                <option value="調査済み">調査済み</option>
+                <option value="完了">完了</option>
               </select>
             </FormField>
 

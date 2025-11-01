@@ -13,11 +13,15 @@ import {
   SurveyStatus,
   AttachmentStatus,
   ConstructionStatus,
+  SurveyFeasibility,
+  AttachmentNeeded,
 } from '@/features/applications/types'
 import {
   getApplications,
   updateApplication,
   addProgressEntry,
+  updateSurveyFeasibility,
+  updateAttachmentApplication,
 } from '@/features/applications/lib/applicationStorage'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { ClipboardDocumentListIcon } from '@heroicons/react/24/outline'
@@ -276,6 +280,14 @@ function ProgressUpdateModal({
   const [formData, setFormData] = useState<ApplicationRequest>(request)
   const [uploadingFiles, setUploadingFiles] = useState(false)
 
+  // 新規報告用のstate
+  const [surveyFeasibility, setSurveyFeasibility] = useState<SurveyFeasibility>(
+    (request as SurveyRequest).feasibilityResult?.feasibility || '未判定'
+  )
+  const [attachmentNeeded, setAttachmentNeeded] = useState<AttachmentNeeded>(
+    (request as AttachmentRequest).applicationReport?.applicationNeeded || '未確認'
+  )
+
   const handleFileUpload = async (files: File[]) => {
     if (!user) return
     setUploadingFiles(true)
@@ -332,10 +344,34 @@ function ProgressUpdateModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!user?.contractorId || !user?.contractor || !formData.teamName) return
+
+    // タイプ別の報告を保存
+    if (request.type === 'survey') {
+      updateSurveyFeasibility(
+        request.id,
+        surveyFeasibility,
+        user.contractorId,
+        user.contractor,
+        formData.teamName
+      )
+    } else if (request.type === 'attachment') {
+      updateAttachmentApplication(
+        request.id,
+        attachmentNeeded,
+        user.contractorId,
+        user.contractor,
+        formData.teamName
+      )
+    }
+
     // ファイル添付も含めて更新
     updateApplication(request.type, request.id, {
       attachments: formData.attachments,
     })
+
+    // 進捗履歴を追加（従来通り）
     onSave(request.type, request.id, status, comment)
   }
 
@@ -343,9 +379,9 @@ function ProgressUpdateModal({
     if (request.type === 'survey') {
       return ['未着手', '調査中', '完了', 'キャンセル']
     } else if (request.type === 'attachment') {
-      return ['受付', '提出済', '許可', '取下げ']
+      return ['受付', '調査済み', '完了']
     } else {
-      return ['未着手', '施工中', '完了', '保留']
+      return ['未着手', '施工中', '完了', '一部完了', '中止', '延期', '保留']
     }
   }
 
@@ -369,7 +405,59 @@ function ProgressUpdateModal({
               isEditing={false}
             />
 
-            <div>
+            {/* タイプ別の報告フォーム */}
+            {request.type === 'survey' && (
+              <div className="border-t pt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">工事可否判定</label>
+                <div className="space-y-2">
+                  {(['可能', '条件付き可能', '要確認', '不可'] as SurveyFeasibility[]).map((option) => (
+                    <label key={option} className="flex items-center">
+                      <input
+                        type="radio"
+                        value={option}
+                        checked={surveyFeasibility === option}
+                        onChange={(e) => setSurveyFeasibility(e.target.value as SurveyFeasibility)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-700">{option}</span>
+                    </label>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">詳細はファイルにて提出してください</p>
+              </div>
+            )}
+
+            {request.type === 'attachment' && (
+              <div className="border-t pt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">申請有無</label>
+                <div className="space-y-2">
+                  {(['必要', '不要'] as AttachmentNeeded[]).map((option) => (
+                    <label key={option} className="flex items-center">
+                      <input
+                        type="radio"
+                        value={option}
+                        checked={attachmentNeeded === option}
+                        onChange={(e) => setAttachmentNeeded(e.target.value as AttachmentNeeded)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-700">{option}</span>
+                    </label>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">詳細はファイルにて提出してください</p>
+              </div>
+            )}
+
+            {request.type === 'construction' && (
+              <div className="border-t pt-4">
+                <p className="text-sm text-gray-700 mb-2">
+                  工事予定日: <span className="font-medium">{(request as ConstructionRequest).constructionDate || '未設定'}</span>
+                </p>
+                <p className="text-xs text-gray-500">作業詳細はファイルにて提出してください</p>
+              </div>
+            )}
+
+            <div className="border-t pt-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">ステータス</label>
               <select
                 value={status}

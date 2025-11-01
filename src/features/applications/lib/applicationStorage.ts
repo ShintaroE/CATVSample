@@ -6,6 +6,10 @@ import {
   RequestType,
   ProgressEntry,
   AttachedFile,
+  SurveyFeasibility,
+  SurveyFeasibilityResult,
+  AttachmentNeeded,
+  AttachmentApplicationReport,
 } from '../types'
 
 // ローカルストレージのキー
@@ -321,6 +325,120 @@ export const updateRequestNotes = <T extends ApplicationRequest>(
   }
 }
 
+// ========== 協力会社報告機能 ==========
+
+/**
+ * 工事可否判定を登録（現地調査依頼）
+ */
+export const updateSurveyFeasibility = (
+  requestId: string,
+  feasibility: SurveyFeasibility,
+  reportedBy: string,
+  reportedByName: string,
+  reportedByTeam?: string
+): void => {
+  try {
+    const applications = getApplications<SurveyRequest>('survey')
+    const index = applications.findIndex((a) => a.id === requestId)
+
+    if (index === -1) {
+      throw new Error('Survey request not found')
+    }
+
+    const feasibilityResult: SurveyFeasibilityResult = {
+      reportedAt: new Date().toISOString(),
+      reportedBy,
+      reportedByName,
+      reportedByTeam,
+      feasibility,
+    }
+
+    applications[index] = {
+      ...applications[index],
+      feasibilityResult,
+      updatedAt: new Date().toISOString(),
+    }
+
+    saveApplications('survey', applications)
+  } catch (error) {
+    console.error('Failed to update survey feasibility:', error)
+    throw error
+  }
+}
+
+/**
+ * 申請有無を登録（共架・添架依頼）
+ */
+export const updateAttachmentApplication = (
+  requestId: string,
+  applicationNeeded: AttachmentNeeded,
+  reportedBy: string,
+  reportedByName: string,
+  reportedByTeam?: string
+): void => {
+  try {
+    const applications = getApplications<AttachmentRequest>('attachment')
+    const index = applications.findIndex((a) => a.id === requestId)
+
+    if (index === -1) {
+      throw new Error('Attachment request not found')
+    }
+
+    const applicationReport: AttachmentApplicationReport = {
+      reportedAt: new Date().toISOString(),
+      reportedBy,
+      reportedByName,
+      reportedByTeam,
+      applicationNeeded,
+    }
+
+    applications[index] = {
+      ...applications[index],
+      applicationReport,
+      updatedAt: new Date().toISOString(),
+    }
+
+    saveApplications('attachment', applications)
+  } catch (error) {
+    console.error('Failed to update attachment application:', error)
+    throw error
+  }
+}
+
+/**
+ * 工事予定日を設定（管理者のみ）
+ */
+export const updateConstructionDate = (
+  requestId: string,
+  constructionDate: string,
+  setBy: string,
+  setByName: string
+): void => {
+  try {
+    const applications = getApplications<ConstructionRequest>('construction')
+    const index = applications.findIndex((a) => a.id === requestId)
+
+    if (index === -1) {
+      throw new Error('Construction request not found')
+    }
+
+    applications[index] = {
+      ...applications[index],
+      constructionDate,
+      constructionDateSetBy: setBy,
+      constructionDateSetByName: setByName,
+      constructionDateSetAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    saveApplications('construction', applications)
+  } catch (error) {
+    console.error('Failed to update construction date:', error)
+    throw error
+  }
+}
+
+
 // ========== 初期データセットアップ ==========
 
 export const initializeApplicationData = (): void => {
@@ -400,7 +518,7 @@ export const initializeApplicationData = (): void => {
         contractorName: '直営班',
         teamId: 'team-1',
         teamName: 'A班',
-        status: '許可',
+        status: '完了',
         submittedAt: '2025-02-07',
         approvedAt: '2025-03-10',
         requestedAt: '2025-02-05',
@@ -421,7 +539,7 @@ export const initializeApplicationData = (): void => {
         contractorName: 'スライヴ',
         teamId: 'team-4',
         teamName: '第1班',
-        status: '提出済',
+        status: '調査済み',
         submittedAt: '2025-02-07',
         requestedAt: '2025-02-01',
         notes: '許可待ち',

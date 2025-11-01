@@ -37,7 +37,10 @@ export default function ConstructionTab({ data, onEdit }: ConstructionTabProps) 
       未着手: 'default',
       施工中: 'info',
       完了: 'success',
-      保留: 'warning',
+      一部完了: 'warning',
+      中止: 'danger',
+      延期: 'warning',
+      保留: 'default',
     }
     return variantMap[status]
   }
@@ -78,6 +81,9 @@ export default function ConstructionTab({ data, onEdit }: ConstructionTabProps) 
               <option value="未着手">未着手</option>
               <option value="施工中">施工中</option>
               <option value="完了">完了</option>
+              <option value="一部完了">一部完了</option>
+              <option value="中止">中止</option>
+              <option value="延期">延期</option>
               <option value="保留">保留</option>
             </select>
           </div>
@@ -108,9 +114,7 @@ export default function ConstructionTab({ data, onEdit }: ConstructionTabProps) 
                 <th className="px-3 py-2 font-medium whitespace-nowrap">工事種別</th>
                 <th className="px-3 py-2 font-medium whitespace-nowrap">依頼先</th>
                 <th className="px-3 py-2 font-medium whitespace-nowrap">状態</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">依頼日</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">工事日</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">完了日</th>
+                <th className="px-3 py-2 font-medium whitespace-nowrap">工事予定日</th>
                 <th className="px-3 py-2 font-medium text-right">操作</th>
               </tr>
             </thead>
@@ -136,9 +140,7 @@ export default function ConstructionTab({ data, onEdit }: ConstructionTabProps) 
                       {r.status}
                     </Badge>
                   </td>
-                  <td className="px-3 py-2 text-gray-900">{r.requestedAt || '-'}</td>
                   <td className="px-3 py-2 text-gray-900">{r.constructionDate || '-'}</td>
-                  <td className="px-3 py-2 text-gray-900">{r.completedAt || '-'}</td>
                   <td className="px-3 py-2 text-right">
                     <button
                       className="inline-flex items-center px-2 py-1 rounded border text-gray-700 hover:bg-gray-50 text-xs"
@@ -151,7 +153,7 @@ export default function ConstructionTab({ data, onEdit }: ConstructionTabProps) 
               ))}
               {filtered.length === 0 && (
                 <tr className="bg-white">
-                  <td colSpan={11} className="px-3 py-10 text-center text-sm text-gray-500">
+                  <td colSpan={9} className="px-3 py-10 text-center text-sm text-gray-500">
                     条件に一致するデータがありません
                   </td>
                 </tr>
