@@ -45,11 +45,12 @@ src/
 │   └── utils/                      # Domain-agnostic utilities
 │       ├── formatters.ts           # Date/number formatting
 │       ├── validators.ts           # Validation functions
-│       ├── constants.ts            # App-wide constants
-│       └── password.ts             # Password generation
+│       └── constants.ts            # App-wide constants
 │
 ├── features/                        # Layer 2: Domain feature modules
 │   ├── auth/
+│   │   ├── components/
+│   │   │   └── AuthProvider.tsx    # Auth context provider
 │   │   ├── hooks/useAuth.ts        # Authentication hook
 │   │   ├── lib/authStorage.ts      # localStorage operations
 │   │   └── types/index.ts          # Auth-related types
@@ -60,7 +61,8 @@ src/
 │   │   ├── lib/applicationStorage.ts # Application request CRUD
 │   │   └── types/index.ts          # Application types
 │   └── calendar/
-│       ├── components/CalendarPicker/ # Reusable calendar
+│       ├── components/
+│       │   └── CalendarPicker/     # Reusable calendar component
 │       ├── lib/dateUtils.ts        # Calendar-specific date ops
 │       └── types/index.ts          # Calendar types
 │
@@ -120,6 +122,9 @@ src/
     ├── page.tsx                     # ✅ Dashboard
     ├── layout.tsx                   # Root layout
     └── globals.css
+
+Note: There is also a `src/lib/` directory containing:
+- `password-generator.ts` - To be moved to `src/shared/utils/password.ts` in Phase 0
 ```
 
 ### Key Features
@@ -171,12 +176,18 @@ This system is built for KCT (倉敷ケーブルテレビ) CATV construction man
 
 ### Component Architecture
 - Uses 'use client' directive for interactive components (all pages are client-side)
-- Custom Layout component wraps all pages with Sidebar
+- Custom Layout component wraps all pages with Sidebar (`src/shared/components/layout/`)
 - Sidebar component manages its own expanded/collapsed state via hover
-- Icon system uses Heroicons (@heroicons/react/24/outline) for UI
+- **Shared UI Library** (`src/shared/components/ui/`):
+  - `Button.tsx` - Unified button component with variants
+  - `Badge.tsx` - Status badges with color variants
+  - `Modal.tsx` - Modal wrapper using Headless UI Dialog
+  - `Input.tsx` - Form input with label
+  - `Textarea.tsx` - Form textarea with label
+- Icon system uses Heroicons (@heroicons/react/24/outline) and Lucide React
 - Modal-based detail editing patterns (using Headless UI Dialog)
 - Drag & drop file upload components for Excel/PDF uploads
-- CalendarPicker: Reusable date picker with schedule visualization and exclusion display (used in orders page appointment modal)
+- CalendarPicker: Reusable date picker with schedule visualization and exclusion display (`src/features/calendar/components/CalendarPicker/`)
 
 ### Data Management & State
 - All data is stored in component state (useState) - no backend/database yet
@@ -186,7 +197,7 @@ This system is built for KCT (倉敷ケーブルテレビ) CATV construction man
 - Authentication data persisted in localStorage (key: 'user', client-side only)
 - **Contractor & Team data**: Persisted to localStorage (keys: 'contractors', 'teams')
   - Initialized with default data on first load via `initializeDefaultData()`
-  - Full CRUD operations available through `src/lib/contractors.ts`
+  - Full CRUD operations available through `src/features/contractor/lib/contractorStorage.ts`
 - **Exclusion data**: Currently stored only in component state (not persisted to localStorage yet)
 
 ### Development Notes
@@ -346,16 +357,18 @@ This project is undergoing systematic refactoring to improve maintainability:
 | orders | ⏳ Planned | 1,664 | ~200 | 10+ components |
 | contractor-management | ⏳ Planned | 1,005 | ~150 | 11+ components |
 | my-exclusions | ⏳ Planned | 507 | ~150 | 4+ components |
-| contractor-requests | ✅ Updated | 345 | - | Includes FileAttachments integration |
+| contractor-requests | ✅ Updated | 518 | - | Includes FileAttachments integration |
 | login | ✅ Simple | 114 | - | Already clean |
 
-**Refactoring Phases** (detailed WBS available in project documentation):
-1. **Phase 0**: Shared library cleanup (move password-generator to shared/utils/)
+**Refactoring Phases**:
+1. **Phase 0**: Shared library cleanup - ⏳ Pending
+   - Move `src/lib/password-generator.ts` → `src/shared/utils/password.ts`
+   - This is a prerequisite for other refactoring phases
 2. **Phase 1**: Schedule page (highest priority - most complex)
 3. **Phase 2**: Orders page (second largest)
 4. **Phase 3**: Contractor management page
 5. **Phase 4**: My exclusions page
-6. **Phase 5**: Contractor requests page
+6. **Phase 5**: Contractor requests page (already includes FileAttachments)
 7. **Phase 6**: Final integration testing and documentation
 
 ### Custom Hooks Patterns
@@ -422,9 +435,9 @@ app/new-page/
 ## Authentication System
 
 ### Architecture
-- **Context Provider**: `AuthContext.tsx` provides global authentication state
+- **Context Provider**: `src/features/auth/components/AuthProvider.tsx` provides global authentication state
 - **Storage**: localStorage for session persistence (key: 'user')
-- **Protection**: `Layout.tsx` checks authentication and redirects to /login if unauthenticated
+- **Protection**: `src/shared/components/layout/Layout/index.tsx` checks authentication and redirects to /login if unauthenticated
 - **Routing**: useEffect-based navigation to prevent render-time routing errors
 
 ### Demo Accounts
@@ -575,7 +588,7 @@ interface Team {
 3. **Add Team Modal**: Team name input, contractor pre-selected
 4. **Edit Team Modal**: Team name input
 
-### localStorage Operations (src/lib/contractors.ts)
+### localStorage Operations (src/features/contractor/lib/contractorStorage.ts)
 
 ```typescript
 // Admin CRUD
@@ -610,6 +623,8 @@ initializeDefaultData(): void  // Creates default admins/contractors/teams if no
 ```
 
 ### Password Generation (src/lib/password-generator.ts)
+
+**Note**: This file should be moved to `src/shared/utils/password.ts` as part of Phase 0 refactoring.
 
 ```typescript
 generateSimplePassword(length: number = 10): string
@@ -665,10 +680,11 @@ Teams:
 
 1. **Login Level**: Authentication happens at contractor level, NOT team level
 2. **Team Selection**: Teams are selected when registering exclusions, not at login
-3. **Data Persistence**: All contractor/team data stored in localStorage (keys: 'contractors', 'teams')
+3. **Data Persistence**: All contractor/team data stored in localStorage (keys: 'admins', 'contractors', 'teams')
 4. **Cascade Delete**: Deleting a contractor removes all its teams
 5. **Password Security**: Passwords stored in plain text (suitable for demo, not production)
-6. **Form Styling**: All input/select elements MUST include `bg-white text-gray-900` classes
+6. **Password Generation**: Uses `generateSimplePassword()` from `src/lib/password-generator.ts` (to be moved to `src/shared/utils/password.ts`)
+7. **Form Styling**: All input/select elements MUST include `bg-white text-gray-900` classes
 
 ## Exclusion Date Management
 
@@ -1007,7 +1023,7 @@ const [scheduleCalendarDate, setScheduleCalendarDate] = useState<Date>(new Date(
 
 ## CalendarPicker Component
 
-### Overview (src/components/CalendarPicker.tsx)
+### Overview (src/features/calendar/components/CalendarPicker/index.tsx)
 Reusable calendar component used in the appointment history modal for date selection with integrated schedule and exclusion visibility.
 
 ### Props Interface
@@ -1270,7 +1286,7 @@ The application management system handles three types of requests with unified p
 2. **Attachment Requests (共架・添架依頼)** - Utility pole attachment permit applications
 3. **Construction Requests (工事依頼)** - Construction work orders
 
-### Data Model (src/types/application.ts)
+### Data Model (src/features/applications/types/index.ts)
 
 #### Request Types
 ```typescript
@@ -1384,7 +1400,7 @@ Automatically records:
 - New status
 - Comment explaining the progress
 
-### localStorage Operations (src/lib/applications.ts)
+### localStorage Operations (src/features/applications/lib/applicationStorage.ts)
 
 #### Storage Keys
 - `applications_survey` - Survey requests
