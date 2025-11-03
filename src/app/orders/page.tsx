@@ -34,6 +34,13 @@ export default function OrdersPage() {
   const [selectedScheduleDate, setSelectedScheduleDate] = useState<string | null>(null)
   const [scheduleCalendarDate, setScheduleCalendarDate] = useState<Date>(new Date())
 
+  // 工事決定時のスケジュール登録用state
+  const [selectedContractorId, setSelectedContractorId] = useState<string>('')
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('')
+  const [availableTeams, setAvailableTeams] = useState<Array<{ id: string, name: string }>>([])
+  const [workStartTime, setWorkStartTime] = useState<string>('09:00')
+  const [workEndTime, setWorkEndTime] = useState<string>('12:00')
+
   // 週表示とフィルター用の状態
   const [calendarViewMode, setCalendarViewMode] = useState<CalendarViewMode>('month')
   const [teamFilters, setTeamFilters] = useState<TeamFilter[]>([])
@@ -202,6 +209,8 @@ export default function OrdersPage() {
     setAppointmentDate(today.toISOString().slice(0, 10))
     setAppointmentTime('10:00')
     setAppointmentEndTime('11:00')
+    setWorkStartTime('09:00')
+    setWorkEndTime('12:00')
     setEditingAppointment({
       id: '',
       date: `${today.toISOString().slice(0, 10)}T10:00`,
@@ -219,14 +228,73 @@ export default function OrdersPage() {
     setAppointmentDate(appointmentDateTime.toISOString().slice(0, 10))
     setAppointmentTime(appointmentDateTime.toISOString().slice(11, 16))
     setAppointmentEndTime(appointment.endTime || '11:00')
+
+    // 工事決定の場合、スケジュール情報を復元
+    if (appointment.scheduleInfo) {
+      const { contractorId, teamId, workStartTime, workEndTime } = appointment.scheduleInfo
+      setSelectedContractorId(contractorId)
+      const teams = getTeams().filter(t => t.contractorId === contractorId && t.isActive)
+      setAvailableTeams(teams.map(t => ({ id: t.id, name: t.teamName })))
+      setSelectedTeamId(teamId)
+      setWorkStartTime(workStartTime)
+      setWorkEndTime(workEndTime)
+    } else {
+      // 工事決定でない場合はリセット
+      setWorkStartTime('09:00')
+      setWorkEndTime('12:00')
+    }
+  }
+
+  const handleContractorChange = (contractorId: string) => {
+    setSelectedContractorId(contractorId)
+    setSelectedTeamId('')
+
+    // 選択した協力会社の班を取得
+    if (contractorId) {
+      const teams = getTeams().filter(t => t.contractorId === contractorId && t.isActive)
+      setAvailableTeams(teams.map(t => ({ id: t.id, name: t.teamName })))
+    } else {
+      setAvailableTeams([])
+    }
   }
 
   const handleSaveAppointment = () => {
     if (!appointmentOrder || !editingAppointment) return
 
+    // 工事決定の場合、協力会社と班の選択を検証
+    if (editingAppointment.status === '工事決定') {
+      if (!selectedContractorId || !selectedTeamId) {
+        alert('工事決定の場合、工事会社と班を選択してください')
+        return
+      }
+    }
+
     // 日付と時刻を結合
     const combinedDateTime = `${appointmentDate}T${appointmentTime}`
-    const updatedAppointment = { ...editingAppointment, date: combinedDateTime, endTime: appointmentEndTime }
+
+    // スケジュール情報を追加
+    let scheduleInfo = undefined
+    if (editingAppointment.status === '工事決定' && selectedContractorId && selectedTeamId) {
+      const contractor = getContractors().find(c => c.id === selectedContractorId)
+      const team = getTeams().find(t => t.id === selectedTeamId)
+      if (contractor && team) {
+        scheduleInfo = {
+          contractorId: contractor.id,
+          contractorName: contractor.name,
+          teamId: team.id,
+          teamName: team.teamName,
+          workStartTime,
+          workEndTime
+        }
+      }
+    }
+
+    const updatedAppointment = {
+      ...editingAppointment,
+      date: combinedDateTime,
+      endTime: appointmentEndTime,
+      scheduleInfo
+    }
 
     const updatedOrders = orders.map(order => {
       if (order.orderNumber === appointmentOrder.orderNumber) {
@@ -253,8 +321,21 @@ export default function OrdersPage() {
       const updated = updatedOrders.find(o => o.orderNumber === prev.orderNumber)
       return updated || null
     })
+
+    // スケジュール情報をリセット
+    setSelectedContractorId('')
+    setSelectedTeamId('')
+    setAvailableTeams([])
+    setWorkStartTime('09:00')
+    setWorkEndTime('12:00')
+
     setEditingAppointment(null)
     setIsAddingAppointment(false)
+
+    // 成功メッセージ
+    if (editingAppointment.status === '工事決定' && scheduleInfo) {
+      alert(`アポイントを保存し、スケジュールを登録しました\n担当: ${scheduleInfo.contractorName} - ${scheduleInfo.teamName}\n工事時間: ${scheduleInfo.workStartTime} - ${scheduleInfo.workEndTime}`)
+    }
   }
 
   const handleDeleteAppointment = (appointmentId: string) => {
@@ -286,6 +367,8 @@ export default function OrdersPage() {
         return 'bg-yellow-100 text-yellow-800'
       case '不通':
         return 'bg-red-100 text-red-800'
+      case '留守電':
+        return 'bg-blue-100 text-blue-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -1492,19 +1575,92 @@ export default function OrdersPage() {
                           <label className="block text-sm font-medium text-gray-700">ステータス</label>
                           <select
                             value={editingAppointment.status}
-                            onChange={(e) => setEditingAppointment({...editingAppointment, status: e.target.value as '工事決定' | '保留' | '不通'})}
+                            onChange={(e) => {
+                              const newStatus = e.target.value as '工事決定' | '保留' | '不通' | '留守電'
+                              setEditingAppointment({...editingAppointment, status: newStatus})
+                              // 工事決定以外の場合はリセット
+                              if (newStatus !== '工事決定') {
+                                setSelectedContractorId('')
+                                setSelectedTeamId('')
+                                setAvailableTeams([])
+                              }
+                            }}
                             className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
                           >
                             <option value="工事決定">工事決定</option>
                             <option value="保留">保留</option>
                             <option value="不通">不通</option>
+                            <option value="留守電">留守電</option>
                           </select>
                         </div>
+                        {/* 工事決定時のスケジュール登録フォーム */}
+                        {editingAppointment.status === '工事決定' && (
+                          <div className="bg-green-50 p-3 rounded-md border border-green-200">
+                            <h5 className="text-sm font-medium text-green-900 mb-2">📅 スケジュール登録情報</h5>
+                            <div className="grid grid-cols-2 gap-3 mb-3">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700">工事会社 *</label>
+                                <select
+                                  value={selectedContractorId}
+                                  onChange={(e) => handleContractorChange(e.target.value)}
+                                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
+                                >
+                                  <option value="">選択してください</option>
+                                  {getContractors().filter(c => c.isActive).map(contractor => (
+                                    <option key={contractor.id} value={contractor.id}>
+                                      {contractor.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700">班 *</label>
+                                <select
+                                  value={selectedTeamId}
+                                  onChange={(e) => setSelectedTeamId(e.target.value)}
+                                  disabled={!selectedContractorId}
+                                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                >
+                                  <option value="">選択してください</option>
+                                  {availableTeams.map(team => (
+                                    <option key={team.id} value={team.id}>
+                                      {team.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700">工事開始時刻 *</label>
+                                <input
+                                  type="time"
+                                  value={workStartTime}
+                                  onChange={(e) => setWorkStartTime(e.target.value)}
+                                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700">工事終了時刻 *</label>
+                                <input
+                                  type="time"
+                                  value={workEndTime}
+                                  onChange={(e) => setWorkEndTime(e.target.value)}
+                                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
+                                />
+                              </div>
+                            </div>
+                            <p className="text-xs text-green-700 mt-2">
+                              ※ 工事会社・班・時間を入力すると、スケジュールに自動登録されます
+                            </p>
+                          </div>
+                        )}
                         <Textarea
                           label="会話内容"
                           value={editingAppointment.content}
                           onChange={(e) => setEditingAppointment({...editingAppointment, content: e.target.value})}
                           rows={3}
+                          fullWidth
                         />
                         <div className="flex space-x-2">
                           <Button
@@ -1553,6 +1709,13 @@ export default function OrdersPage() {
                             </button>
                           </div>
                         </div>
+                        {appointment.scheduleInfo && (
+                          <div className="mb-2 flex items-center space-x-2 text-xs">
+                            <span className="inline-flex items-center px-2 py-1 rounded-md bg-green-100 text-green-800 font-medium">
+                              📅 {appointment.scheduleInfo.contractorName} - {appointment.scheduleInfo.teamName}
+                            </span>
+                          </div>
+                        )}
                         <p className="text-sm text-gray-700">{appointment.content}</p>
                       </div>
                     )}
@@ -1596,20 +1759,93 @@ export default function OrdersPage() {
                         <label className="block text-sm font-medium text-gray-700">ステータス</label>
                         <select
                           value={editingAppointment.status}
-                          onChange={(e) => setEditingAppointment({...editingAppointment, status: e.target.value as '工事決定' | '保留' | '不通'})}
+                          onChange={(e) => {
+                            const newStatus = e.target.value as '工事決定' | '保留' | '不通' | '留守電'
+                            setEditingAppointment({...editingAppointment, status: newStatus})
+                            // 工事決定以外の場合はリセット
+                            if (newStatus !== '工事決定') {
+                              setSelectedContractorId('')
+                              setSelectedTeamId('')
+                              setAvailableTeams([])
+                            }
+                          }}
                           className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 bg-white"
                         >
                           <option value="工事決定">工事決定</option>
                           <option value="保留">保留</option>
                           <option value="不通">不通</option>
+                          <option value="留守電">留守電</option>
                         </select>
                       </div>
+                      {/* 工事決定時のスケジュール登録フォーム */}
+                      {editingAppointment.status === '工事決定' && (
+                        <div className="bg-green-50 p-3 rounded-md border border-green-200">
+                          <h5 className="text-sm font-medium text-green-900 mb-2">📅 スケジュール登録情報</h5>
+                          <div className="grid grid-cols-2 gap-3 mb-3">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700">工事会社 *</label>
+                              <select
+                                value={selectedContractorId}
+                                onChange={(e) => handleContractorChange(e.target.value)}
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
+                              >
+                                <option value="">選択してください</option>
+                                {getContractors().filter(c => c.isActive).map(contractor => (
+                                  <option key={contractor.id} value={contractor.id}>
+                                    {contractor.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700">班 *</label>
+                              <select
+                                value={selectedTeamId}
+                                onChange={(e) => setSelectedTeamId(e.target.value)}
+                                disabled={!selectedContractorId}
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                              >
+                                <option value="">選択してください</option>
+                                {availableTeams.map(team => (
+                                  <option key={team.id} value={team.id}>
+                                    {team.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700">工事開始時刻 *</label>
+                              <input
+                                type="time"
+                                value={workStartTime}
+                                onChange={(e) => setWorkStartTime(e.target.value)}
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700">工事終了時刻 *</label>
+                              <input
+                                type="time"
+                                value={workEndTime}
+                                onChange={(e) => setWorkEndTime(e.target.value)}
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
+                              />
+                            </div>
+                          </div>
+                          <p className="text-xs text-green-700 mt-2">
+                            ※ 工事会社・班・時間を入力すると、スケジュールに自動登録されます
+                          </p>
+                        </div>
+                      )}
                       <Textarea
                         label="会話内容"
                         value={editingAppointment.content}
                         onChange={(e) => setEditingAppointment({...editingAppointment, content: e.target.value})}
                         rows={3}
                         placeholder="アポイント内容を入力してください"
+                        fullWidth
                       />
                       <div className="flex space-x-2">
                         <Button

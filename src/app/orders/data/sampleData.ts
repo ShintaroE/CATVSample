@@ -178,7 +178,15 @@ export const sampleOrders: OrderData[] = [
         date: '2025-09-27T14:30',
         endTime: '15:30',
         status: '工事決定',
-        content: '工事内容に合意、9月29日で調整'
+        content: '工事内容に合意、9月29日で調整',
+        scheduleInfo: {
+          contractorId: 'contractor-1',
+          contractorName: '直営班',
+          teamId: 'team-1',
+          teamName: 'A班',
+          workStartTime: '09:00',
+          workEndTime: '12:00'
+        }
       }
     ]
   },
@@ -202,7 +210,15 @@ export const sampleOrders: OrderData[] = [
         date: '2025-09-28T09:00',
         endTime: '10:00',
         status: '工事決定',
-        content: '工事日程確定、立会い可能'
+        content: '工事日程確定、立会い可能',
+        scheduleInfo: {
+          contractorId: 'contractor-3',
+          contractorName: 'スライヴ',
+          teamId: 'team-4',
+          teamName: '第1班',
+          workStartTime: '09:00',
+          workEndTime: '12:00'
+        }
       }
     ]
   },
@@ -227,6 +243,13 @@ export const sampleOrders: OrderData[] = [
         endTime: '16:30',
         status: '不通',
         content: '電話に出ず、後日再連絡'
+      },
+      {
+        id: '5',
+        date: '2025-09-27T11:00',
+        endTime: '11:30',
+        status: '留守電',
+        content: '留守電を残した、折り返し連絡待ち'
       }
     ]
   }
