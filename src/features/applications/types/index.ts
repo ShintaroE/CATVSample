@@ -163,10 +163,16 @@ export interface ConstructionWorkProgress {
 }
 
 // 工事依頼
+// 工事後報告ステータス
+export type PostConstructionReport = '完了' | '未完了' | '不要'
+
 export interface ConstructionRequest extends RequestBase {
   type: 'construction'
   status: ConstructionStatus
   constructionType?: string // 工事種別
+  constructionRequestedDate?: string // 工事依頼日 (YYYY-MM-DD)
+  constructionCompletedDate?: string // 工事完了日 (YYYY-MM-DD)
+  postConstructionReport?: PostConstructionReport // 工事後報告
   constructionDate?: string // 工事予定日 (YYYY-MM-DD)
   constructionDateSetBy?: string // 工事日を設定した管理者のID
   constructionDateSetByName?: string // 管理者名

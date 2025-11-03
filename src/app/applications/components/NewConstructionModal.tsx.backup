@@ -38,11 +38,6 @@ export default function NewConstructionModal({
     assigneeType: 'internal' as AssigneeType,
     contractorId: '',
     teamId: '',
-    propertyType: '個別',
-    kctReceivedDate: '',
-    constructionRequestedDate: '',
-    constructionCompletedDate: '',
-    postConstructionReport: '未完了' as PostConstructionReport,
   })
   const [attachments, setAttachments] = useState<FileAttachments>({
     fromAdmin: [],
@@ -100,17 +95,6 @@ export default function NewConstructionModal({
       if (field === 'teamId') {
         const team = teams.find((t) => t.id === value)
         newData.teamName = team?.teamName || ''
-      }
-
-      // 個別/集合の切り替え時に不要なフィールドをクリア
-      if (field === 'propertyType') {
-        if (value === '個別') {
-          newData.collectiveCode = ''
-          newData.collectiveHousingName = ''
-        } else if (value === '集合') {
-          newData.customerCode = ''
-          newData.customerName = ''
-        }
       }
 
       return newData
@@ -183,61 +167,6 @@ export default function NewConstructionModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
-    // バリデーション
-    if (!formData.orderNumber) {
-      alert('受注番号を入力してください')
-      return
-    }
-
-    if (!formData.propertyType) {
-      alert('個別/集合を選択してください')
-      return
-    }
-
-    if (formData.propertyType === '個別') {
-      if (!formData.customerCode) {
-        alert('顧客コードを入力してください')
-        return
-      }
-      if (!formData.customerName) {
-        alert('顧客名を入力してください')
-        return
-      }
-      if (!formData.address) {
-        alert('住所を入力してください')
-        return
-      }
-    } else if (formData.propertyType === '集合') {
-      if (!formData.collectiveCode) {
-        alert('集合コードを入力してください')
-        return
-      }
-      if (!formData.collectiveHousingName) {
-        alert('集合住宅名を入力してください')
-        return
-      }
-      if (!formData.address) {
-        alert('部屋番号・顧客名を入力してください')
-        return
-      }
-    }
-
-    if (!formData.teamId) {
-      alert('班を選択してください')
-      return
-    }
-
-    if (!formData.constructionType) {
-      alert('工事種別を選択してください')
-      return
-    }
-
-    if (!formData.postConstructionReport) {
-      alert('工事後報告を選択してください')
-      return
-    }
-
     onCreate(activeTab, {
       ...formData,
       attachments,
