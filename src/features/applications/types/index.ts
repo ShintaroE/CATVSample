@@ -70,10 +70,14 @@ export interface RequestBase {
   type: RequestType
   serialNumber: number // 整理番号
   orderNumber?: string // 受注番号
-  contractNo?: string // 契約No.
-  customerCode?: string // 顧客コード
-  customerName?: string // 顧客名
-  address?: string // 住所
+
+  // 物件種別関連
+  propertyType?: '個別' | '集合' // 個別/集合の区別
+  customerCode?: string // 顧客コード（個別の場合）
+  customerName?: string // 顧客名（個別の場合）
+  collectiveCode?: string // 集合コード（集合の場合）
+  collectiveHousingName?: string // 集合住宅名（集合の場合）
+  address?: string // 住所（個別の場合）or 部屋番号・顧客名（集合の場合）
   phoneNumber?: string // 電話番号
 
   // 依頼先情報
@@ -84,9 +88,10 @@ export interface RequestBase {
   teamName?: string // 班名
 
   // 共通日付
+  kctReceivedDate?: string // KCT受取日 (YYYY-MM-DD)
   requestedAt?: string // 依頼日 (YYYY-MM-DD)
-  scheduledDate?: string // 予定日
-  completedAt?: string // 完了日
+  scheduledDate?: string // 予定日（調査予定日/工事予定日など）
+  completedAt?: string // 完了日（調査完了日/工事完了日など）
 
   notes?: string // 備考
   createdAt: string // 作成日時
@@ -97,36 +102,16 @@ export interface RequestBase {
   lastUpdatedBy?: string // 最終更新者
   lastUpdatedByName?: string // 最終更新者名
 
-  // ファイル添付・備考機能（新規追加）
+  // ファイル添付・備考機能
   attachments?: FileAttachments // ファイル添付管理
   requestNotes?: RequestNotes // 依頼時の備考
-}
-
-// 調査結果
-export interface SurveyResult {
-  photos?: string[] // 写真
-  closureNumber?: string // クロージャ番号
-  lineType?: string // 現状線種別
-  notes?: string // 所見
-}
-
-// 現地調査中間報告
-export interface SurveyIntermediateReport {
-  reportedAt: string // 報告日時
-  progressRate: number // 進捗率 (0-100)
-  findings?: string // 現地での気づき
-  issues?: string // 問題点
-  photos?: string[] // 現地写真
 }
 
 // 現地調査依頼
 export interface SurveyRequest extends RequestBase {
   type: 'survey'
   status: SurveyStatus
-  surveyItems?: string[] // 調査項目
-  surveyResult?: SurveyResult // 調査結果
-  intermediateReport?: SurveyIntermediateReport // 中間報告
-  feasibilityResult?: SurveyFeasibilityResult // 工事可否判定結果
+  feasibilityResult?: SurveyFeasibilityResult // 工事可否判定結果（協力会社報告用）
 }
 
 // 申請内容詳細

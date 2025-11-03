@@ -176,14 +176,6 @@ export default function EditConstructionModal({
                 />
               </FormField>
 
-              <FormField label="契約No.">
-                <input
-                  value={formData.contractNo || ''}
-                  onChange={(e) => handleChange('contractNo', e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
-                />
-              </FormField>
-
               <FormField label="顧客コード">
                 <input
                   value={formData.customerCode || ''}

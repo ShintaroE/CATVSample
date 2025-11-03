@@ -4,33 +4,87 @@ import {
   FunnelIcon,
   PencilSquareIcon,
 } from '@heroicons/react/24/outline'
-import { SurveyRequest, SurveyStatus, AssigneeType, SurveyFeasibility } from '@/features/applications/types'
+import { SurveyRequest, SurveyStatus, AssigneeType } from '@/features/applications/types'
+import { Contractor, Team } from '@/features/contractor/types'
+import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { Badge, BadgeVariant } from '@/shared/components/ui'
 
 interface SurveyTabProps {
   data: SurveyRequest[]
+  contractors: Contractor[]
+  teams: Team[]
   onEdit: (item: SurveyRequest) => void
 }
 
-export default function SurveyTab({ data, onEdit }: SurveyTabProps) {
-  const [orderFilter, setOrderFilter] = useState('')
-  const [customerFilter, setCustomerFilter] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'全て' | SurveyStatus>('全て')
-  const [assigneeFilter, setAssigneeFilter] = useState<'全て' | AssigneeType | 'internal'>('全て')
+export default function SurveyTab({ data, contractors, teams, onEdit }: SurveyTabProps) {
+  const [propertyTypeFilter, setPropertyTypeFilter] = useState<'' | '個別' | '集合'>('')
+  const [customerCodeFilter, setCustomerCodeFilter] = useState('')
+  const [collectiveCodeFilter, setCollectiveCodeFilter] = useState('')
+  const [contractorIdFilter, setContractorIdFilter] = useState('')
+  const [teamIdFilter, setTeamIdFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'' | SurveyStatus>('')
+
+  // 依頼先選択時に利用可能な班を取得
+  const availableTeams = useMemo(() => {
+    if (!contractorIdFilter) return []
+    return getTeamsByContractorId(contractorIdFilter)
+  }, [contractorIdFilter])
+
+  // 依頼先変更時に班フィルタをリセット
+  const handleContractorChange = (contractorId: string) => {
+    setContractorIdFilter(contractorId)
+    setTeamIdFilter('') // 班選択をリセット
+  }
+
+  // フィルタクリア
+  const handleClearFilters = () => {
+    setPropertyTypeFilter('')
+    setCustomerCodeFilter('')
+    setCollectiveCodeFilter('')
+    setContractorIdFilter('')
+    setTeamIdFilter('')
+    setStatusFilter('')
+  }
 
   const filtered = useMemo(() => {
     return data.filter((r) => {
-      const orderOk = orderFilter ? (r.orderNumber || '').includes(orderFilter) : true
-      const customerOk = customerFilter
-        ? (r.customerCode || '').includes(customerFilter) ||
-          (r.customerName || '').includes(customerFilter)
-        : true
-      const statusOk = statusFilter === '全て' || r.status === statusFilter
-      const assigneeOk =
-        assigneeFilter === '全て' || r.assigneeType === assigneeFilter
-      return orderOk && customerOk && statusOk && assigneeOk
+      // 物件種別
+      if (propertyTypeFilter && r.propertyType !== propertyTypeFilter) {
+        return false
+      }
+
+      // 顧客コード（個別のみ、部分一致）
+      if (customerCodeFilter && r.propertyType === '個別') {
+        if (!(r.customerCode || '').includes(customerCodeFilter)) {
+          return false
+        }
+      }
+
+      // 集合コード（集合のみ、部分一致）
+      if (collectiveCodeFilter && r.propertyType === '集合') {
+        if (!(r.collectiveCode || '').includes(collectiveCodeFilter)) {
+          return false
+        }
+      }
+
+      // 依頼先
+      if (contractorIdFilter && r.contractorId !== contractorIdFilter) {
+        return false
+      }
+
+      // 班（依頼先が選択されている場合のみ）
+      if (contractorIdFilter && teamIdFilter && r.teamId !== teamIdFilter) {
+        return false
+      }
+
+      // 状態
+      if (statusFilter && r.status !== statusFilter) {
+        return false
+      }
+
+      return true
     })
-  }, [data, orderFilter, customerFilter, statusFilter, assigneeFilter])
+  }, [data, propertyTypeFilter, customerCodeFilter, collectiveCodeFilter, contractorIdFilter, teamIdFilter, statusFilter])
 
   const getStatusBadge = (status: SurveyStatus): BadgeVariant => {
     const variantMap: Record<SurveyStatus, BadgeVariant> = {
@@ -42,59 +96,108 @@ export default function SurveyTab({ data, onEdit }: SurveyTabProps) {
     return variantMap[status]
   }
 
-  const getFeasibilityBadge = (feasibility: SurveyFeasibility): BadgeVariant => {
-    const variantMap: Record<SurveyFeasibility, BadgeVariant> = {
-      可能: 'success',
-      条件付き可能: 'warning',
-      要確認: 'info',
-      不可: 'danger',
-      未判定: 'default',
-    }
-    return variantMap[feasibility]
-  }
-
-  const formatDateTime = (isoString?: string): string => {
-    if (!isoString) return '-'
-    const date = new Date(isoString)
-    const year = date.getFullYear()
-    const month = (date.getMonth() + 1).toString().padStart(2, '0')
-    const day = date.getDate().toString().padStart(2, '0')
-    const hour = date.getHours().toString().padStart(2, '0')
-    const minute = date.getMinutes().toString().padStart(2, '0')
-    return `${year}-${month}-${day} ${hour}:${minute}`
-  }
-
   return (
     <div>
-      {/* フィルタ */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-4">
-        <div className="relative">
-          <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            value={orderFilter}
-            onChange={(e) => setOrderFilter(e.target.value)}
-            placeholder="受注番号で絞り込み"
-            className="w-full pl-10 pr-3 py-2 rounded-md border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div className="relative">
-          <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            value={customerFilter}
-            onChange={(e) => setCustomerFilter(e.target.value)}
-            placeholder="顧客名・コードで絞り込み"
-            className="w-full pl-10 pr-3 py-2 rounded-md border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <FunnelIcon className="w-5 h-5 text-gray-400" />
+      {/* 絞り込みパネル */}
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+          <FunnelIcon className="w-4 h-4 mr-1.5" />
+          絞り込み条件
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* 物件種別 */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              物件種別
+            </label>
+            <select
+              value={propertyTypeFilter}
+              onChange={(e) => setPropertyTypeFilter(e.target.value as '' | '個別' | '集合')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
+            >
+              <option value="">全て</option>
+              <option value="個別">個別</option>
+              <option value="集合">集合</option>
+            </select>
+          </div>
+
+          {/* 顧客コード */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              顧客コード
+            </label>
+            <input
+              type="text"
+              value={customerCodeFilter}
+              onChange={(e) => setCustomerCodeFilter(e.target.value)}
+              placeholder="C123456"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
+            />
+            <p className="text-xs text-gray-500 mt-1">※個別物件のみ</p>
+          </div>
+
+          {/* 集合コード */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              集合コード
+            </label>
+            <input
+              type="text"
+              value={collectiveCodeFilter}
+              onChange={(e) => setCollectiveCodeFilter(e.target.value)}
+              placeholder="K001"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
+            />
+            <p className="text-xs text-gray-500 mt-1">※集合物件のみ</p>
+          </div>
+
+          {/* 依頼先 */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              依頼先
+            </label>
+            <select
+              value={contractorIdFilter}
+              onChange={(e) => handleContractorChange(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
+            >
+              <option value="">全て</option>
+              {contractors.filter(c => c.isActive).map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* 班 */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              班
+            </label>
+            <select
+              value={teamIdFilter}
+              onChange={(e) => setTeamIdFilter(e.target.value)}
+              disabled={!contractorIdFilter}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+            >
+              <option value="">全て</option>
+              {availableTeams.filter(t => t.isActive).map(t => (
+                <option key={t.id} value={t.id}>{t.teamName}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* 状態 */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              状態
+            </label>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as '全て' | SurveyStatus)}
-              className="w-full px-2 py-2 rounded-md border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => setStatusFilter(e.target.value as '' | SurveyStatus)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
             >
-              <option value="全て">全て</option>
+              <option value="">全て</option>
               <option value="未着手">未着手</option>
               <option value="調査中">調査中</option>
               <option value="完了">完了</option>
@@ -102,16 +205,15 @@ export default function SurveyTab({ data, onEdit }: SurveyTabProps) {
             </select>
           </div>
         </div>
-        <div>
-          <select
-            value={assigneeFilter}
-            onChange={(e) => setAssigneeFilter(e.target.value as '全て' | AssigneeType)}
-            className="w-full px-2 py-2 rounded-md border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+
+        {/* クリアボタン */}
+        <div className="flex justify-end mt-4">
+          <button
+            onClick={handleClearFilters}
+            className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
           >
-            <option value="全て">全て</option>
-            <option value="internal">自社</option>
-            <option value="contractor">協力会社</option>
-          </select>
+            クリア
+          </button>
         </div>
       </div>
 
@@ -123,14 +225,18 @@ export default function SurveyTab({ data, onEdit }: SurveyTabProps) {
               <tr className="bg-gray-100 text-left text-xs text-gray-600">
                 <th className="px-3 py-2 font-medium whitespace-nowrap">整理番号</th>
                 <th className="px-3 py-2 font-medium whitespace-nowrap">受注番号</th>
+                <th className="px-3 py-2 font-medium whitespace-nowrap">個別/集合</th>
+                <th className="px-3 py-2 font-medium whitespace-nowrap">顧客コード</th>
                 <th className="px-3 py-2 font-medium whitespace-nowrap">顧客名</th>
+                <th className="px-3 py-2 font-medium whitespace-nowrap">集合コード</th>
+                <th className="px-3 py-2 font-medium whitespace-nowrap">集合住宅名</th>
                 <th className="px-3 py-2 font-medium whitespace-nowrap">住所</th>
                 <th className="px-3 py-2 font-medium whitespace-nowrap">依頼先</th>
                 <th className="px-3 py-2 font-medium whitespace-nowrap">状態</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">工事可否</th>
                 <th className="px-3 py-2 font-medium whitespace-nowrap">依頼日</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">予定日</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">完了日</th>
+                <th className="px-3 py-2 font-medium whitespace-nowrap">調査予定日</th>
+                <th className="px-3 py-2 font-medium whitespace-nowrap">調査完了日</th>
+                <th className="px-3 py-2 font-medium whitespace-nowrap">最終更新</th>
                 <th className="px-3 py-2 font-medium text-right">操作</th>
               </tr>
             </thead>
@@ -139,7 +245,26 @@ export default function SurveyTab({ data, onEdit }: SurveyTabProps) {
                 <tr key={r.id} className="border-t text-sm odd:bg-white even:bg-gray-50">
                   <td className="px-3 py-2 tabular-nums text-gray-900">{r.serialNumber}</td>
                   <td className="px-3 py-2 font-medium text-gray-900">{r.orderNumber || '-'}</td>
-                  <td className="px-3 py-2 text-gray-900">{r.customerName || '-'}</td>
+                  <td className="px-3 py-2">
+                    <Badge
+                      variant={r.propertyType === '個別' ? 'info' : r.propertyType === '集合' ? 'warning' : 'default'}
+                      size="sm"
+                    >
+                      {r.propertyType || '-'}
+                    </Badge>
+                  </td>
+                  <td className="px-3 py-2 text-gray-900">
+                    {r.propertyType === '個別' ? (r.customerCode || '-') : '-'}
+                  </td>
+                  <td className="px-3 py-2 text-gray-900">
+                    {r.propertyType === '個別' ? (r.customerName || '-') : '-'}
+                  </td>
+                  <td className="px-3 py-2 text-gray-900">
+                    {r.propertyType === '集合' ? (r.collectiveCode || '-') : '-'}
+                  </td>
+                  <td className="px-3 py-2 text-gray-900">
+                    {r.propertyType === '集合' ? (r.collectiveHousingName || '-') : '-'}
+                  </td>
                   <td className="px-3 py-2 text-gray-900 max-w-[12rem] truncate" title={r.address}>
                     {r.address || '-'}
                   </td>
@@ -155,23 +280,10 @@ export default function SurveyTab({ data, onEdit }: SurveyTabProps) {
                       {r.status}
                     </Badge>
                   </td>
-                  <td className="px-3 py-2">
-                    {r.feasibilityResult ? (
-                      <div className="flex flex-col gap-1">
-                        <Badge variant={getFeasibilityBadge(r.feasibilityResult.feasibility)} size="sm">
-                          {r.feasibilityResult.feasibility}
-                        </Badge>
-                        <span className="text-xs text-gray-500">
-                          {formatDateTime(r.feasibilityResult.reportedAt)}
-                        </span>
-                      </div>
-                    ) : (
-                      <Badge variant="default" size="sm">未判定</Badge>
-                    )}
-                  </td>
                   <td className="px-3 py-2 text-gray-900">{r.requestedAt || '-'}</td>
                   <td className="px-3 py-2 text-gray-900">{r.scheduledDate || '-'}</td>
                   <td className="px-3 py-2 text-gray-900">{r.completedAt || '-'}</td>
+                  <td className="px-3 py-2 text-xs text-gray-500">{r.lastUpdatedByName || '-'}</td>
                   <td className="px-3 py-2 text-right">
                     <button
                       className="inline-flex items-center px-2 py-1 rounded border text-gray-700 hover:bg-gray-50 text-xs"
@@ -184,7 +296,7 @@ export default function SurveyTab({ data, onEdit }: SurveyTabProps) {
               ))}
               {filtered.length === 0 && (
                 <tr className="bg-white">
-                  <td colSpan={11} className="px-3 py-10 text-center text-sm text-gray-500">
+                  <td colSpan={15} className="px-3 py-10 text-center text-sm text-gray-500">
                     条件に一致するデータがありません
                   </td>
                 </tr>
