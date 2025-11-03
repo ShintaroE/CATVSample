@@ -32,6 +32,7 @@ export default function RequestNotes({
           rows={4}
           disabled={!isEditing}
           className="bg-white text-gray-900"
+          fullWidth
         />
         <p className="text-xs text-gray-500">
           この備考は協力会社側で確認できます

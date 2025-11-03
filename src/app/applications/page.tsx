@@ -20,7 +20,9 @@ import { getContractors, getTeams } from '@/features/contractor/lib/contractorSt
 import SurveyTab from './components/SurveyTab'
 import AttachmentTab from './components/AttachmentTab'
 import ConstructionTab from './components/ConstructionTab'
-import NewRequestModal from './components/NewRequestModal'
+import NewSurveyModal from './components/NewSurveyModal'
+import NewAttachmentModal from './components/NewAttachmentModal'
+import NewConstructionModal from './components/NewConstructionModal'
 import EditSurveyModal from './components/EditSurveyModal'
 import EditAttachmentModal from './components/EditAttachmentModal'
 import EditConstructionModal from './components/EditConstructionModal'
@@ -174,9 +176,24 @@ export default function ApplicationsPage() {
         </div>
 
         {/* 新規作成モーダル */}
-        {isNewModalOpen && (
-          <NewRequestModal
-            defaultTab={activeTab}
+        {isNewModalOpen && activeTab === 'survey' && (
+          <NewSurveyModal
+            contractors={contractors}
+            teams={teams}
+            onClose={() => setIsNewModalOpen(false)}
+            onCreate={handleCreate}
+          />
+        )}
+        {isNewModalOpen && activeTab === 'attachment' && (
+          <NewAttachmentModal
+            contractors={contractors}
+            teams={teams}
+            onClose={() => setIsNewModalOpen(false)}
+            onCreate={handleCreate}
+          />
+        )}
+        {isNewModalOpen && activeTab === 'construction' && (
+          <NewConstructionModal
             contractors={contractors}
             teams={teams}
             onClose={() => setIsNewModalOpen(false)}

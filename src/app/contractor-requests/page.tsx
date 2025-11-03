@@ -13,23 +13,18 @@ import {
   SurveyStatus,
   AttachmentStatus,
   ConstructionStatus,
-  SurveyFeasibility,
-  AttachmentNeeded,
 } from '@/features/applications/types'
 import {
   getApplications,
   updateApplication,
   addProgressEntry,
-  updateSurveyFeasibility,
-  updateAttachmentApplication,
 } from '@/features/applications/lib/applicationStorage'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { ClipboardDocumentListIcon } from '@heroicons/react/24/outline'
-import { Button, Textarea } from '@/shared/components/ui'
-import FileAttachmentsComponent from '@/app/applications/components/FileAttachments'
-import RequestNotesComponent from '@/app/applications/components/RequestNotes'
-import { AttachedFile } from '@/features/applications/types'
-import { downloadFile } from '@/features/applications/lib/applicationStorage'
+import { Button } from '@/shared/components/ui'
+import SurveyProgressModal from './components/SurveyProgressModal'
+import AttachmentProgressModal from './components/AttachmentProgressModal'
+import ConstructionProgressModal from './components/ConstructionProgressModal'
 
 type TabType = 'survey' | 'attachment' | 'construction'
 
@@ -251,268 +246,29 @@ export default function ContractorRequestsPage() {
           </div>
         </div>
 
-        {/* 進捗更新モーダル（簡易版） */}
-        {selectedRequest && (
-          <ProgressUpdateModal
-            request={selectedRequest}
+        {/* 進捗更新モーダル */}
+        {selectedRequest && selectedRequest.type === 'survey' && (
+          <SurveyProgressModal
+            request={selectedRequest as SurveyRequest}
+            onClose={() => setSelectedRequest(null)}
+            onSave={handleSaveProgress}
+          />
+        )}
+        {selectedRequest && selectedRequest.type === 'attachment' && (
+          <AttachmentProgressModal
+            request={selectedRequest as AttachmentRequest}
+            onClose={() => setSelectedRequest(null)}
+            onSave={handleSaveProgress}
+          />
+        )}
+        {selectedRequest && selectedRequest.type === 'construction' && (
+          <ConstructionProgressModal
+            request={selectedRequest as ConstructionRequest}
             onClose={() => setSelectedRequest(null)}
             onSave={handleSaveProgress}
           />
         )}
       </div>
     </Layout>
-  )
-}
-
-// 簡易版の進捗更新モーダル
-function ProgressUpdateModal({
-  request,
-  onClose,
-  onSave,
-}: {
-  request: ApplicationRequest
-  onClose: () => void
-  onSave: (type: RequestType, id: string, status: string, comment: string) => void
-}) {
-  const { user } = useAuth()
-  const [status, setStatus] = useState<string>(request.status)
-  const [comment, setComment] = useState('')
-  const [formData, setFormData] = useState<ApplicationRequest>(request)
-  const [uploadingFiles, setUploadingFiles] = useState(false)
-
-  // 新規報告用のstate
-  const [surveyFeasibility, setSurveyFeasibility] = useState<SurveyFeasibility>(
-    (request as SurveyRequest).feasibilityResult?.feasibility || '未判定'
-  )
-  const [attachmentNeeded, setAttachmentNeeded] = useState<AttachmentNeeded>(
-    (request as AttachmentRequest).applicationReport?.applicationNeeded || '未確認'
-  )
-
-  const handleFileUpload = async (files: File[]) => {
-    if (!user) return
-    setUploadingFiles(true)
-    try {
-      const newFiles = await Promise.all(
-        files.map(async (file) => {
-          const reader = new FileReader()
-          return new Promise<{ name: string; size: number; type: string; data: string }>((resolve) => {
-            reader.onload = () => resolve({ name: file.name, size: file.size, type: file.type, data: reader.result as string })
-            reader.readAsDataURL(file)
-          })
-        })
-      )
-      const existingAttachments = formData.attachments || { fromAdmin: [], fromContractor: [] }
-      setFormData((prev) => ({
-        ...prev,
-        attachments: {
-          ...existingAttachments,
-          fromContractor: [
-            ...existingAttachments.fromContractor,
-            ...newFiles.map((f, i) => ({
-              id: `temp-${Date.now()}-${i}`,
-              fileName: f.name,
-              fileSize: f.size,
-              fileType: f.type,
-              fileData: f.data,
-              uploadedBy: user.id,
-              uploadedByName: user.name,
-              uploadedByRole: 'contractor' as const,
-              uploadedAt: new Date().toISOString(),
-            })),
-          ],
-        },
-      }))
-    } catch (error) {
-      console.error('File upload failed:', error)
-    } finally {
-      setUploadingFiles(false)
-    }
-  }
-
-  const handleFileDelete = (fileId: string) => {
-    const existingAttachments = formData.attachments || { fromAdmin: [], fromContractor: [] }
-    setFormData((prev) => ({
-      ...prev,
-      attachments: {
-        ...existingAttachments,
-        fromContractor: existingAttachments.fromContractor.filter((f) => f.id !== fileId),
-      },
-    }))
-  }
-
-  const handleFileDownload = (file: AttachedFile) => { downloadFile(file) }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!user?.contractorId || !user?.contractor || !formData.teamName) return
-
-    // タイプ別の報告を保存
-    if (request.type === 'survey') {
-      updateSurveyFeasibility(
-        request.id,
-        surveyFeasibility,
-        user.contractorId,
-        user.contractor,
-        formData.teamName
-      )
-    } else if (request.type === 'attachment') {
-      updateAttachmentApplication(
-        request.id,
-        attachmentNeeded,
-        user.contractorId,
-        user.contractor,
-        formData.teamName
-      )
-    }
-
-    // ファイル添付も含めて更新
-    updateApplication(request.type, request.id, {
-      attachments: formData.attachments,
-    })
-
-    // 進捗履歴を追加（従来通り）
-    onSave(request.type, request.id, status, comment)
-  }
-
-  const getStatusOptions = () => {
-    if (request.type === 'survey') {
-      return ['未着手', '調査中', '完了', 'キャンセル']
-    } else if (request.type === 'attachment') {
-      return ['受付', '調査済み', '完了']
-    } else {
-      return ['未着手', '施工中', '完了', '一部完了', '中止', '延期', '保留']
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative bg-white w-[min(600px,92vw)] max-h-[90vh] overflow-auto rounded-lg shadow-xl">
-        <div className="px-5 py-4 border-b">
-          <h2 className="text-lg font-semibold">進捗更新</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            整理番号: {request.serialNumber} / {request.customerName}
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit}>
-          <div className="px-5 py-4 space-y-4">
-            {/* 管理者からの指示事項 */}
-            <RequestNotesComponent
-              userRole="contractor"
-              notes={request.requestNotes}
-              isEditing={false}
-            />
-
-            {/* タイプ別の報告フォーム */}
-            {request.type === 'survey' && (
-              <div className="border-t pt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">工事可否判定</label>
-                <div className="space-y-2">
-                  {(['可能', '条件付き可能', '要確認', '不可'] as SurveyFeasibility[]).map((option) => (
-                    <label key={option} className="flex items-center">
-                      <input
-                        type="radio"
-                        value={option}
-                        checked={surveyFeasibility === option}
-                        onChange={(e) => setSurveyFeasibility(e.target.value as SurveyFeasibility)}
-                        className="mr-2"
-                      />
-                      <span className="text-sm text-gray-700">{option}</span>
-                    </label>
-                  ))}
-                </div>
-                <p className="text-xs text-gray-500 mt-2">詳細はファイルにて提出してください</p>
-              </div>
-            )}
-
-            {request.type === 'attachment' && (
-              <div className="border-t pt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">申請有無</label>
-                <div className="space-y-2">
-                  {(['必要', '不要'] as AttachmentNeeded[]).map((option) => (
-                    <label key={option} className="flex items-center">
-                      <input
-                        type="radio"
-                        value={option}
-                        checked={attachmentNeeded === option}
-                        onChange={(e) => setAttachmentNeeded(e.target.value as AttachmentNeeded)}
-                        className="mr-2"
-                      />
-                      <span className="text-sm text-gray-700">{option}</span>
-                    </label>
-                  ))}
-                </div>
-                <p className="text-xs text-gray-500 mt-2">詳細はファイルにて提出してください</p>
-              </div>
-            )}
-
-            {request.type === 'construction' && (
-              <div className="border-t pt-4">
-                <p className="text-sm text-gray-700 mb-2">
-                  工事予定日: <span className="font-medium">{(request as ConstructionRequest).constructionDate || '未設定'}</span>
-                </p>
-                <p className="text-xs text-gray-500">作業詳細はファイルにて提出してください</p>
-              </div>
-            )}
-
-            <div className="border-t pt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">ステータス</label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
-                required
-              >
-                {getStatusOptions().map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <Textarea
-              label="進捗コメント"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="作業内容や気づいた点を入力してください"
-              required
-              className="min-h-[100px]"
-            />
-
-            {/* ファイル添付 */}
-            <div className="border-t pt-4">
-              <FileAttachmentsComponent
-                userRole="contractor"
-                attachments={formData.attachments || { fromAdmin: [], fromContractor: [] }}
-                isEditing={true}
-                onFileUpload={handleFileUpload}
-                onFileDelete={handleFileDelete}
-                onFileDownload={handleFileDownload}
-                uploadingFiles={uploadingFiles}
-              />
-            </div>
-          </div>
-
-          <div className="px-5 py-4 border-t flex items-center justify-end gap-2">
-            <Button
-              type="button"
-              onClick={onClose}
-              variant="secondary"
-            >
-              キャンセル
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-            >
-              更新
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
   )
 }
