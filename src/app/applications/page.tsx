@@ -165,13 +165,13 @@ export default function ApplicationsPage() {
         {/* タブコンテンツ */}
         <div className="mt-4">
           {activeTab === 'survey' && (
-            <SurveyTab data={surveyData} onEdit={handleEdit} />
+            <SurveyTab data={surveyData} contractors={contractors} teams={teams} onEdit={handleEdit} />
           )}
           {activeTab === 'attachment' && (
-            <AttachmentTab data={attachmentData} onEdit={handleEdit} />
+            <AttachmentTab data={attachmentData} contractors={contractors} teams={teams} onEdit={handleEdit} />
           )}
           {activeTab === 'construction' && (
-            <ConstructionTab data={constructionData} onEdit={handleEdit} />
+            <ConstructionTab data={constructionData} contractors={contractors} teams={teams} onEdit={handleEdit} />
           )}
         </div>
 

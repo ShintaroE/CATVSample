@@ -20,7 +20,7 @@ import {
   addProgressEntry,
 } from '@/features/applications/lib/applicationStorage'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
-import { ClipboardDocumentListIcon } from '@heroicons/react/24/outline'
+import { ClipboardDocumentListIcon, FunnelIcon } from '@heroicons/react/24/outline'
 import { Button } from '@/shared/components/ui'
 import SurveyProgressModal from './components/SurveyProgressModal'
 import AttachmentProgressModal from './components/AttachmentProgressModal'
@@ -43,6 +43,10 @@ export default function ContractorRequestsPage() {
   const [attachmentData, setAttachmentData] = useState<AttachmentRequest[]>([])
   const [constructionData, setConstructionData] = useState<ConstructionRequest[]>([])
   const [selectedRequest, setSelectedRequest] = useState<ApplicationRequest | null>(null)
+
+  // 絞り込みフィルタ
+  const [orderNumberFilter, setOrderNumberFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('')
 
   // 協力会社ユーザーでない場合はリダイレクト
   useEffect(() => {
@@ -95,6 +99,37 @@ export default function ContractorRequestsPage() {
     setSelectedRequest(request)
   }
 
+  // フィルタクリア
+  const handleClearFilters = () => {
+    setOrderNumberFilter('')
+    setStatusFilter('')
+  }
+
+  // 現在のタブデータ
+  const currentData =
+    activeTab === 'survey'
+      ? surveyData
+      : activeTab === 'attachment'
+      ? attachmentData
+      : constructionData
+
+  // フィルタリング適用
+  const filteredData = useMemo(() => {
+    return currentData.filter((request: ApplicationRequest) => {
+      // 受注番号
+      if (orderNumberFilter && !(request.orderNumber || '').includes(orderNumberFilter)) {
+        return false
+      }
+
+      // 状態
+      if (statusFilter && request.status !== statusFilter) {
+        return false
+      }
+
+      return true
+    })
+  }, [currentData, orderNumberFilter, statusFilter])
+
   // 進捗更新を保存
   const handleSaveProgress = (
     type: RequestType,
@@ -126,13 +161,6 @@ export default function ContractorRequestsPage() {
     return null
   }
 
-  const currentData =
-    activeTab === 'survey'
-      ? surveyData
-      : activeTab === 'attachment'
-      ? attachmentData
-      : constructionData
-
   return (
     <Layout>
       <div className="px-6 py-6">
@@ -143,26 +171,37 @@ export default function ContractorRequestsPage() {
               <ClipboardDocumentListIcon className="w-7 h-7 mr-2 text-blue-600" />
               依頼一覧
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              {user.contractor} に割り当てられた依頼を確認・更新できます
-            </p>
+
+            {availableTeams.length === 1 ? (
+              // 班が1つの場合: 情報表示のみ
+              <p className="text-sm text-gray-600 mt-1">
+                {user.contractor} {availableTeams[0].teamName} に割り当てられた依頼
+              </p>
+            ) : availableTeams.length > 1 ? (
+              // 班が複数の場合: セレクトボックス表示
+              <div className="flex items-center gap-2 mt-2">
+                <label className="text-sm font-medium text-gray-700">
+                  表示する班:
+                </label>
+                <select
+                  value={selectedTeamId}
+                  onChange={(e) => setSelectedTeamId(e.target.value)}
+                  className="px-3 py-1.5 border rounded-md bg-white text-gray-900 text-sm"
+                >
+                  {availableTeams.map((team) => (
+                    <option key={team.id} value={team.id}>
+                      {team.teamName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              // 班がない場合
+              <p className="text-sm text-gray-500 mt-1">
+                班が割り当てられていません
+              </p>
+            )}
           </div>
-          {availableTeams.length > 1 && (
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-700">班:</label>
-              <select
-                value={selectedTeamId}
-                onChange={(e) => setSelectedTeamId(e.target.value)}
-                className="px-3 py-2 border rounded-md bg-white text-gray-900"
-              >
-                {availableTeams.map((team) => (
-                  <option key={team.id} value={team.id}>
-                    {team.teamName}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
         </div>
 
         {/* タブ */}
@@ -188,6 +227,81 @@ export default function ContractorRequestsPage() {
           </nav>
         </div>
 
+        {/* 絞り込みパネル */}
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-4">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+            <FunnelIcon className="w-4 h-4 mr-1.5" />
+            絞り込み条件
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* 受注番号 */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                受注番号
+              </label>
+              <input
+                type="text"
+                value={orderNumberFilter}
+                onChange={(e) => setOrderNumberFilter(e.target.value)}
+                placeholder="2024031500001"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
+              />
+            </div>
+
+            {/* 状態 */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                状態
+              </label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
+              >
+                <option value="">全て</option>
+                {activeTab === 'survey' && (
+                  <>
+                    <option value="未着手">未着手</option>
+                    <option value="調査中">調査中</option>
+                    <option value="完了">完了</option>
+                    <option value="キャンセル">キャンセル</option>
+                  </>
+                )}
+                {activeTab === 'attachment' && (
+                  <>
+                    <option value="受付">受付</option>
+                    <option value="提出済">提出済</option>
+                    <option value="許可">許可</option>
+                    <option value="取下げ">取下げ</option>
+                  </>
+                )}
+                {activeTab === 'construction' && (
+                  <>
+                    <option value="未着手">未着手</option>
+                    <option value="施工中">施工中</option>
+                    <option value="完了">完了</option>
+                    <option value="一部完了">一部完了</option>
+                    <option value="中止">中止</option>
+                    <option value="延期">延期</option>
+                    <option value="保留">保留</option>
+                  </>
+                )}
+              </select>
+            </div>
+          </div>
+
+          {/* クリアボタン */}
+          <div className="flex justify-end mt-4">
+            <button
+              onClick={handleClearFilters}
+              className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              クリア
+            </button>
+          </div>
+        </div>
+
         {/* テーブル */}
         <div className="mt-4 bg-white rounded-lg shadow overflow-hidden">
           <div className="overflow-x-auto">
@@ -196,8 +310,22 @@ export default function ContractorRequestsPage() {
                 <tr className="bg-gray-100 text-left text-xs text-gray-600">
                   <th className="px-3 py-2 font-medium">整理番号</th>
                   <th className="px-3 py-2 font-medium">受注番号</th>
-                  <th className="px-3 py-2 font-medium">顧客名</th>
-                  <th className="px-3 py-2 font-medium">住所</th>
+                  {activeTab === 'survey' && (
+                    <>
+                      <th className="px-3 py-2 font-medium">個別/集合</th>
+                      <th className="px-3 py-2 font-medium">顧客コード</th>
+                      <th className="px-3 py-2 font-medium">顧客名</th>
+                      <th className="px-3 py-2 font-medium">集合コード</th>
+                      <th className="px-3 py-2 font-medium">集合住宅名</th>
+                      <th className="px-3 py-2 font-medium">住所</th>
+                    </>
+                  )}
+                  {activeTab !== 'survey' && (
+                    <>
+                      <th className="px-3 py-2 font-medium">顧客名</th>
+                      <th className="px-3 py-2 font-medium">住所</th>
+                    </>
+                  )}
                   <th className="px-3 py-2 font-medium">予定日</th>
                   <th className="px-3 py-2 font-medium">状態</th>
                   <th className="px-3 py-2 font-medium">最終更新</th>
@@ -205,14 +333,56 @@ export default function ContractorRequestsPage() {
                 </tr>
               </thead>
               <tbody className="text-gray-900">
-                {currentData.map((request) => (
+                {filteredData.map((request) => (
                   <tr key={request.id} className="border-t text-sm odd:bg-white even:bg-gray-50">
                     <td className="px-3 py-2">{request.serialNumber}</td>
                     <td className="px-3 py-2">{request.orderNumber || '-'}</td>
-                    <td className="px-3 py-2">{request.customerName || '-'}</td>
-                    <td className="px-3 py-2 max-w-[12rem] truncate" title={request.address}>
-                      {request.address || '-'}
-                    </td>
+                    {activeTab === 'survey' && (
+                      <>
+                        <td className="px-3 py-2">
+                          {(request as SurveyRequest).propertyType ? (
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              (request as SurveyRequest).propertyType === '個別'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-purple-100 text-purple-800'
+                            }`}>
+                              {(request as SurveyRequest).propertyType}
+                            </span>
+                          ) : '-'}
+                        </td>
+                        <td className="px-3 py-2">
+                          {(request as SurveyRequest).propertyType === '個別'
+                            ? ((request as SurveyRequest).customerCode || '-')
+                            : '-'}
+                        </td>
+                        <td className="px-3 py-2">
+                          {(request as SurveyRequest).propertyType === '個別'
+                            ? ((request as SurveyRequest).customerName || '-')
+                            : '-'}
+                        </td>
+                        <td className="px-3 py-2">
+                          {(request as SurveyRequest).propertyType === '集合'
+                            ? ((request as SurveyRequest).collectiveCode || '-')
+                            : '-'}
+                        </td>
+                        <td className="px-3 py-2">
+                          {(request as SurveyRequest).propertyType === '集合'
+                            ? ((request as SurveyRequest).collectiveHousingName || '-')
+                            : '-'}
+                        </td>
+                        <td className="px-3 py-2 max-w-[12rem] truncate" title={request.address}>
+                          {request.address || '-'}
+                        </td>
+                      </>
+                    )}
+                    {activeTab !== 'survey' && (
+                      <>
+                        <td className="px-3 py-2">{request.customerName || '-'}</td>
+                        <td className="px-3 py-2 max-w-[12rem] truncate" title={request.address}>
+                          {request.address || '-'}
+                        </td>
+                      </>
+                    )}
                     <td className="px-3 py-2">{request.scheduledDate || '-'}</td>
                     <td className="px-3 py-2">
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">

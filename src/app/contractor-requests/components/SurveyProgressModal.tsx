@@ -116,29 +116,6 @@ export default function SurveyProgressModal({
           </div>
 
           <div className="px-6 py-4 space-y-6">
-            {/* 依頼情報（読み取り専用） */}
-            <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-              <h3 className="font-medium text-gray-900 mb-3">依頼情報</h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <span className="text-gray-600">申請番号:</span>
-                  <span className="ml-2 text-gray-900">{request.serialNumber}</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">受注番号:</span>
-                  <span className="ml-2 text-gray-900">{request.orderNumber}</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">顧客名:</span>
-                  <span className="ml-2 text-gray-900">{request.customerName}</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">住所:</span>
-                  <span className="ml-2 text-gray-900">{request.address}</span>
-                </div>
-              </div>
-            </div>
-
             {/* KCT管理者からの指示事項 */}
             <RequestNotes
               userRole="contractor"
