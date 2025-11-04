@@ -3,17 +3,10 @@
 import React from 'react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 
+import { useFilters } from '../../hooks/useFilters'
+
 interface FilterPanelProps {
-  filterHooks: {
-    teamFilters: any[]
-    isFilterPanelOpen: boolean
-    setIsFilterPanelOpen: (open: boolean) => void
-    getContractorCheckState: (contractorId: string) => 'all' | 'some' | 'none'
-    getContractorGroups: () => any[]
-    handleToggleAll: (checked: boolean) => void
-    handleToggleContractor: (contractorId: string, checked: boolean) => void
-    handleToggleTeam: (teamId: string, checked: boolean) => void
-  }
+  filterHooks: ReturnType<typeof useFilters>
 }
 
 export default function FilterPanel({ filterHooks }: FilterPanelProps) {
@@ -48,9 +41,6 @@ export default function FilterPanel({ filterHooks }: FilterPanelProps) {
             {/* 協力会社ごとのフィルター */}
             {contractorGroups.map(contractor => {
               const checkState = filterHooks.getContractorCheckState(contractor.id)
-              const colorClass = contractor.color === 'blue' ? 'text-blue-600' :
-                               contractor.color === 'green' ? 'text-green-600' :
-                               contractor.color === 'purple' ? 'text-purple-600' : 'text-gray-600'
 
               return (
                 <div key={contractor.id} className="mb-2">

@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
+import { PlusIcon } from '@heroicons/react/24/outline'
 import { Button } from '@/shared/components/ui'
 import { ViewMode } from '../../types'
 import NavigationButtons from './NavigationButtons'

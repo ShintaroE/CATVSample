@@ -1,7 +1,11 @@
 'use client'
 
 import React, { useMemo } from 'react'
-import { ScheduleItem, ExclusionEntry, HOUR_HEIGHT, BUSINESS_START_HOUR, BUSINESS_END_HOUR } from '../../../types'
+import { ScheduleItem, ExclusionEntry, HOUR_HEIGHT, BUSINESS_START_HOUR, BUSINESS_END_HOUR, WeekViewColumn, TeamGroup, AssignedTeam } from '../../../types'
+import { getContractorColorClasses } from '@/shared/utils/contractorColors'
+import { useFilters } from '../../../hooks/useFilters'
+import { useScheduleLayout } from '../../../hooks/useScheduleLayout'
+import { useCalendar } from '../../../hooks/useCalendar'
 
 interface WeekViewProps {
   currentDate: Date
@@ -9,25 +13,49 @@ interface WeekViewProps {
   onDateSelect: (date: Date) => void
   onDateDoubleClick: (date: Date) => void
   onEditSchedule: (schedule: ScheduleItem) => void
-  filterHooks: any
-  layoutHooks: any
-  calendarHooks: any
+  filterHooks: ReturnType<typeof useFilters>
+  layoutHooks: ReturnType<typeof useScheduleLayout>
+  calendarHooks: ReturnType<typeof useCalendar>
 }
 
 export default function WeekView({
-  currentDate,
   selectedDateForAdd,
   onDateSelect,
   onDateDoubleClick,
   onEditSchedule,
   filterHooks,
   layoutHooks,
-  calendarHooks,
 }: WeekViewProps) {
   const teamGroups = layoutHooks.getTeamGroups()
   const weekColumns = layoutHooks.getWeekViewColumns()
   const columnWidth = layoutHooks.getColumnWidth(teamGroups.length)
   const totalColumns = weekColumns.length
+
+  const getHourlyTimeSlots = () => {
+    const slots: string[] = []
+    for (let hour = BUSINESS_START_HOUR; hour <= BUSINESS_END_HOUR; hour++) {
+      slots.push(`${hour.toString().padStart(2, '0')}:00`)
+    }
+    return slots
+  }
+
+  // 各列ごとのスケジュールと除外日を取得（早期returnの前に呼ぶ必要がある）
+  const columnSchedules = useMemo(() => {
+    return weekColumns.map((col: WeekViewColumn) => {
+      return filterHooks.filteredSchedules.filter((s: ScheduleItem) =>
+        s.assignedDate === col.dateStr &&
+        s.assignedTeams.some((team: AssignedTeam) => team.teamId === col.teamId)
+      )
+    })
+  }, [weekColumns, filterHooks.filteredSchedules])
+
+  const columnExclusions = useMemo(() => {
+    return weekColumns.map((col: WeekViewColumn) => {
+      return filterHooks.filteredExclusions.filter((e: ExclusionEntry) =>
+        e.teamId === col.teamId && e.date === col.dateStr
+      )
+    })
+  }, [weekColumns, filterHooks.filteredExclusions])
 
   if (totalColumns === 0) {
     return (
@@ -37,45 +65,6 @@ export default function WeekView({
         表示フィルターから班を選択してください。
       </div>
     )
-  }
-
-  const getHourlyTimeSlots = () => {
-    const slots = []
-    for (let hour = BUSINESS_START_HOUR; hour <= BUSINESS_END_HOUR; hour++) {
-      slots.push(`${hour.toString().padStart(2, '0')}:00`)
-    }
-    return slots
-  }
-
-  // 各列ごとのスケジュールと除外日を取得
-  const columnSchedules = useMemo(() => {
-    return weekColumns.map((col: any) => {
-      return filterHooks.filteredSchedules.filter((s: ScheduleItem) =>
-        s.assignedDate === col.dateStr &&
-        s.assignedTeams.some((team: any) => team.teamId === col.teamId)
-      )
-    })
-  }, [weekColumns, filterHooks.filteredSchedules])
-
-  const columnExclusions = useMemo(() => {
-    return weekColumns.map((col: any) => {
-      return filterHooks.filteredExclusions.filter((e: ExclusionEntry) =>
-        e.teamId === col.teamId && e.date === col.dateStr
-      )
-    })
-  }, [weekColumns, filterHooks.filteredExclusions])
-
-  const getContractorColor = (contractor: string) => {
-    switch (contractor) {
-      case '直営班':
-        return 'bg-blue-200 border-blue-300 text-blue-900'
-      case '栄光電気':
-        return 'bg-green-200 border-green-300 text-green-900'
-      case 'スライヴ':
-        return 'bg-purple-200 border-purple-300 text-purple-900'
-      default:
-        return 'bg-gray-200 border-gray-300 text-gray-900'
-    }
   }
 
   const getTimeLabel = (exclusion: ExclusionEntry): string => {
@@ -108,7 +97,7 @@ export default function WeekView({
             <div className="p-3 bg-gray-50 border-r-2 border-gray-300 text-sm font-medium text-gray-700 sticky left-0 z-10">
               時間
             </div>
-            {teamGroups.map((team: any) => (
+            {teamGroups.map((team: TeamGroup) => (
               <div
                 key={team.teamId}
                 className={`p-3 text-center border-r-2 border-gray-300 last:border-r-0 ${
@@ -130,7 +119,7 @@ export default function WeekView({
             }}
           >
             <div className="bg-gray-50 border-r border-gray-200 sticky left-0 z-10" />
-            {weekColumns.map((col: any, idx: number) => (
+            {weekColumns.map((col: WeekViewColumn, idx: number) => (
               <div
                 key={`${col.teamId}-${col.dateStr}-${idx}`}
                 className={`p-2 text-center text-xs border-r border-gray-200 cursor-pointer hover:bg-gray-100 ${
@@ -163,7 +152,7 @@ export default function WeekView({
               </div>
 
               {/* 班列（背景グリッド） */}
-              {weekColumns.map((col: any, colIdx: number) => (
+              {weekColumns.map((col: WeekViewColumn) => (
                 <div key={`grid-${col.teamId}-${col.dateStr}`} className="border-r border-gray-100">
                   {timeSlots.map((time: string) => (
                     <div
@@ -186,7 +175,7 @@ export default function WeekView({
               <div />
 
               {/* 班ごとのスケジュールエリア */}
-              {weekColumns.map((col: any, colIdx: number) => {
+              {weekColumns.map((col: WeekViewColumn, colIdx: number) => {
                 const schedules = columnSchedules[colIdx] || []
                 const exclusions = columnExclusions[colIdx] || []
 
@@ -222,7 +211,7 @@ export default function WeekView({
                       return (
                         <div
                           key={schedule.id}
-                          className={`absolute left-0 right-0 rounded border-l-4 shadow-sm cursor-pointer hover:shadow-lg hover:z-50 transition-all ${getContractorColor(schedule.contractor)}`}
+                          className={`absolute left-0 right-0 rounded border-l-4 shadow-sm cursor-pointer hover:shadow-lg hover:z-50 transition-all ${getContractorColorClasses(schedule.contractor)}`}
                           style={{
                             top: layoutHooks.calculateScheduleTop(schedule.timeSlot),
                             height: scheduleHeight,

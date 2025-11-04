@@ -2,13 +2,14 @@
 
 import React from 'react'
 import { useScheduleViewer } from '../../../hooks/useScheduleViewer'
+import { getContractorBadgeColorClasses, getContractorBackgroundColorClass, getContractorColorName } from '@/shared/utils/contractorColors'
 
 interface MonthViewProps {
   scheduleHooks: ReturnType<typeof useScheduleViewer>
 }
 
 export default function MonthView({ scheduleHooks }: MonthViewProps) {
-  const getExclusionTimeText = (exclusion: any) => {
+  const getExclusionTimeText = (exclusion: { timeType: string; startTime?: string; endTime?: string }) => {
     switch (exclusion.timeType) {
       case 'all_day':
         return '終日'
@@ -90,11 +91,7 @@ export default function MonthView({ scheduleHooks }: MonthViewProps) {
                   {daySchedules.slice(0, 2).map((schedule, idx) => (
                     <div
                       key={idx}
-                      className={`text-[10px] p-0.5 rounded truncate ${
-                        schedule.contractor === '直営班' ? 'bg-blue-100 text-blue-800' :
-                        schedule.contractor === '栄光電気' ? 'bg-green-100 text-green-800' :
-                        'bg-purple-100 text-purple-800'
-                      }`}
+                      className={`text-[10px] p-0.5 rounded truncate ${getContractorBadgeColorClasses(schedule.contractor)}`}
                     >
                       <div className="truncate">
                         {schedule.contractor}{schedule.teamName ? ` - ${schedule.teamName}` : ''}
@@ -145,19 +142,16 @@ export default function MonthView({ scheduleHooks }: MonthViewProps) {
               .map((schedule, index) => (
                 <div
                   key={index}
-                  className={`p-3 rounded-lg border ${
-                    schedule.contractor === '直営班' ? 'bg-blue-50 border-blue-200' :
-                    schedule.contractor === '栄光電気' ? 'bg-green-50 border-green-200' :
-                    'bg-purple-50 border-purple-200'
+                  className={`p-3 rounded-lg border ${getContractorBackgroundColorClass(schedule.contractor)} ${
+                    getContractorColorName(schedule.contractor) === 'blue' ? 'border-blue-200' :
+                    getContractorColorName(schedule.contractor) === 'green' ? 'border-green-200' :
+                    getContractorColorName(schedule.contractor) === 'purple' ? 'border-purple-200' :
+                    'border-gray-200'
                   }`}
                 >
                   <div className="flex justify-between items-start mb-2">
                     <span className="font-medium text-xs">{schedule.timeSlot}</span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                      schedule.contractor === '直営班' ? 'bg-blue-100 text-blue-800' :
-                      schedule.contractor === '栄光電気' ? 'bg-green-100 text-green-800' :
-                      'bg-purple-100 text-purple-800'
-                    }`}>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${getContractorBadgeColorClasses(schedule.contractor)}`}>
                       {schedule.contractor}{schedule.teamName ? ` - ${schedule.teamName}` : ''}
                     </span>
                   </div>

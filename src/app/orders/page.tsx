@@ -41,7 +41,7 @@ export default function OrdersPage() {
     }
   }
 
-  const handleMapUpload = (order: OrderData, file: File) => {
+  const handleMapUpload = (order: OrderData) => {
     // 実際の実装では、ファイルをサーバーにアップロードして URL を取得
     // ここではサンプルとして地図.pdfのパスを設定
     const mapPath = '/地図.pdf'

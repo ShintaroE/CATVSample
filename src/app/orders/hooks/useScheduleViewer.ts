@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
-import { ExclusionEntry, ScheduleData, TeamFilter, CalendarViewMode, WeekViewColumn, TeamGroup } from '../types'
+import { TeamFilter, CalendarViewMode, WeekViewColumn, TeamGroup } from '../types'
 import { sampleExclusions, sampleSchedules } from '../data/sampleData'
+import { getContractorColorName } from '@/shared/utils/contractorColors'
 
 export function useScheduleViewer() {
   const [calendarViewMode, setCalendarViewMode] = useState<CalendarViewMode>('month')
@@ -14,21 +15,17 @@ export function useScheduleViewer() {
   useEffect(() => {
     const contractors = getContractors()
     const teams = getTeams()
-    const colorMap: Record<string, string> = {
-      'contractor-1': 'blue',
-      'contractor-2': 'green',
-      'contractor-3': 'purple'
-    }
 
     const filters: TeamFilter[] = teams.map(team => {
       const contractor = contractors.find(c => c.id === team.contractorId)
+      const contractorName = contractor?.name || ''
       return {
         contractorId: team.contractorId,
-        contractorName: contractor?.name || '',
+        contractorName,
         teamId: team.id,
         teamName: team.teamName,
         isVisible: true,
-        color: colorMap[team.contractorId] || 'gray'
+        color: getContractorColorName(contractorName)
       }
     })
 

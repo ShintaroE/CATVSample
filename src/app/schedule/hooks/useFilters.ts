@@ -1,16 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
-import { TeamFilter, ScheduleItem, ExclusionEntry, ScheduleItemWithTeam, AssignedTeam } from '../types'
-import { sampleSchedules, sampleExclusions } from '../data/sampleData'
-
-const getContractorColorName = (contractorName: string): string => {
-  const colorMap: Record<string, string> = {
-    '直営班': 'blue',
-    '栄光電気': 'green',
-    'スライヴ': 'purple',
-  }
-  return colorMap[contractorName] || 'gray'
-}
+import { TeamFilter, ScheduleItem, ExclusionEntry, ScheduleItemWithTeam } from '../types'
+import { getContractorColorName } from '@/shared/utils/contractorColors'
 
 export function useFilters(schedules: ScheduleItem[], exclusions: ExclusionEntry[]) {
   const [teamFilters, setTeamFilters] = useState<TeamFilter[]>([])
