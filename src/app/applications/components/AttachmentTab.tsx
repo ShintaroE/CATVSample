@@ -206,44 +206,80 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
       </div>
 
       {/* テーブル */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white">
-            <thead>
-              <tr className="bg-gray-100 text-left text-xs text-gray-600">
-                <th className="px-3 py-2 font-medium whitespace-nowrap">整理番号</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">受注番号</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">顧客名</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">依頼先</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">提出日</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">許可日</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">状態</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">申請有無</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">取下げ</th>
-                <th className="px-3 py-2 font-medium text-right">操作</th>
+      <div className="overflow-x-auto bg-white rounded-lg shadow">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                整理番号
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                受注番号
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                顧客名
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                依頼先
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                提出日
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                許可日
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                状態
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                申請有無
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                取下げ
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                操作
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={10} className="px-4 py-8 text-center text-sm text-gray-500">
+                  条件に一致するデータがありません
+                </td>
               </tr>
-            </thead>
-            <tbody className="text-gray-900">
-              {filtered.map((r) => (
-                <tr key={r.id} className="border-t text-sm odd:bg-white even:bg-gray-50">
-                  <td className="px-3 py-2 tabular-nums text-gray-900">{r.serialNumber}</td>
-                  <td className="px-3 py-2 font-medium text-gray-900">{r.orderNumber || '-'}</td>
-                  <td className="px-3 py-2 text-gray-900">{r.customerName || '-'}</td>
-                  <td className="px-3 py-2 text-gray-900">
+            ) : (
+              filtered.map((r) => (
+                <tr key={r.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap tabular-nums">
+                    {r.serialNumber}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap font-medium">
+                    {r.orderNumber || '-'}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    {r.customerName || '-'}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.assigneeType === 'internal' ? (
                       <span className="text-blue-600 font-medium">自社 - {r.teamName}</span>
                     ) : (
                       <span className="text-gray-900">{r.contractorName} - {r.teamName}</span>
                     )}
                   </td>
-                  <td className="px-3 py-2 text-gray-900">{r.submittedAt || '-'}</td>
-                  <td className="px-3 py-2 text-gray-900">{r.approvedAt || '-'}</td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    {r.submittedAt || '-'}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    {r.approvedAt || '-'}
+                  </td>
+                  <td className="px-4 py-3 text-sm whitespace-nowrap">
                     <Badge variant={getStatusBadge(r.status)} size="sm">
                       {r.status}
                     </Badge>
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-3 text-sm whitespace-nowrap">
                     {r.applicationReport ? (
                       <div className="flex flex-col gap-1">
                         <Badge variant={getApplicationNeededBadge(r.applicationReport.applicationNeeded)} size="sm">
@@ -257,36 +293,30 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
                       <Badge variant="default" size="sm">未確認</Badge>
                     )}
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-3 text-sm whitespace-nowrap">
                     {r.withdrawNeeded ? (
                       <span className="text-red-600 text-xs font-semibold">要</span>
                     ) : (
                       <span className="text-gray-400 text-xs">-</span>
                     )}
                   </td>
-                  <td className="px-3 py-2 text-right">
+                  <td className="px-4 py-3 text-sm whitespace-nowrap">
                     <button
-                      className="inline-flex items-center px-2 py-1 rounded border text-gray-700 hover:bg-gray-50 text-xs"
+                      className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       onClick={() => onEdit(r)}
                     >
-                      <PencilSquareIcon className="w-4 h-4 mr-1" /> 編集
+                      <PencilSquareIcon className="h-4 w-4 mr-1" />
+                      編集
                     </button>
                   </td>
                 </tr>
-              ))}
-              {filtered.length === 0 && (
-                <tr className="bg-white">
-                  <td colSpan={10} className="px-3 py-10 text-center text-sm text-gray-500">
-                    条件に一致するデータがありません
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-        <div className="px-3 py-2 text-xs text-gray-500 border-t">
-          表示件数: {filtered.length} / 総件数: {data.length}
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+      <div className="px-4 py-2 text-xs text-gray-500 bg-white rounded-b-lg">
+        表示件数: {filtered.length} / 総件数: {data.length}
       </div>
     </div>
   )

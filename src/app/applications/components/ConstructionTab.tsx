@@ -32,6 +32,17 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
     setTeamIdFilter('')
   }
 
+  // フィルタクリア
+  const handleClearFilters = () => {
+    setOrderNumberFilter('')
+    setCustomerNameFilter('')
+    setConstructionTypeFilter('')
+    setContractorIdFilter('')
+    setTeamIdFilter('')
+    setStatusFilter('')
+    setPostConstructionReportFilter('')
+  }
+
   // Badge variant functions
   const getStatusBadge = (status: ConstructionStatus): BadgeVariant => {
     switch (status) {
@@ -101,21 +112,21 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
   return (
     <div className="space-y-4">
       {/* Filtering Panel */}
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <div className="flex items-center mb-3">
-          <FunnelIcon className="h-5 w-5 text-gray-600 mr-2" />
-          <h3 className="text-sm font-semibold text-gray-700">フィルタ</h3>
-        </div>
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+          <FunnelIcon className="w-4 h-4 mr-1.5" />
+          絞り込み条件
+        </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* 受注番号 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-gray-600 mb-1">
               受注番号
             </label>
             <input
               type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
               value={orderNumberFilter}
               onChange={(e) => setOrderNumberFilter(e.target.value)}
               placeholder="受注番号で絞り込み"
@@ -124,12 +135,12 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
 
           {/* 顧客名 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-gray-600 mb-1">
               顧客名
             </label>
             <input
               type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
               value={customerNameFilter}
               onChange={(e) => setCustomerNameFilter(e.target.value)}
               placeholder="顧客名で絞り込み"
@@ -138,11 +149,11 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
 
           {/* 工事種別 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-gray-600 mb-1">
               工事種別
             </label>
             <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
               value={constructionTypeFilter}
               onChange={(e) => setConstructionTypeFilter(e.target.value)}
             >
@@ -156,11 +167,11 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
 
           {/* 依頼先 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-gray-600 mb-1">
               依頼先
             </label>
             <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
               value={contractorIdFilter}
               onChange={(e) => handleContractorChange(e.target.value)}
             >
@@ -175,11 +186,11 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
 
           {/* 班 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-gray-600 mb-1">
               班
             </label>
             <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
               value={teamIdFilter}
               onChange={(e) => setTeamIdFilter(e.target.value)}
               disabled={!contractorIdFilter}
@@ -195,11 +206,11 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
 
           {/* 状態 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-gray-600 mb-1">
               状態
             </label>
             <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as '' | ConstructionStatus)}
             >
@@ -216,11 +227,11 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
 
           {/* 工事後報告 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-gray-600 mb-1">
               工事後報告
             </label>
             <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
               value={postConstructionReportFilter}
               onChange={(e) => setPostConstructionReportFilter(e.target.value as '' | PostConstructionReport)}
             >
@@ -230,6 +241,16 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
               <option value="不要">不要</option>
             </select>
           </div>
+        </div>
+
+        {/* クリアボタン */}
+        <div className="flex justify-end mt-4">
+          <button
+            onClick={handleClearFilters}
+            className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            クリア
+          </button>
         </div>
       </div>
 
@@ -325,7 +346,7 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
                       {item.contractorName} - {item.teamName}
                     </td>
                     <td className="px-4 py-3 text-sm whitespace-nowrap">
-                      <Badge variant={getStatusBadge(item.status)}>
+                      <Badge variant={getStatusBadge(item.status)} size="sm">
                         {item.status}
                       </Badge>
                     </td>
@@ -339,7 +360,7 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
                       {item.constructionCompletedDate || '-'}
                     </td>
                     <td className="px-4 py-3 text-sm whitespace-nowrap">
-                      <Badge variant={reportBadge.variant}>
+                      <Badge variant={reportBadge.variant} size="sm">
                         {reportBadge.text}
                       </Badge>
                     </td>
@@ -358,6 +379,9 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
             )}
           </tbody>
         </table>
+      </div>
+      <div className="px-4 py-2 text-xs text-gray-500 bg-white rounded-b-lg">
+        表示件数: {filteredData.length} / 総件数: {data.length}
       </div>
     </div>
   )

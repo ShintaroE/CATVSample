@@ -216,34 +216,74 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
       </div>
 
       {/* テーブル */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white">
-            <thead>
-              <tr className="bg-gray-100 text-left text-xs text-gray-600">
-                <th className="px-3 py-2 font-medium whitespace-nowrap">整理番号</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">受注番号</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">個別/集合</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">顧客コード</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">顧客名</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">集合コード</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">集合住宅名</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">住所</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">依頼先</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">状態</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">依頼日</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">調査予定日</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">調査完了日</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">最終更新</th>
-                <th className="px-3 py-2 font-medium text-right">操作</th>
+      <div className="overflow-x-auto bg-white rounded-lg shadow">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                整理番号
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                受注番号
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                個別/集合
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                顧客コード
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                顧客名
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                集合コード
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                集合住宅名
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                住所
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                依頼先
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                状態
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                依頼日
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                調査予定日
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                調査完了日
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                最終更新
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                操作
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={15} className="px-4 py-8 text-center text-sm text-gray-500">
+                  条件に一致するデータがありません
+                </td>
               </tr>
-            </thead>
-            <tbody className="text-gray-900">
-              {filtered.map((r) => (
-                <tr key={r.id} className="border-t text-sm odd:bg-white even:bg-gray-50">
-                  <td className="px-3 py-2 tabular-nums text-gray-900">{r.serialNumber}</td>
-                  <td className="px-3 py-2 font-medium text-gray-900">{r.orderNumber || '-'}</td>
-                  <td className="px-3 py-2">
+            ) : (
+              filtered.map((r) => (
+                <tr key={r.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap tabular-nums">
+                    {r.serialNumber}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap font-medium">
+                    {r.orderNumber || '-'}
+                  </td>
+                  <td className="px-4 py-3 text-sm whitespace-nowrap">
                     <Badge
                       variant={r.propertyType === '個別' ? 'info' : r.propertyType === '集合' ? 'warning' : 'default'}
                       size="sm"
@@ -251,60 +291,62 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
                       {r.propertyType || '-'}
                     </Badge>
                   </td>
-                  <td className="px-3 py-2 text-gray-900">
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.propertyType === '個別' ? (r.customerCode || '-') : '-'}
                   </td>
-                  <td className="px-3 py-2 text-gray-900">
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.propertyType === '個別' ? (r.customerName || '-') : '-'}
                   </td>
-                  <td className="px-3 py-2 text-gray-900">
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.propertyType === '集合' ? (r.collectiveCode || '-') : '-'}
                   </td>
-                  <td className="px-3 py-2 text-gray-900">
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.propertyType === '集合' ? (r.collectiveHousingName || '-') : '-'}
                   </td>
-                  <td className="px-3 py-2 text-gray-900 max-w-[12rem] truncate" title={r.address}>
+                  <td className="px-4 py-3 text-sm text-gray-900" title={r.address}>
                     {r.address || '-'}
                   </td>
-                  <td className="px-3 py-2 text-gray-900">
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.assigneeType === 'internal' ? (
                       <span className="text-blue-600 font-medium">自社 - {r.teamName}</span>
                     ) : (
                       <span className="text-gray-900">{r.contractorName} - {r.teamName}</span>
                     )}
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-3 text-sm whitespace-nowrap">
                     <Badge variant={getStatusBadge(r.status)} size="sm">
                       {r.status}
                     </Badge>
                   </td>
-                  <td className="px-3 py-2 text-gray-900">{r.requestedAt || '-'}</td>
-                  <td className="px-3 py-2 text-gray-900">{r.scheduledDate || '-'}</td>
-                  <td className="px-3 py-2 text-gray-900">{r.completedAt || '-'}</td>
-                  <td className="px-3 py-2 text-xs text-gray-500">{r.lastUpdatedByName || '-'}</td>
-                  <td className="px-3 py-2 text-right">
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    {r.requestedAt || '-'}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    {r.scheduledDate || '-'}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    {r.completedAt || '-'}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">
+                    {r.lastUpdatedByName || '-'}
+                  </td>
+                  <td className="px-4 py-3 text-sm whitespace-nowrap">
                     <button
-                      className="inline-flex items-center px-2 py-1 rounded border text-gray-700 hover:bg-gray-50 text-xs"
+                      className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       onClick={() => onEdit(r)}
                     >
-                      <PencilSquareIcon className="w-4 h-4 mr-1" /> 編集
+                      <PencilSquareIcon className="h-4 w-4 mr-1" />
+                      編集
                     </button>
                   </td>
                 </tr>
-              ))}
-              {filtered.length === 0 && (
-                <tr className="bg-white">
-                  <td colSpan={15} className="px-3 py-10 text-center text-sm text-gray-500">
-                    条件に一致するデータがありません
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-        <div className="px-3 py-2 text-xs text-gray-500 border-t">
-          表示件数: {filtered.length} / 総件数: {data.length}
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+      <div className="px-4 py-2 text-xs text-gray-500 bg-white rounded-b-lg">
+        表示件数: {filtered.length} / 総件数: {data.length}
       </div>
     </div>
   )

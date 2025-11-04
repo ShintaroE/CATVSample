@@ -382,9 +382,9 @@ export default function ContractorRequestsPage() {
                   )}
                 </tr>
               </thead>
-              <tbody className="text-gray-900">
+              <tbody className="text-gray-900 divide-y divide-gray-200">
                 {filteredData.map((request) => (
-                  <tr key={request.id} className="border-t text-sm odd:bg-white even:bg-gray-50">
+                  <tr key={request.id} className="text-sm odd:bg-white even:bg-gray-50">
                     <td className="px-3 py-2">{request.serialNumber}</td>
                     <td className="px-3 py-2">{request.orderNumber || '-'}</td>
                     {activeTab === 'survey' && (
