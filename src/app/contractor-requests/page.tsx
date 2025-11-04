@@ -13,6 +13,7 @@ import {
   SurveyStatus,
   AttachmentStatus,
   ConstructionStatus,
+  PostConstructionReport,
 } from '@/features/applications/types'
 import {
   getApplications,
@@ -47,6 +48,7 @@ export default function ContractorRequestsPage() {
   // 絞り込みフィルタ
   const [orderNumberFilter, setOrderNumberFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('')
+  const [postConstructionReportFilter, setPostConstructionReportFilter] = useState<'' | PostConstructionReport>('')
 
   // 協力会社ユーザーでない場合はリダイレクト
   useEffect(() => {
@@ -103,6 +105,7 @@ export default function ContractorRequestsPage() {
   const handleClearFilters = () => {
     setOrderNumberFilter('')
     setStatusFilter('')
+    setPostConstructionReportFilter('')
   }
 
   // 現在のタブデータ
@@ -126,9 +129,17 @@ export default function ContractorRequestsPage() {
         return false
       }
 
+      // 工事後報告
+      if (postConstructionReportFilter && activeTab === 'construction') {
+        const constructionReq = request as ConstructionRequest
+        if (constructionReq.postConstructionReport !== postConstructionReportFilter) {
+          return false
+        }
+      }
+
       return true
     })
-  }, [currentData, orderNumberFilter, statusFilter])
+  }, [currentData, orderNumberFilter, statusFilter, postConstructionReportFilter, activeTab])
 
   // 進捗更新を保存
   const handleSaveProgress = (
@@ -234,7 +245,7 @@ export default function ContractorRequestsPage() {
             絞り込み条件
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* 受注番号 */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">
@@ -289,6 +300,25 @@ export default function ContractorRequestsPage() {
                 )}
               </select>
             </div>
+
+            {/* 工事後報告フィルター - 工事タブのみ */}
+            {activeTab === 'construction' && (
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  工事後報告
+                </label>
+                <select
+                  value={postConstructionReportFilter}
+                  onChange={(e) => setPostConstructionReportFilter(e.target.value as '' | PostConstructionReport)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
+                >
+                  <option value="">全て</option>
+                  <option value="完了">完了</option>
+                  <option value="未完了">未完了</option>
+                  <option value="不要">不要</option>
+                </select>
+              </div>
+            )}
           </div>
 
           {/* クリアボタン */}
@@ -318,18 +348,38 @@ export default function ContractorRequestsPage() {
                       <th className="px-3 py-2 font-medium">集合コード</th>
                       <th className="px-3 py-2 font-medium">集合住宅名</th>
                       <th className="px-3 py-2 font-medium">住所</th>
+                      <th className="px-3 py-2 font-medium">予定日</th>
+                      <th className="px-3 py-2 font-medium">状態</th>
+                      <th className="px-3 py-2 font-medium">最終更新</th>
+                      <th className="px-3 py-2 font-medium text-right">操作</th>
                     </>
                   )}
-                  {activeTab !== 'survey' && (
+                  {activeTab === 'attachment' && (
                     <>
                       <th className="px-3 py-2 font-medium">顧客名</th>
                       <th className="px-3 py-2 font-medium">住所</th>
+                      <th className="px-3 py-2 font-medium">予定日</th>
+                      <th className="px-3 py-2 font-medium">状態</th>
+                      <th className="px-3 py-2 font-medium">最終更新</th>
+                      <th className="px-3 py-2 font-medium text-right">操作</th>
                     </>
                   )}
-                  <th className="px-3 py-2 font-medium">予定日</th>
-                  <th className="px-3 py-2 font-medium">状態</th>
-                  <th className="px-3 py-2 font-medium">最終更新</th>
-                  <th className="px-3 py-2 font-medium text-right">操作</th>
+                  {activeTab === 'construction' && (
+                    <>
+                      <th className="px-3 py-2 font-medium">個別/集合</th>
+                      <th className="px-3 py-2 font-medium">顧客コード</th>
+                      <th className="px-3 py-2 font-medium">顧客名</th>
+                      <th className="px-3 py-2 font-medium">集合コード</th>
+                      <th className="px-3 py-2 font-medium">集合住宅名</th>
+                      <th className="px-3 py-2 font-medium">住所</th>
+                      <th className="px-3 py-2 font-medium">状態</th>
+                      <th className="px-3 py-2 font-medium">工事依頼日</th>
+                      <th className="px-3 py-2 font-medium">工事予定日</th>
+                      <th className="px-3 py-2 font-medium">工事完了日</th>
+                      <th className="px-3 py-2 font-medium">工事後報告</th>
+                      <th className="px-3 py-2 font-medium text-right">操作</th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody className="text-gray-900">
@@ -373,40 +423,133 @@ export default function ContractorRequestsPage() {
                         <td className="px-3 py-2 max-w-[12rem] truncate" title={request.address}>
                           {request.address || '-'}
                         </td>
+                        <td className="px-3 py-2">{request.scheduledDate || '-'}</td>
+                        <td className="px-3 py-2">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                            {request.status}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-xs text-gray-500">
+                          {request.lastUpdatedByName || '-'}
+                        </td>
+                        <td className="px-3 py-2 text-right">
+                          <Button
+                            onClick={() => handleOpenProgress(request)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-600 hover:bg-blue-50 border"
+                          >
+                            進捗更新
+                          </Button>
+                        </td>
                       </>
                     )}
-                    {activeTab !== 'survey' && (
+                    {activeTab === 'attachment' && (
                       <>
                         <td className="px-3 py-2">{request.customerName || '-'}</td>
                         <td className="px-3 py-2 max-w-[12rem] truncate" title={request.address}>
                           {request.address || '-'}
                         </td>
+                        <td className="px-3 py-2">{request.scheduledDate || '-'}</td>
+                        <td className="px-3 py-2">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                            {request.status}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-xs text-gray-500">
+                          {request.lastUpdatedByName || '-'}
+                        </td>
+                        <td className="px-3 py-2 text-right">
+                          <Button
+                            onClick={() => handleOpenProgress(request)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-600 hover:bg-blue-50 border"
+                          >
+                            進捗更新
+                          </Button>
+                        </td>
                       </>
                     )}
-                    <td className="px-3 py-2">{request.scheduledDate || '-'}</td>
-                    <td className="px-3 py-2">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                        {request.status}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 text-xs text-gray-500">
-                      {request.lastUpdatedByName || '-'}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      <Button
-                        onClick={() => handleOpenProgress(request)}
-                        variant="ghost"
-                        size="sm"
-                        className="text-blue-600 hover:bg-blue-50 border"
-                      >
-                        進捗更新
-                      </Button>
-                    </td>
+                    {activeTab === 'construction' && (
+                      <>
+                        <td className="px-3 py-2">
+                          {(request as ConstructionRequest).propertyType ? (
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              (request as ConstructionRequest).propertyType === '個別'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-purple-100 text-purple-800'
+                            }`}>
+                              {(request as ConstructionRequest).propertyType}
+                            </span>
+                          ) : '-'}
+                        </td>
+                        <td className="px-3 py-2">
+                          {(request as ConstructionRequest).propertyType === '個別'
+                            ? ((request as ConstructionRequest).customerCode || '-')
+                            : '-'}
+                        </td>
+                        <td className="px-3 py-2">
+                          {(request as ConstructionRequest).customerName || '-'}
+                        </td>
+                        <td className="px-3 py-2">
+                          {(request as ConstructionRequest).propertyType === '集合'
+                            ? ((request as ConstructionRequest).collectiveCode || '-')
+                            : '-'}
+                        </td>
+                        <td className="px-3 py-2">
+                          {(request as ConstructionRequest).propertyType === '集合'
+                            ? ((request as ConstructionRequest).collectiveHousingName || '-')
+                            : '-'}
+                        </td>
+                        <td className="px-3 py-2 max-w-[12rem] truncate" title={request.address}>
+                          {request.address || '-'}
+                        </td>
+                        <td className="px-3 py-2">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                            {request.status}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2">{(request as ConstructionRequest).constructionRequestedDate || '-'}</td>
+                        <td className="px-3 py-2">{(request as ConstructionRequest).constructionDate || '-'}</td>
+                        <td className="px-3 py-2">{(request as ConstructionRequest).constructionCompletedDate || '-'}</td>
+                        <td className="px-3 py-2">
+                          {(request as ConstructionRequest).postConstructionReport ? (
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              (request as ConstructionRequest).postConstructionReport === '完了'
+                                ? 'bg-green-100 text-green-800'
+                                : (request as ConstructionRequest).postConstructionReport === '未完了'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {(request as ConstructionRequest).postConstructionReport}
+                            </span>
+                          ) : '-'}
+                        </td>
+                        <td className="px-3 py-2 text-right">
+                          <Button
+                            onClick={() => handleOpenProgress(request)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-600 hover:bg-blue-50 border"
+                          >
+                            進捗更新
+                          </Button>
+                        </td>
+                      </>
+                    )}
                   </tr>
                 ))}
                 {currentData.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-3 py-10 text-center text-sm text-gray-500">
+                    <td
+                      colSpan={
+                        activeTab === 'survey' ? 12 :
+                        activeTab === 'attachment' ? 8 :
+                        14
+                      }
+                      className="px-3 py-10 text-center text-sm text-gray-500"
+                    >
                       依頼はありません
                     </td>
                   </tr>

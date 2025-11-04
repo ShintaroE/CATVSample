@@ -1,10 +1,6 @@
 import React, { useMemo, useState } from 'react'
-import {
-  MagnifyingGlassIcon,
-  FunnelIcon,
-  PencilSquareIcon,
-} from '@heroicons/react/24/outline'
-import { ConstructionRequest, ConstructionStatus } from '@/features/applications/types'
+import { FunnelIcon, PencilSquareIcon } from '@heroicons/react/24/outline'
+import { ConstructionRequest, ConstructionStatus, PostConstructionReport } from '@/features/applications/types'
 import { Contractor, Team } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { Badge, BadgeVariant } from '@/shared/components/ui'
@@ -16,132 +12,140 @@ interface ConstructionTabProps {
   onEdit: (item: ConstructionRequest) => void
 }
 
-export default function ConstructionTab({ data, contractors, teams, onEdit }: ConstructionTabProps) {
+const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, teams, onEdit }) => {
   const [orderNumberFilter, setOrderNumberFilter] = useState('')
   const [customerNameFilter, setCustomerNameFilter] = useState('')
   const [constructionTypeFilter, setConstructionTypeFilter] = useState('')
   const [contractorIdFilter, setContractorIdFilter] = useState('')
   const [teamIdFilter, setTeamIdFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState<'' | ConstructionStatus>('')
+  const [postConstructionReportFilter, setPostConstructionReportFilter] = useState<'' | PostConstructionReport>('')
 
-  // 依頼先選択時に利用可能な班を取得
+  // Get teams for selected contractor
   const availableTeams = useMemo(() => {
     if (!contractorIdFilter) return []
     return getTeamsByContractorId(contractorIdFilter)
   }, [contractorIdFilter])
 
-  // 依頼先変更時に班フィルタをリセット
+  // Reset team filter when contractor changes
   const handleContractorChange = (contractorId: string) => {
     setContractorIdFilter(contractorId)
     setTeamIdFilter('')
   }
 
-  // フィルタクリア
-  const handleClearFilters = () => {
-    setOrderNumberFilter('')
-    setCustomerNameFilter('')
-    setConstructionTypeFilter('')
-    setContractorIdFilter('')
-    setTeamIdFilter('')
-    setStatusFilter('')
+  // Badge variant functions
+  const getStatusBadge = (status: ConstructionStatus): BadgeVariant => {
+    switch (status) {
+      case '未着手':
+        return 'default'
+      case '施工中':
+        return 'warning'
+      case '完了':
+        return 'success'
+      case '一部完了':
+        return 'info'
+      case '中止':
+        return 'danger'
+      case '延期':
+        return 'warning'
+      case '保留':
+        return 'default'
+      default:
+        return 'default'
+    }
   }
 
-  const filtered = useMemo(() => {
-    return data.filter((r) => {
-      // 受注番号
-      if (orderNumberFilter && !(r.orderNumber || '').includes(orderNumberFilter)) {
+  const getPostConstructionReportBadge = (report: PostConstructionReport | undefined): { variant: BadgeVariant; text: string } => {
+    if (!report) {
+      return { variant: 'default', text: '-' }
+    }
+    switch (report) {
+      case '完了':
+        return { variant: 'success', text: '完了' }
+      case '未完了':
+        return { variant: 'warning', text: '未完了' }
+      case '不要':
+        return { variant: 'default', text: '不要' }
+      default:
+        return { variant: 'default', text: '-' }
+    }
+  }
+
+  // Filter data
+  const filteredData = useMemo(() => {
+    return data.filter(item => {
+      if (orderNumberFilter && !item.orderNumber?.toLowerCase().includes(orderNumberFilter.toLowerCase())) {
         return false
       }
-
-      // 顧客名
-      if (customerNameFilter && !(r.customerName || '').includes(customerNameFilter)) {
+      if (customerNameFilter && !item.customerName?.toLowerCase().includes(customerNameFilter.toLowerCase())) {
         return false
       }
-
-      // 工事種別
-      if (constructionTypeFilter && r.constructionType !== constructionTypeFilter) {
+      if (constructionTypeFilter && item.constructionType !== constructionTypeFilter) {
         return false
       }
-
-      // 依頼先
-      if (contractorIdFilter && r.contractorId !== contractorIdFilter) {
+      if (contractorIdFilter && item.contractorId !== contractorIdFilter) {
         return false
       }
-
-      // 班
-      if (contractorIdFilter && teamIdFilter && r.teamId !== teamIdFilter) {
+      if (teamIdFilter && item.teamId !== teamIdFilter) {
         return false
       }
-
-      // 状態
-      if (statusFilter && r.status !== statusFilter) {
+      if (statusFilter && item.status !== statusFilter) {
         return false
       }
-
+      if (postConstructionReportFilter && item.postConstructionReport !== postConstructionReportFilter) {
+        return false
+      }
       return true
     })
-  }, [data, orderNumberFilter, customerNameFilter, constructionTypeFilter, contractorIdFilter, teamIdFilter, statusFilter])
-
-  const getStatusBadge = (status: ConstructionStatus): BadgeVariant => {
-    const variantMap: Record<ConstructionStatus, BadgeVariant> = {
-      未着手: 'default',
-      施工中: 'info',
-      完了: 'success',
-      一部完了: 'warning',
-      中止: 'danger',
-      延期: 'warning',
-      保留: 'default',
-    }
-    return variantMap[status]
-  }
+  }, [data, orderNumberFilter, customerNameFilter, constructionTypeFilter, contractorIdFilter, teamIdFilter, statusFilter, postConstructionReportFilter])
 
   return (
-    <div>
-      {/* 絞り込みパネル */}
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-          <FunnelIcon className="w-4 h-4 mr-1.5" />
-          絞り込み条件
-        </h3>
+    <div className="space-y-4">
+      {/* Filtering Panel */}
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <div className="flex items-center mb-3">
+          <FunnelIcon className="h-5 w-5 text-gray-600 mr-2" />
+          <h3 className="text-sm font-semibold text-gray-700">フィルタ</h3>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {/* 受注番号 */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               受注番号
             </label>
             <input
               type="text"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
               value={orderNumberFilter}
               onChange={(e) => setOrderNumberFilter(e.target.value)}
-              placeholder="2024031500001"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
+              placeholder="受注番号で絞り込み"
             />
           </div>
 
           {/* 顧客名 */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               顧客名
             </label>
             <input
               type="text"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
               value={customerNameFilter}
               onChange={(e) => setCustomerNameFilter(e.target.value)}
-              placeholder="山田太郎"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
+              placeholder="顧客名で絞り込み"
             />
           </div>
 
           {/* 工事種別 */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               工事種別
             </label>
             <select
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
               value={constructionTypeFilter}
               onChange={(e) => setConstructionTypeFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
             >
               <option value="">全て</option>
               <option value="宅内引込">宅内引込</option>
@@ -153,48 +157,52 @@ export default function ConstructionTab({ data, contractors, teams, onEdit }: Co
 
           {/* 依頼先 */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               依頼先
             </label>
             <select
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
               value={contractorIdFilter}
               onChange={(e) => handleContractorChange(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
             >
               <option value="">全て</option>
-              {contractors.filter(c => c.isActive).map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+              {contractors.map(contractor => (
+                <option key={contractor.id} value={contractor.id}>
+                  {contractor.name}
+                </option>
               ))}
             </select>
           </div>
 
           {/* 班 */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               班
             </label>
             <select
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
               value={teamIdFilter}
               onChange={(e) => setTeamIdFilter(e.target.value)}
               disabled={!contractorIdFilter}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
             >
               <option value="">全て</option>
-              {availableTeams.filter(t => t.isActive).map(t => (
-                <option key={t.id} value={t.id}>{t.teamName}</option>
+              {availableTeams.map(team => (
+                <option key={team.id} value={team.id}>
+                  {team.teamName}
+                </option>
               ))}
             </select>
           </div>
 
           {/* 状態 */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               状態
             </label>
             <select
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as '' | ConstructionStatus)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
             >
               <option value="">全て</option>
               <option value="未着手">未着手</option>
@@ -206,83 +214,154 @@ export default function ConstructionTab({ data, contractors, teams, onEdit }: Co
               <option value="保留">保留</option>
             </select>
           </div>
-        </div>
 
-        {/* クリアボタン */}
-        <div className="flex justify-end mt-4">
-          <button
-            onClick={handleClearFilters}
-            className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-          >
-            クリア
-          </button>
+          {/* 工事後報告 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              工事後報告
+            </label>
+            <select
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              value={postConstructionReportFilter}
+              onChange={(e) => setPostConstructionReportFilter(e.target.value as '' | PostConstructionReport)}
+            >
+              <option value="">全て</option>
+              <option value="完了">完了</option>
+              <option value="未完了">未完了</option>
+              <option value="不要">不要</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* テーブル */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white">
-            <thead>
-              <tr className="bg-gray-100 text-left text-xs text-gray-600">
-                <th className="px-3 py-2 font-medium whitespace-nowrap">整理番号</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">受注番号</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">顧客名</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">住所</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">工事種別</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">依頼先</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">状態</th>
-                <th className="px-3 py-2 font-medium whitespace-nowrap">工事予定日</th>
-                <th className="px-3 py-2 font-medium text-right">操作</th>
+      {/* Table */}
+      <div className="overflow-x-auto bg-white rounded-lg shadow">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                整理番号
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                受注番号
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                個別/集合
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                顧客コード
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                顧客名
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                集合コード
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                集合住宅名
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                住所
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                依頼先
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                状態
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                工事依頼日
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                工事予定日
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                工事完了日
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                工事後報告
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                操作
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {filteredData.length === 0 ? (
+              <tr>
+                <td colSpan={15} className="px-4 py-8 text-center text-sm text-gray-500">
+                  データがありません
+                </td>
               </tr>
-            </thead>
-            <tbody className="text-gray-900">
-              {filtered.map((r) => (
-                <tr key={r.id} className="border-t text-sm odd:bg-white even:bg-gray-50">
-                  <td className="px-3 py-2 tabular-nums text-gray-900">{r.serialNumber}</td>
-                  <td className="px-3 py-2 font-medium text-gray-900">{r.orderNumber || '-'}</td>
-                  <td className="px-3 py-2 text-gray-900">{r.customerName || '-'}</td>
-                  <td className="px-3 py-2 text-gray-900 max-w-[12rem] truncate" title={r.address}>
-                    {r.address || '-'}
-                  </td>
-                  <td className="px-3 py-2 text-gray-900">{r.constructionType || '-'}</td>
-                  <td className="px-3 py-2 text-gray-900">
-                    {r.assigneeType === 'internal' ? (
-                      <span className="text-blue-600 font-medium">自社 - {r.teamName}</span>
-                    ) : (
-                      <span className="text-gray-900">{r.contractorName} - {r.teamName}</span>
-                    )}
-                  </td>
-                  <td className="px-3 py-2">
-                    <Badge variant={getStatusBadge(r.status)} size="sm">
-                      {r.status}
-                    </Badge>
-                  </td>
-                  <td className="px-3 py-2 text-gray-900">{r.constructionDate || '-'}</td>
-                  <td className="px-3 py-2 text-right">
-                    <button
-                      className="inline-flex items-center px-2 py-1 rounded border text-gray-700 hover:bg-gray-50 text-xs"
-                      onClick={() => onEdit(r)}
-                    >
-                      <PencilSquareIcon className="w-4 h-4 mr-1" /> 編集
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {filtered.length === 0 && (
-                <tr className="bg-white">
-                  <td colSpan={9} className="px-3 py-10 text-center text-sm text-gray-500">
-                    条件に一致するデータがありません
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-        <div className="px-3 py-2 text-xs text-gray-500 border-t">
-          表示件数: {filtered.length} / 総件数: {data.length}
-        </div>
+            ) : (
+              filteredData.map((item) => {
+                const reportBadge = getPostConstructionReportBadge(item.postConstructionReport)
+                return (
+                  <tr key={item.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                      {item.serialNumber}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                      {item.orderNumber || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                      {item.propertyType === '個別' ? '個別' : '集合'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                      {item.propertyType === '個別' ? item.customerCode : '-'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                      {item.customerName}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                      {item.propertyType === '集合' ? item.collectiveCode : '-'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                      {item.propertyType === '集合' ? item.collectiveHousingName : '-'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900">
+                      {item.address}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                      {item.contractorName} - {item.teamName}
+                    </td>
+                    <td className="px-4 py-3 text-sm whitespace-nowrap">
+                      <Badge variant={getStatusBadge(item.status)}>
+                        {item.status}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                      {item.constructionRequestedDate || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                      {item.constructionDate || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                      {item.constructionCompletedDate || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-sm whitespace-nowrap">
+                      <Badge variant={reportBadge.variant}>
+                        {reportBadge.text}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-sm whitespace-nowrap">
+                      <button
+                        onClick={() => onEdit(item)}
+                        className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        <PencilSquareIcon className="h-4 w-4 mr-1" />
+                        編集
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   )
 }
+
+export default ConstructionTab
