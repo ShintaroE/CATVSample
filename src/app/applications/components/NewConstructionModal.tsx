@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from 'react'
+import { Dialog } from '@headlessui/react'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 import {
   RequestType,
   SurveyRequest,
@@ -64,8 +66,8 @@ export default function NewConstructionModal({
     if (formData.assigneeType === 'internal') {
       return chokueiContractor ? getTeamsByContractorId(chokueiContractor.id) : []
     }
-    if (formData.contractorId && typeof formData.contractorId === 'string') {
-      return getTeamsByContractorId(formData.contractorId)
+    if (formData.contractorId) {
+      return getTeamsByContractorId(formData.contractorId as string)
     }
     return []
   }, [formData.assigneeType, formData.contractorId, chokueiContractor])
@@ -97,7 +99,9 @@ export default function NewConstructionModal({
       }
 
       if (field === 'teamId') {
-        const team = teams.find((t) => t.id === value)
+        const team =
+          availableTeams.find((t) => t.id === value) ||
+          teams.find((t) => t.id === value)
         newData.teamName = team?.teamName || ''
       }
 
@@ -240,295 +244,295 @@ export default function NewConstructionModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative w-[min(880px,92vw)] max-h-[90vh] overflow-y-auto rounded-lg bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-          <h2 className="text-lg font-medium text-gray-900">新規工事依頼</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-gray-400 transition-colors hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            <span className="text-2xl leading-none">×</span>
-          </button>
-        </div>
+    <Dialog open={true} onClose={onClose} className="relative z-50">
+      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
-        <form onSubmit={handleSubmit} className="space-y-6 px-6 py-4">
-          <section className="space-y-4">
-            <SectionTitle>基本情報</SectionTitle>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Input
-              label="受注番号"
-              value={(formData.orderNumber as string) || ''}
-              onChange={(e) => handleChange('orderNumber', e.target.value)}
-              required
-              placeholder="例: 2024031500001"
-              fullWidth
-              className="bg-white text-gray-900"
-            />
-            <Input
-              label="KCT受取日"
-              type="date"
-              value={(formData.kctReceivedDate as string) || ''}
-              onChange={(e) => handleChange('kctReceivedDate', e.target.value)}
-              fullWidth
-              className="bg-white text-gray-900"
-            />
-            <Input
-              label="工事依頼日"
-              type="date"
-              value={(formData.constructionRequestedDate as string) || ''}
-              onChange={(e) => handleChange('constructionRequestedDate', e.target.value)}
-              fullWidth
-              className="bg-white text-gray-900"
-            />
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <SectionTitle>物件情報</SectionTitle>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              個別/集合 <span className="text-red-500">*</span>
-            </label>
-            <div className="flex gap-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  value="個別"
-                  checked={formData.propertyType === '個別'}
-                  onChange={(e) => handleChange('propertyType', e.target.value)}
-                  className="mr-2"
-                />
-                <span className="text-sm text-gray-700">個別</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  value="集合"
-                  checked={formData.propertyType === '集合'}
-                  onChange={(e) => handleChange('propertyType', e.target.value)}
-                  className="mr-2"
-                />
-                <span className="text-sm text-gray-700">集合</span>
-              </label>
-            </div>
-          </div>
-
-          {formData.propertyType === '個別' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="顧客コード"
-                value={(formData.customerCode as string) || ''}
-                onChange={(e) => handleChange('customerCode', e.target.value)}
-                required
-                fullWidth
-                className="bg-white text-gray-900"
-              />
-              <Input
-                label="顧客名"
-                value={(formData.customerName as string) || ''}
-                onChange={(e) => handleChange('customerName', e.target.value)}
-                required
-                fullWidth
-                className="bg-white text-gray-900"
-              />
-              <Input
-                label="住所"
-                value={(formData.address as string) || ''}
-                onChange={(e) => handleChange('address', e.target.value)}
-                required
-                fullWidth
-                className="bg-white text-gray-900 md:col-span-2"
-              />
-              <Input
-                label="電話番号"
-                value={(formData.phoneNumber as string) || ''}
-                onChange={(e) => handleChange('phoneNumber', e.target.value)}
-                placeholder="086-123-4567"
-                fullWidth
-                className="bg-white text-gray-900"
-              />
-            </div>
-          )}
-
-          {formData.propertyType === '集合' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="集合コード"
-                value={(formData.collectiveCode as string) || ''}
-                onChange={(e) => handleChange('collectiveCode', e.target.value)}
-                required
-                fullWidth
-                className="bg-white text-gray-900"
-              />
-              <Input
-                label="集合住宅名"
-                value={(formData.collectiveHousingName as string) || ''}
-                onChange={(e) => handleChange('collectiveHousingName', e.target.value)}
-                required
-                fullWidth
-                className="bg-white text-gray-900"
-              />
-              <Input
-                label="部屋番号・顧客名"
-                value={(formData.address as string) || ''}
-                onChange={(e) => handleChange('address', e.target.value)}
-                required
-                placeholder="例: 101号室 山田太郎"
-                fullWidth
-                className="bg-white text-gray-900 md:col-span-2"
-              />
-              <Input
-                label="電話番号"
-                value={(formData.phoneNumber as string) || ''}
-                onChange={(e) => handleChange('phoneNumber', e.target.value)}
-                placeholder="086-123-4567"
-                fullWidth
-                className="bg-white text-gray-900"
-              />
-            </div>
-          )}
-        </section>
-
-        <section className="space-y-4">
-          <SectionTitle>依頼先情報</SectionTitle>
-          <div className="space-y-4">
-            <div className="flex gap-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  value="internal"
-                  checked={formData.assigneeType === 'internal'}
-                  onChange={(e) => handleChange('assigneeType', e.target.value)}
-                  className="mr-2"
-                />
-                <span className="text-sm text-gray-700">自社（直営班）</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  value="contractor"
-                  checked={formData.assigneeType === 'contractor'}
-                  onChange={(e) => handleChange('assigneeType', e.target.value)}
-                  className="mr-2"
-                />
-                <span className="text-sm text-gray-700">協力会社</span>
-              </label>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {formData.assigneeType === 'contractor' && (
-                <SelectField
-                  label="協力会社"
-                  value={(formData.contractorId as string) || ''}
-                  onChange={(value) => handleChange('contractorId', value)}
-                  required
-                >
-                  <option value="">選択してください</option>
-                  {contractors
-                    .filter((c) => c.isActive && c.name !== '直営班')
-                    .map((contractor) => (
-                      <option key={contractor.id} value={contractor.id}>
-                        {contractor.name}
-                      </option>
-                    ))}
-                </SelectField>
-              )}
-
-              <SelectField
-                label="班"
-                value={(formData.teamId as string) || ''}
-                onChange={(value) => handleChange('teamId', value)}
-                required
-              >
-                <option value="">選択してください</option>
-                {availableTeams.map((team) => (
-                  <option key={team.id} value={team.id}>
-                    {team.teamName}
-                  </option>
-                ))}
-              </SelectField>
-            </div>
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <SectionTitle>工事情報</SectionTitle>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <SelectField
-              label="工事種別"
-              value={(formData.constructionType as string) || ''}
-              onChange={(value) => handleChange('constructionType', value)}
-              required
+      <div className="fixed inset-0 flex items-center justify-center p-4">
+        <Dialog.Panel className="mx-auto w-full max-w-5xl rounded-lg bg-white shadow-xl max-h-[90vh] overflow-y-auto">
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
+            <Dialog.Title className="text-lg font-semibold text-gray-900">
+              新規工事依頼
+            </Dialog.Title>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-500"
             >
-              <option value="">選択してください</option>
-              <option value="宅内引込">宅内引込</option>
-              <option value="撤去">撤去</option>
-              <option value="移設">移設</option>
-              <option value="その他">その他</option>
-            </SelectField>
-
-            <SelectField
-              label="工事後報告"
-              value={(formData.postConstructionReport as string) || ''}
-              onChange={(value) => handleChange('postConstructionReport', value)}
-              required
-            >
-              <option value="未完了">未完了</option>
-              <option value="完了">完了</option>
-              <option value="不要">不要</option>
-            </SelectField>
+              <XMarkIcon className="h-6 w-6" />
+            </button>
           </div>
-        </section>
 
-        <section className="space-y-4 border-t border-gray-200 pt-4">
-          <RequestNotesComponent
-            userRole="admin"
-            notes={requestNotes}
-            isEditing
-            onChange={(notes) => setRequestNotes({ adminNotes: notes })}
-          />
-        </section>
+          <form onSubmit={handleSubmit}>
+            <div className="px-6 py-4 space-y-6">
+              <section>
+                <SectionTitle>基本情報</SectionTitle>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Input
+                    label="受注番号"
+                    value={(formData.orderNumber as string) || ''}
+                    onChange={(e) => handleChange('orderNumber', e.target.value)}
+                    required
+                    className="bg-white text-gray-900"
+                    placeholder="例: 2024031500001"
+                  />
+                  <Input
+                    label="KCT受取日"
+                    type="date"
+                    value={(formData.kctReceivedDate as string) || ''}
+                    onChange={(e) => handleChange('kctReceivedDate', e.target.value)}
+                    className="bg-white text-gray-900"
+                  />
+                  <Input
+                    label="工事依頼日"
+                    type="date"
+                    value={(formData.constructionRequestedDate as string) || ''}
+                    onChange={(e) => handleChange('constructionRequestedDate', e.target.value)}
+                    className="bg-white text-gray-900"
+                  />
+                </div>
+              </section>
 
-        <section className="space-y-4 border-t border-gray-200 pt-4">
-          <FileAttachmentsComponent
-            userRole="admin"
-            attachments={attachments}
-            isEditing
-            onFileUpload={handleFileUpload}
-            onFileDelete={handleFileDelete}
-            onFileDownload={handleFileDownload}
-            uploadingFiles={uploadingFiles}
-          />
-        </section>
+              <section className="space-y-4">
+                <SectionTitle>物件情報</SectionTitle>
 
-        <section className="space-y-2 border-t border-gray-200 pt-4">
-          <Textarea
-            label="その他備考"
-            value={(formData.notes as string) || ''}
-            onChange={(e) => handleChange('notes', e.target.value)}
-            placeholder="その他の情報（任意）"
-            fullWidth
-            className="min-h-[96px]"
-            />
-          </section>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    個別/集合 <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        value="個別"
+                        checked={formData.propertyType === '個別'}
+                        onChange={(e) => handleChange('propertyType', e.target.value)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-700">個別</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        value="集合"
+                        checked={formData.propertyType === '集合'}
+                        onChange={(e) => handleChange('propertyType', e.target.value)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-700">集合</span>
+                    </label>
+                  </div>
+                </div>
 
-          <div className="flex items-center justify-end space-x-3 border-t border-gray-200 pt-4">
-            <Button type="button" variant="secondary" onClick={onClose}>
-              キャンセル
-            </Button>
-            <Button type="submit">登録</Button>
-          </div>
-        </form>
+                {formData.propertyType === '個別' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input
+                      label="顧客コード"
+                      value={(formData.customerCode as string) || ''}
+                      onChange={(e) => handleChange('customerCode', e.target.value)}
+                      required
+                      className="bg-white text-gray-900"
+                    />
+                    <Input
+                      label="顧客名"
+                      value={(formData.customerName as string) || ''}
+                      onChange={(e) => handleChange('customerName', e.target.value)}
+                      required
+                      className="bg-white text-gray-900"
+                    />
+                    <div className="md:col-span-2">
+                      <Input
+                        label="住所"
+                        value={(formData.address as string) || ''}
+                        onChange={(e) => handleChange('address', e.target.value)}
+                        required
+                        className="bg-white text-gray-900"
+                      />
+                    </div>
+                    <Input
+                      label="電話番号"
+                      value={(formData.phoneNumber as string) || ''}
+                      onChange={(e) => handleChange('phoneNumber', e.target.value)}
+                      className="bg-white text-gray-900"
+                      placeholder="086-123-4567"
+                    />
+                  </div>
+                )}
+
+                {formData.propertyType === '集合' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input
+                      label="集合コード"
+                      value={(formData.collectiveCode as string) || ''}
+                      onChange={(e) => handleChange('collectiveCode', e.target.value)}
+                      required
+                      className="bg-white text-gray-900"
+                    />
+                    <Input
+                      label="集合住宅名"
+                      value={(formData.collectiveHousingName as string) || ''}
+                      onChange={(e) => handleChange('collectiveHousingName', e.target.value)}
+                      required
+                      className="bg-white text-gray-900"
+                    />
+                    <div className="md:col-span-2">
+                      <Input
+                        label="部屋番号・顧客名"
+                        value={(formData.address as string) || ''}
+                        onChange={(e) => handleChange('address', e.target.value)}
+                        required
+                        placeholder="例: 101号室 山田太郎"
+                        className="bg-white text-gray-900"
+                      />
+                    </div>
+                    <Input
+                      label="電話番号"
+                      value={(formData.phoneNumber as string) || ''}
+                      onChange={(e) => handleChange('phoneNumber', e.target.value)}
+                      className="bg-white text-gray-900"
+                      placeholder="086-123-4567"
+                    />
+                  </div>
+                )}
+              </section>
+
+              <section className="space-y-4">
+                <SectionTitle>依頼先情報</SectionTitle>
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        value="internal"
+                        checked={formData.assigneeType === 'internal'}
+                        onChange={(e) => handleChange('assigneeType', e.target.value)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-700">自社（直営班）</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        value="contractor"
+                        checked={formData.assigneeType === 'contractor'}
+                        onChange={(e) => handleChange('assigneeType', e.target.value)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-700">協力会社</span>
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {formData.assigneeType === 'contractor' && (
+                      <SelectField
+                        label="協力会社"
+                        value={(formData.contractorId as string) || ''}
+                        onChange={(value) => handleChange('contractorId', value)}
+                        required
+                      >
+                        <option value="">選択してください</option>
+                        {contractors
+                          .filter((c) => c.isActive && c.name !== '直営班')
+                          .map((contractor) => (
+                            <option key={contractor.id} value={contractor.id}>
+                              {contractor.name}
+                            </option>
+                          ))}
+                      </SelectField>
+                    )}
+
+                    <SelectField
+                      label="班"
+                      value={(formData.teamId as string) || ''}
+                      onChange={(value) => handleChange('teamId', value)}
+                      required
+                    >
+                      <option value="">選択してください</option>
+                      {availableTeams.map((team) => (
+                        <option key={team.id} value={team.id}>
+                          {team.teamName}
+                        </option>
+                      ))}
+                    </SelectField>
+                  </div>
+                </div>
+              </section>
+
+              <section className="space-y-4">
+                <SectionTitle>工事情報</SectionTitle>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <SelectField
+                    label="工事種別"
+                    value={(formData.constructionType as string) || ''}
+                    onChange={(value) => handleChange('constructionType', value)}
+                    required
+                  >
+                    <option value="">選択してください</option>
+                    <option value="宅内引込">宅内引込</option>
+                    <option value="撤去">撤去</option>
+                    <option value="移設">移設</option>
+                    <option value="その他">その他</option>
+                  </SelectField>
+
+                  <SelectField
+                    label="工事後報告"
+                    value={(formData.postConstructionReport as string) || ''}
+                    onChange={(value) => handleChange('postConstructionReport', value)}
+                    required
+                  >
+                    <option value="未完了">未完了</option>
+                    <option value="完了">完了</option>
+                    <option value="不要">不要</option>
+                  </SelectField>
+                </div>
+              </section>
+
+              <section className="space-y-4 border-t border-gray-200 pt-4">
+                <RequestNotesComponent
+                  userRole="admin"
+                  notes={requestNotes}
+                  isEditing
+                  onChange={(notes) => setRequestNotes({ adminNotes: notes })}
+                />
+              </section>
+
+              <section className="space-y-4 border-t border-gray-200 pt-4">
+                <FileAttachmentsComponent
+                  userRole="admin"
+                  attachments={attachments}
+                  isEditing
+                  onFileUpload={handleFileUpload}
+                  onFileDelete={handleFileDelete}
+                  onFileDownload={handleFileDownload}
+                  uploadingFiles={uploadingFiles}
+                />
+              </section>
+
+              <section className="space-y-2 border-t border-gray-200 pt-4">
+                <Textarea
+                  label="その他備考"
+                  value={(formData.notes as string) || ''}
+                  onChange={(e) => handleChange('notes', e.target.value)}
+                  placeholder="その他の情報（任意）"
+                  fullWidth
+                  className="min-h-[96px]"
+                />
+              </section>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
+              <Button type="button" variant="secondary" onClick={onClose}>
+                キャンセル
+              </Button>
+              <Button type="submit">登録</Button>
+            </div>
+          </form>
+        </Dialog.Panel>
       </div>
-    </div>
+    </Dialog>
   )
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h3 className="text-md font-medium text-gray-900">{children}</h3>
+  return <h3 className="mb-3 text-md font-medium text-gray-900">{children}</h3>
 }
 
 function SelectField({
@@ -553,7 +557,7 @@ function SelectField({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900"
       >
         {children}
       </select>
