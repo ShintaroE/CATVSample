@@ -15,6 +15,7 @@ interface SurveyTabProps {
 }
 
 export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps) {
+  const [orderNumberFilter, setOrderNumberFilter] = useState('')
   const [propertyTypeFilter, setPropertyTypeFilter] = useState<'' | '個別' | '集合'>('')
   const [customerCodeFilter, setCustomerCodeFilter] = useState('')
   const [collectiveCodeFilter, setCollectiveCodeFilter] = useState('')
@@ -36,6 +37,7 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
 
   // フィルタクリア
   const handleClearFilters = () => {
+    setOrderNumberFilter('')
     setPropertyTypeFilter('')
     setCustomerCodeFilter('')
     setCollectiveCodeFilter('')
@@ -46,6 +48,11 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
 
   const filtered = useMemo(() => {
     return data.filter((r) => {
+      // 受注番号（部分一致）
+      if (orderNumberFilter && !(r.orderNumber || '').toLowerCase().includes(orderNumberFilter.toLowerCase())) {
+        return false
+      }
+
       // 物件種別
       if (propertyTypeFilter && r.propertyType !== propertyTypeFilter) {
         return false
@@ -82,7 +89,7 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
 
       return true
     })
-  }, [data, propertyTypeFilter, customerCodeFilter, collectiveCodeFilter, contractorIdFilter, teamIdFilter, statusFilter])
+  }, [data, orderNumberFilter, propertyTypeFilter, customerCodeFilter, collectiveCodeFilter, contractorIdFilter, teamIdFilter, statusFilter])
 
   const getStatusBadge = (status: SurveyStatus): BadgeVariant => {
     const variantMap: Record<SurveyStatus, BadgeVariant> = {
@@ -104,10 +111,24 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* 物件種別 */}
+          {/* 受注番号 */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              物件種別
+              受注番号
+            </label>
+            <input
+              type="text"
+              value={orderNumberFilter}
+              onChange={(e) => setOrderNumberFilter(e.target.value)}
+              placeholder="2024031500001"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
+            />
+          </div>
+
+          {/* 個別/集合 */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              個別/集合
             </label>
             <select
               value={propertyTypeFilter}
@@ -260,9 +281,6 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
                 調査完了日
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                最終更新
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 操作
               </th>
             </tr>
@@ -270,7 +288,7 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
           <tbody className="bg-white divide-y divide-gray-200">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={15} className="px-4 py-8 text-center text-sm text-gray-500">
+                <td colSpan={14} className="px-4 py-8 text-center text-sm text-gray-500">
                   条件に一致するデータがありません
                 </td>
               </tr>
@@ -326,9 +344,6 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.completedAt || '-'}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">
-                    {r.lastUpdatedByName || '-'}
                   </td>
                   <td className="px-4 py-3 text-sm whitespace-nowrap">
                     <button

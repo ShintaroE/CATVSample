@@ -13,8 +13,9 @@ interface ConstructionTabProps {
 
 const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, onEdit }) => {
   const [orderNumberFilter, setOrderNumberFilter] = useState('')
-  const [customerNameFilter, setCustomerNameFilter] = useState('')
-  const [constructionTypeFilter, setConstructionTypeFilter] = useState('')
+  const [customerCodeFilter, setCustomerCodeFilter] = useState('')
+  const [collectiveCodeFilter, setCollectiveCodeFilter] = useState('')
+  const [propertyTypeFilter, setPropertyTypeFilter] = useState<'' | '個別' | '集合'>('')
   const [contractorIdFilter, setContractorIdFilter] = useState('')
   const [teamIdFilter, setTeamIdFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState<'' | ConstructionStatus>('')
@@ -35,8 +36,9 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
   // フィルタクリア
   const handleClearFilters = () => {
     setOrderNumberFilter('')
-    setCustomerNameFilter('')
-    setConstructionTypeFilter('')
+    setCustomerCodeFilter('')
+    setCollectiveCodeFilter('')
+    setPropertyTypeFilter('')
     setContractorIdFilter('')
     setTeamIdFilter('')
     setStatusFilter('')
@@ -84,15 +86,52 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
   // Filter data
   const filteredData = useMemo(() => {
     return data.filter(item => {
+      // 受注番号（部分一致）
       if (orderNumberFilter && !item.orderNumber?.toLowerCase().includes(orderNumberFilter.toLowerCase())) {
         return false
       }
-      if (customerNameFilter && !item.customerName?.toLowerCase().includes(customerNameFilter.toLowerCase())) {
-        return false
+
+      // 個別/集合（テーブル表示と同じロジックで判定）
+      if (propertyTypeFilter) {
+        if (propertyTypeFilter === '個別') {
+          // 個別を選択した場合、propertyTypeが'個別'のもののみ表示
+          if (item.propertyType !== '個別') {
+            return false
+          }
+        } else if (propertyTypeFilter === '集合') {
+          // 集合を選択した場合、propertyTypeが'個別'でないもの（集合またはundefined等）を表示
+          if (item.propertyType === '個別') {
+            return false
+          }
+        }
       }
-      if (constructionTypeFilter && item.constructionType !== constructionTypeFilter) {
-        return false
+
+      // 顧客コード（個別のみ、部分一致）
+      if (customerCodeFilter) {
+        // 個別物件の場合のみチェック
+        if (item.propertyType === '個別') {
+          if (!(item.customerCode || '').toLowerCase().includes(customerCodeFilter.toLowerCase())) {
+            return false
+          }
+        } else {
+          // 集合物件の場合は、顧客コードフィルターで除外しない（スキップ）
+          // ただし、propertyTypeFilterで個別が選択されている場合は、集合物件は除外される
+        }
       }
+
+      // 集合コード（集合のみ、部分一致）
+      if (collectiveCodeFilter) {
+        // 集合物件の場合のみチェック
+        if (item.propertyType === '集合') {
+          if (!(item.collectiveCode || '').toLowerCase().includes(collectiveCodeFilter.toLowerCase())) {
+            return false
+          }
+        } else {
+          // 個別物件の場合は、集合コードフィルターで除外しない（スキップ）
+          // ただし、propertyTypeFilterで集合が選択されている場合は、個別物件は除外される
+        }
+      }
+
       if (contractorIdFilter && item.contractorId !== contractorIdFilter) {
         return false
       }
@@ -107,7 +146,7 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
       }
       return true
     })
-  }, [data, orderNumberFilter, customerNameFilter, constructionTypeFilter, contractorIdFilter, teamIdFilter, statusFilter, postConstructionReportFilter])
+  }, [data, orderNumberFilter, propertyTypeFilter, customerCodeFilter, collectiveCodeFilter, contractorIdFilter, teamIdFilter, statusFilter, postConstructionReportFilter])
 
   return (
     <div className="space-y-4">
@@ -133,36 +172,50 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
             />
           </div>
 
-          {/* 顧客名 */}
+          {/* 個別/集合 */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              顧客名
-            </label>
-            <input
-              type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-              value={customerNameFilter}
-              onChange={(e) => setCustomerNameFilter(e.target.value)}
-              placeholder="顧客名で絞り込み"
-            />
-          </div>
-
-          {/* 工事種別 */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              工事種別
+              個別/集合
             </label>
             <select
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-              value={constructionTypeFilter}
-              onChange={(e) => setConstructionTypeFilter(e.target.value)}
+              value={propertyTypeFilter}
+              onChange={(e) => setPropertyTypeFilter(e.target.value as '' | '個別' | '集合')}
             >
               <option value="">全て</option>
-              <option value="宅内引込">宅内引込</option>
-              <option value="撤去">撤去</option>
-              <option value="移設">移設</option>
-              <option value="その他">その他</option>
+              <option value="個別">個別</option>
+              <option value="集合">集合</option>
             </select>
+          </div>
+
+          {/* 顧客コード */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              顧客コード
+            </label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm placeholder:text-gray-400"
+              value={customerCodeFilter}
+              onChange={(e) => setCustomerCodeFilter(e.target.value)}
+              placeholder="C123456"
+            />
+            <p className="text-xs text-gray-500 mt-1">※個別物件のみ</p>
+          </div>
+
+          {/* 集合コード */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              集合コード
+            </label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm placeholder:text-gray-400"
+              value={collectiveCodeFilter}
+              onChange={(e) => setCollectiveCodeFilter(e.target.value)}
+              placeholder="K001"
+            />
+            <p className="text-xs text-gray-500 mt-1">※集合物件のみ</p>
           </div>
 
           {/* 依頼先 */}
