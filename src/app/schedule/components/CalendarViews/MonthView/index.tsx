@@ -1,7 +1,11 @@
 'use client'
 
-import React, { useMemo } from 'react'
-import { ScheduleItem, ExclusionEntry } from '../../../types'
+import React from 'react'
+import { ScheduleItem, ExclusionEntry, ScheduleItemWithTeam } from '../../../types'
+import { getContractorColorClasses } from '@/shared/utils/contractorColors'
+import { useFilters } from '../../../hooks/useFilters'
+import { useScheduleLayout } from '../../../hooks/useScheduleLayout'
+import { useCalendar } from '../../../hooks/useCalendar'
 
 interface MonthViewProps {
   currentDate: Date
@@ -9,9 +13,9 @@ interface MonthViewProps {
   onDateSelect: (date: Date) => void
   onDateDoubleClick: (date: Date) => void
   onEditSchedule: (schedule: ScheduleItem) => void
-  filterHooks: any
-  layoutHooks: any
-  calendarHooks: any
+  filterHooks: ReturnType<typeof useFilters>
+  layoutHooks: ReturnType<typeof useScheduleLayout>
+  calendarHooks: ReturnType<typeof useCalendar>
 }
 
 export default function MonthView({
@@ -21,7 +25,6 @@ export default function MonthView({
   onDateDoubleClick,
   onEditSchedule,
   filterHooks,
-  layoutHooks,
   calendarHooks,
 }: MonthViewProps) {
   const getMonthDays = () => {
@@ -43,19 +46,6 @@ export default function MonthView({
   const getSchedulesForDate = (date: Date) => {
     const dateStr = calendarHooks.formatDateString(date)
     return filterHooks.filteredSchedules.filter((s: ScheduleItem) => s.assignedDate === dateStr)
-  }
-
-  const getContractorColor = (contractor: string) => {
-    switch (contractor) {
-      case '直営班':
-        return 'bg-blue-200 border-blue-300 text-blue-900'
-      case '栄光電気':
-        return 'bg-green-200 border-green-300 text-green-900'
-      case 'スライヴ':
-        return 'bg-purple-200 border-purple-300 text-purple-900'
-      default:
-        return 'bg-gray-200 border-gray-300 text-gray-900'
-    }
   }
 
   const getStatusColor = (status: string) => {
@@ -155,10 +145,10 @@ export default function MonthView({
                   </div>
                 ))}
 
-                {daySchedules.slice(0, dayExclusions.length > 0 ? 2 : 3).map((schedule: any, idx: number) => (
+                {daySchedules.slice(0, dayExclusions.length > 0 ? 2 : 3).map((schedule: ScheduleItemWithTeam, idx: number) => (
                   <div
                     key={`${schedule.id}-${schedule.displayTeam?.teamId || idx}`}
-                    className={`text-xs p-1 rounded truncate cursor-pointer ${getContractorColor(schedule.displayTeam?.contractorName || schedule.contractor)}`}
+                    className={`text-xs p-1 rounded truncate cursor-pointer ${getContractorColorClasses(schedule.displayTeam?.contractorName || schedule.contractor)}`}
                     onClick={(e) => {
                       e.stopPropagation()
                       onEditSchedule(schedule)

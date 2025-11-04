@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import { OrderData } from '../../types'
 import { Button } from '@/shared/components/ui'
@@ -22,7 +22,6 @@ export default function AppointmentHistoryModal({
   setOrders,
   onClose,
 }: AppointmentHistoryModalProps) {
-  const [showCalendarPicker, setShowCalendarPicker] = useState(false)
   const appointmentHooks = useAppointments()
 
   const handleClose = () => {

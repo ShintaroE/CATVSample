@@ -1,5 +1,5 @@
-import { useMemo, useCallback } from 'react'
-import { ExclusionEntry, WeekViewColumn, TeamGroup, TeamFilter, ScheduleItemWithTeam } from '../types'
+import { useCallback } from 'react'
+import { ExclusionEntry, WeekViewColumn, TeamGroup, TeamFilter } from '../types'
 import { HOUR_HEIGHT, BUSINESS_START_HOUR, BUSINESS_END_HOUR } from '../types'
 
 export function useScheduleLayout(
