@@ -165,13 +165,13 @@ export default function ApplicationsPage() {
         {/* タブコンテンツ */}
         <div className="mt-4">
           {activeTab === 'survey' && (
-            <SurveyTab data={surveyData} contractors={contractors} teams={teams} onEdit={handleEdit} />
+            <SurveyTab data={surveyData} contractors={contractors} onEdit={handleEdit} />
           )}
           {activeTab === 'attachment' && (
-            <AttachmentTab data={attachmentData} contractors={contractors} teams={teams} onEdit={handleEdit} />
+            <AttachmentTab data={attachmentData} contractors={contractors} onEdit={handleEdit} />
           )}
           {activeTab === 'construction' && (
-            <ConstructionTab data={constructionData} contractors={contractors} teams={teams} onEdit={handleEdit} />
+            <ConstructionTab data={constructionData} contractors={contractors} onEdit={handleEdit} />
           )}
         </div>
 
@@ -179,7 +179,6 @@ export default function ApplicationsPage() {
         {isNewModalOpen && activeTab === 'survey' && (
           <NewSurveyModal
             contractors={contractors}
-            teams={teams}
             onClose={() => setIsNewModalOpen(false)}
             onCreate={handleCreate}
           />
@@ -206,7 +205,6 @@ export default function ApplicationsPage() {
           <EditSurveyModal
             item={editingItem as SurveyRequest}
             contractors={contractors}
-            teams={teams}
             onClose={() => setEditingItem(null)}
             onSave={(updates) => handleUpdate('survey', editingItem.id, updates)}
           />

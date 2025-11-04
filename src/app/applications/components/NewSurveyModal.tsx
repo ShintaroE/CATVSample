@@ -7,7 +7,7 @@ import {
   RequestNotes,
   AttachedFile,
 } from '@/features/applications/types'
-import { Contractor, Team } from '@/features/contractor/types'
+import { Contractor } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Dialog } from '@headlessui/react'
@@ -18,7 +18,6 @@ import RequestNotesComponent from './RequestNotes'
 
 interface NewSurveyModalProps {
   contractors: Contractor[]
-  teams: Team[]
   onClose: () => void
   onCreate: (
     type: RequestType,
@@ -28,7 +27,6 @@ interface NewSurveyModalProps {
 
 export default function NewSurveyModal({
   contractors,
-  teams,
   onClose,
   onCreate,
 }: NewSurveyModalProps) {

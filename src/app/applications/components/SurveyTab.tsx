@@ -1,22 +1,20 @@
 import React, { useMemo, useState } from 'react'
 import {
-  MagnifyingGlassIcon,
   FunnelIcon,
   PencilSquareIcon,
 } from '@heroicons/react/24/outline'
-import { SurveyRequest, SurveyStatus, AssigneeType } from '@/features/applications/types'
-import { Contractor, Team } from '@/features/contractor/types'
+import { SurveyRequest, SurveyStatus } from '@/features/applications/types'
+import { Contractor } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { Badge, BadgeVariant } from '@/shared/components/ui'
 
 interface SurveyTabProps {
   data: SurveyRequest[]
   contractors: Contractor[]
-  teams: Team[]
   onEdit: (item: SurveyRequest) => void
 }
 
-export default function SurveyTab({ data, contractors, teams, onEdit }: SurveyTabProps) {
+export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps) {
   const [propertyTypeFilter, setPropertyTypeFilter] = useState<'' | '個別' | '集合'>('')
   const [customerCodeFilter, setCustomerCodeFilter] = useState('')
   const [collectiveCodeFilter, setCollectiveCodeFilter] = useState('')

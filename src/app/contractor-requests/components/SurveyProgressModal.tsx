@@ -7,7 +7,7 @@ import { SurveyRequest, RequestType, AttachedFile } from '@/features/application
 import { Textarea } from '@/shared/components/ui'
 import FileAttachments from '@/app/applications/components/FileAttachments'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { uploadFileToRequest, deleteFileFromRequest, downloadFile } from '@/features/applications/lib/applicationStorage'
+import { deleteFileFromRequest, downloadFile } from '@/features/applications/lib/applicationStorage'
 import RequestNotes from '@/app/applications/components/RequestNotes'
 
 interface SurveyProgressModalProps {

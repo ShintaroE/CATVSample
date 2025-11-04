@@ -1,18 +1,17 @@
 import React, { useMemo, useState } from 'react'
 import { FunnelIcon, PencilSquareIcon } from '@heroicons/react/24/outline'
 import { ConstructionRequest, ConstructionStatus, PostConstructionReport } from '@/features/applications/types'
-import { Contractor, Team } from '@/features/contractor/types'
+import { Contractor } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { Badge, BadgeVariant } from '@/shared/components/ui'
 
 interface ConstructionTabProps {
   data: ConstructionRequest[]
   contractors: Contractor[]
-  teams: Team[]
   onEdit: (item: ConstructionRequest) => void
 }
 
-const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, teams, onEdit }) => {
+const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, onEdit }) => {
   const [orderNumberFilter, setOrderNumberFilter] = useState('')
   const [customerNameFilter, setCustomerNameFilter] = useState('')
   const [constructionTypeFilter, setConstructionTypeFilter] = useState('')

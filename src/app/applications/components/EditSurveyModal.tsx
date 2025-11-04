@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react'
 import { SurveyRequest, SurveyStatus, AttachedFile } from '@/features/applications/types'
-import { Contractor, Team } from '@/features/contractor/types'
+import { Contractor } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { downloadFile } from '@/features/applications/lib/applicationStorage'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { Input, Textarea } from '@/shared/components/ui'
+import { Input } from '@/shared/components/ui'
 import ProgressHistory from './ProgressHistory'
 import FileAttachmentsComponent from './FileAttachments'
 import RequestNotesComponent from './RequestNotes'
@@ -14,7 +14,6 @@ import RequestNotesComponent from './RequestNotes'
 interface EditSurveyModalProps {
   item: SurveyRequest
   contractors: Contractor[]
-  teams: Team[]
   onClose: () => void
   onSave: (updates: Partial<SurveyRequest>) => void
 }
@@ -22,7 +21,6 @@ interface EditSurveyModalProps {
 export default function EditSurveyModal({
   item,
   contractors,
-  teams,
   onClose,
   onSave,
 }: EditSurveyModalProps) {

@@ -1,22 +1,20 @@
 import React, { useMemo, useState } from 'react'
 import {
-  MagnifyingGlassIcon,
   FunnelIcon,
   PencilSquareIcon,
 } from '@heroicons/react/24/outline'
-import { AttachmentRequest, AttachmentStatus, AssigneeType, AttachmentNeeded } from '@/features/applications/types'
-import { Contractor, Team } from '@/features/contractor/types'
+import { AttachmentRequest, AttachmentStatus, AttachmentNeeded } from '@/features/applications/types'
+import { Contractor } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { Badge, BadgeVariant } from '@/shared/components/ui'
 
 interface AttachmentTabProps {
   data: AttachmentRequest[]
   contractors: Contractor[]
-  teams: Team[]
   onEdit: (item: AttachmentRequest) => void
 }
 
-export default function AttachmentTab({ data, contractors, teams, onEdit }: AttachmentTabProps) {
+export default function AttachmentTab({ data, contractors, onEdit }: AttachmentTabProps) {
   const [orderNumberFilter, setOrderNumberFilter] = useState('')
   const [customerNameFilter, setCustomerNameFilter] = useState('')
   const [contractorIdFilter, setContractorIdFilter] = useState('')
