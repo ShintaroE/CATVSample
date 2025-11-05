@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { FunnelIcon, PencilSquareIcon } from '@heroicons/react/24/outline'
+import { FunnelIcon, PencilSquareIcon, ChartBarIcon } from '@heroicons/react/24/outline'
 import { ConstructionRequest, ConstructionStatus, PostConstructionReport } from '@/features/applications/types'
 import { Contractor } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
@@ -152,10 +152,28 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
     <div className="space-y-4">
       {/* Filtering Panel */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-          <FunnelIcon className="w-4 h-4 mr-1.5" />
-          絞り込み条件
-        </h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-gray-700 flex items-center">
+            <FunnelIcon className="w-4 h-4 mr-1.5" />
+            絞り込み条件
+          </h3>
+          {/* 表示件数 */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <ChartBarIcon className="w-4 h-4 text-gray-500" />
+              <Badge
+                variant={filteredData.length !== data.length ? 'info' : 'default'}
+                size="sm"
+                className="font-semibold"
+              >
+                表示: {filteredData.length}件
+              </Badge>
+              <Badge variant="default" size="sm" className="font-normal">
+                全: {data.length}件
+              </Badge>
+            </div>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* 受注番号 */}
@@ -432,9 +450,6 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
             )}
           </tbody>
         </table>
-      </div>
-      <div className="px-4 py-2 text-xs text-gray-500 bg-white rounded-b-lg">
-        表示件数: {filteredData.length} / 総件数: {data.length}
       </div>
     </div>
   )
