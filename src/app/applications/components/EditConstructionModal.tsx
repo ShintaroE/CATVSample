@@ -507,18 +507,6 @@ export default function EditConstructionModal({
                 </div>
               </section>
 
-              <section>
-                <SectionTitle>その他備考</SectionTitle>
-                <Textarea
-                  label="その他備考"
-                  value={formData.notes || ''}
-                  onChange={(e) => handleChange('notes', e.target.value)}
-                  placeholder="その他の情報（任意）"
-                  fullWidth
-                  className="min-h-[96px]"
-                />
-              </section>
-
               <section className="space-y-4 border-t border-gray-200 pt-4">
                 <RequestNotesComponent
                   userRole={user?.role || 'admin'}

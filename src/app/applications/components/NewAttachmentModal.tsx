@@ -14,7 +14,7 @@ import {
 import { Contractor, Team } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { Input, Textarea, Button } from '@/shared/components/ui'
+import { Input } from '@/shared/components/ui'
 import FileAttachmentsComponent from './FileAttachments'
 import RequestNotesComponent from './RequestNotes'
 
@@ -49,8 +49,8 @@ export default function NewAttachmentModal({
     requestedAt: '',
     scheduledDate: '',
     submittedAt: '',
-    withdrawNeeded: false, // 申請要否
-    postConstructionReport: false, // 工事後報告
+    withdrawNeeded: false, // 申請要否（デフォルト: 申請不要）
+    postConstructionReport: undefined, // 工事後報告（デフォルト: 未設定）
   })
   const [attachments, setAttachments] = useState<FileAttachments>({
     fromAdmin: [],
@@ -106,6 +106,16 @@ export default function NewAttachmentModal({
           availableTeams.find((t) => t.id === value) ||
           teams.find((t) => t.id === value)
         newData.teamName = team?.teamName || ''
+      }
+
+      // 個別/集合の切り替え時に不要なフィールドをクリア
+      if (field === 'propertyType') {
+        if (value === '個別') {
+          newData.collectiveCode = ''
+          newData.collectiveHousingName = ''
+        } else if (value === '集合') {
+          // 集合の場合は何もクリアしない（顧客コード・顧客名は両方で使用）
+        }
       }
 
       return newData
@@ -166,13 +176,9 @@ export default function NewAttachmentModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
+    // バリデーション
     if (!formData.orderNumber) {
       alert('受注番号を入力してください')
-      return
-    }
-
-    if (!formData.teamId) {
-      alert('班を選択してください')
       return
     }
 
@@ -181,21 +187,45 @@ export default function NewAttachmentModal({
       return
     }
 
-    if (formData.propertyType === '個別' && !formData.customerCode) {
-      alert('顧客コードを入力してください')
+    if (formData.propertyType === '個別') {
+      if (!formData.customerCode) {
+        alert('顧客コードを入力してください')
+        return
+      }
+      if (!formData.customerName) {
+        alert('顧客名を入力してください')
+        return
+      }
+    } else if (formData.propertyType === '集合') {
+      if (!formData.collectiveCode) {
+        alert('集合コードを入力してください')
+        return
+      }
+      if (!formData.collectiveHousingName) {
+        alert('集合住宅名を入力してください')
+        return
+      }
+    }
+
+    if (!formData.address) {
+      alert(formData.propertyType === '個別' ? '住所を入力してください' : '部屋番号・顧客名を入力してください')
       return
     }
 
-    if (formData.propertyType === '集合' && !formData.collectiveCode) {
-      alert('集合コードを入力してください')
+    if (!formData.teamId) {
+      alert('班を選択してください')
       return
     }
 
-    onCreate('attachment', {
+    // データ作成
+    const newData: Partial<AttachmentRequest> = {
       ...formData,
+      type: 'attachment',
       attachments,
       requestNotes,
-    })
+    }
+
+    onCreate('attachment', newData)
   }
 
   return (
@@ -218,16 +248,22 @@ export default function NewAttachmentModal({
 
           <form onSubmit={handleSubmit}>
             <div className="px-6 py-4 space-y-6">
-              <section>
-                <SectionTitle>基本情報</SectionTitle>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* 基本情報 */}
+              <div>
+                <h3 className="text-md font-medium text-gray-900 mb-3">基本情報</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Input
                     label="受注番号"
                     value={(formData.orderNumber as string) || ''}
                     onChange={(e) => handleChange('orderNumber', e.target.value)}
-                    required
                     className="bg-white text-gray-900"
-                    placeholder="例: 2024031500001"
+                  />
+                  <Input
+                    label="KCT受取日"
+                    type="date"
+                    value={(formData.kctReceivedDate as string) || ''}
+                    onChange={(e) => handleChange('kctReceivedDate', e.target.value)}
+                    className="bg-white text-gray-900"
                   />
                   <Input
                     label="依頼日"
@@ -236,26 +272,18 @@ export default function NewAttachmentModal({
                     onChange={(e) => handleChange('requestedAt', e.target.value)}
                     className="bg-white text-gray-900"
                   />
-                  <Input
-                    label="予定日"
-                    type="date"
-                    value={(formData.scheduledDate as string) || ''}
-                    onChange={(e) => handleChange('scheduledDate', e.target.value)}
-                    className="bg-white text-gray-900"
-                  />
-                  <Input
-                    label="申請提出日"
-                    type="date"
-                    value={(formData.submittedAt as string) || ''}
-                    onChange={(e) => handleChange('submittedAt', e.target.value)}
-                    className="bg-white text-gray-900"
-                  />
                 </div>
-              </section>
+              </div>
 
-              <section className="space-y-4">
-                <SectionTitle>物件種別</SectionTitle>
-                <div className="space-y-4">
+              {/* 物件情報 */}
+              <div>
+                <h3 className="text-md font-medium text-gray-900 mb-3">物件情報</h3>
+
+                {/* 個別/集合選択 */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    個別/集合 <span className="text-red-500">*</span>
+                  </label>
                   <div className="flex gap-4">
                     <label className="flex items-center">
                       <input
@@ -278,232 +306,269 @@ export default function NewAttachmentModal({
                       <span className="text-sm text-gray-700">集合</span>
                     </label>
                   </div>
+                </div>
 
+                {/* 個別の場合 */}
+                {formData.propertyType === '個別' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {formData.propertyType === '個別' ? (
-                      <>
-                        <Input
-                          label="顧客コード"
-                          value={(formData.customerCode as string) || ''}
-                          onChange={(e) => handleChange('customerCode', e.target.value)}
-                          required
-                          className="bg-white text-gray-900"
-                          placeholder="例: 123456789"
-                        />
-                        <Input
-                          label="顧客名"
-                          value={(formData.customerName as string) || ''}
-                          onChange={(e) => handleChange('customerName', e.target.value)}
-                          className="bg-white text-gray-900"
-                          placeholder="例: 山田太郎"
-                        />
-                        <div className="md:col-span-2">
-                          <Input
-                            label="住所"
-                            value={(formData.address as string) || ''}
-                            onChange={(e) => handleChange('address', e.target.value)}
-                            className="bg-white text-gray-900"
-                            placeholder="例: 岡山県倉敷市○○町1-2-3"
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <Input
-                          label="集合コード"
-                          value={(formData.collectiveCode as string) || ''}
-                          onChange={(e) => handleChange('collectiveCode', e.target.value)}
-                          required
-                          className="bg-white text-gray-900"
-                          placeholder="例: K001"
-                        />
-                        <Input
-                          label="集合住宅名"
-                          value={(formData.collectiveHousingName as string) || ''}
-                          onChange={(e) => handleChange('collectiveHousingName', e.target.value)}
-                          className="bg-white text-gray-900"
-                          placeholder="例: サンハイツ倉敷"
-                        />
-                        <Input
-                          label="顧客コード"
-                          value={(formData.customerCode as string) || ''}
-                          onChange={(e) => handleChange('customerCode', e.target.value)}
-                          className="bg-white text-gray-900"
-                          placeholder="例: 123456789"
-                        />
-                        <Input
-                          label="顧客名"
-                          value={(formData.customerName as string) || ''}
-                          onChange={(e) => handleChange('customerName', e.target.value)}
-                          className="bg-white text-gray-900"
-                          placeholder="例: 田中花子"
-                        />
-                        <div className="md:col-span-2">
-                          <Input
-                            label="部屋番号・顧客名"
-                            value={(formData.address as string) || ''}
-                            onChange={(e) => handleChange('address', e.target.value)}
-                            className="bg-white text-gray-900"
-                            placeholder="例: 101号室 田中花子"
-                          />
-                        </div>
-                      </>
-                    )}
+                    <Input
+                      label="顧客コード"
+                      value={(formData.customerCode as string) || ''}
+                      onChange={(e) => handleChange('customerCode', e.target.value)}
+                      required
+                      className="bg-white text-gray-900"
+                    />
+                    <Input
+                      label="顧客名"
+                      value={(formData.customerName as string) || ''}
+                      onChange={(e) => handleChange('customerName', e.target.value)}
+                      required
+                      className="bg-white text-gray-900"
+                    />
+                    <Input
+                      label="住所"
+                      value={(formData.address as string) || ''}
+                      onChange={(e) => handleChange('address', e.target.value)}
+                      required
+                      className="bg-white text-gray-900 md:col-span-2"
+                    />
+                    <Input
+                      label="電話番号"
+                      value={(formData.phoneNumber as string) || ''}
+                      onChange={(e) => handleChange('phoneNumber', e.target.value)}
+                      className="bg-white text-gray-900"
+                    />
                   </div>
-                </div>
-              </section>
+                )}
 
-              <section className="space-y-4">
-                <SectionTitle>その他設定</SectionTitle>
-                <div className="space-y-3">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.withdrawNeeded as boolean}
-                      onChange={(e) => handleChange('withdrawNeeded', e.target.checked)}
-                      className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                {/* 集合の場合 */}
+                {formData.propertyType === '集合' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input
+                      label="集合コード"
+                      value={(formData.collectiveCode as string) || ''}
+                      onChange={(e) => handleChange('collectiveCode', e.target.value)}
+                      required
+                      className="bg-white text-gray-900"
                     />
-                    <span className="text-sm text-gray-700">申請要</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.postConstructionReport as boolean}
-                      onChange={(e) => handleChange('postConstructionReport', e.target.checked)}
-                      className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    <Input
+                      label="集合住宅名"
+                      value={(formData.collectiveHousingName as string) || ''}
+                      onChange={(e) => handleChange('collectiveHousingName', e.target.value)}
+                      required
+                      className="bg-white text-gray-900"
                     />
-                    <span className="text-sm text-gray-700">工事後報告が必要</span>
-                  </label>
-                </div>
-              </section>
+                    <Input
+                      label="部屋番号・顧客名"
+                      value={(formData.address as string) || ''}
+                      onChange={(e) => handleChange('address', e.target.value)}
+                      required
+                      placeholder="例: 101号室 山田太郎"
+                      className="bg-white text-gray-900 md:col-span-2"
+                    />
+                    <Input
+                      label="電話番号"
+                      value={(formData.phoneNumber as string) || ''}
+                      onChange={(e) => handleChange('phoneNumber', e.target.value)}
+                      className="bg-white text-gray-900"
+                    />
+                  </div>
+                )}
+              </div>
 
-              <section className="space-y-4">
-                <SectionTitle>依頼先情報</SectionTitle>
+              {/* 依頼先情報 */}
+              <div>
+                <h3 className="text-md font-medium text-gray-900 mb-3">依頼先情報</h3>
                 <div className="space-y-4">
-                  <div className="flex gap-4">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="internal"
-                        checked={formData.assigneeType === 'internal'}
-                        onChange={(e) => handleChange('assigneeType', e.target.value)}
-                        className="mr-2"
-                      />
-                      <span className="text-sm text-gray-700">自社（直営班）</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="contractor"
-                        checked={formData.assigneeType === 'contractor'}
-                        onChange={(e) => handleChange('assigneeType', e.target.value)}
-                        className="mr-2"
-                      />
-                      <span className="text-sm text-gray-700">協力会社</span>
-                    </label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">依頼先</label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          value="internal"
+                          checked={formData.assigneeType === 'internal'}
+                          onChange={(e) => handleChange('assigneeType', e.target.value)}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">自社（直営班）</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          value="contractor"
+                          checked={formData.assigneeType === 'contractor'}
+                          onChange={(e) => handleChange('assigneeType', e.target.value)}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">協力会社</span>
+                      </label>
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {formData.assigneeType === 'contractor' && (
-                      <SelectField
-                        label="協力会社"
-                        value={(formData.contractorId as string) || ''}
-                        onChange={(value) => handleChange('contractorId', value)}
-                        required
-                      >
-                        <option value="">選択してください</option>
-                        {contractors
-                          .filter((c) => c.isActive && c.name !== '直営班')
-                          .map((contractor) => (
-                            <option key={contractor.id} value={contractor.id}>
-                              {contractor.name}
+                  {formData.assigneeType === 'contractor' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">協力会社</label>
+                        <select
+                          value={(formData.contractorId as string) || ''}
+                          onChange={(e) => handleChange('contractorId', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                          required
+                        >
+                          <option value="">選択してください</option>
+                          {contractors
+                            .filter((c) => c.name !== '直営班')
+                            .map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.name}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">班</label>
+                        <select
+                          value={(formData.teamId as string) || ''}
+                          onChange={(e) => handleChange('teamId', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                          required
+                          disabled={!formData.contractorId}
+                        >
+                          <option value="">選択してください</option>
+                          {availableTeams.map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {t.teamName}
                             </option>
                           ))}
-                      </SelectField>
-                    )}
+                        </select>
+                      </div>
+                    </div>
+                  )}
 
-                    <SelectField
-                      label="班"
-                      value={(formData.teamId as string) || ''}
-                      onChange={(value) => handleChange('teamId', value)}
-                      required
+                  {formData.assigneeType === 'internal' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">班</label>
+                        <select
+                          value={(formData.teamId as string) || ''}
+                          onChange={(e) => handleChange('teamId', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                          required
+                        >
+                          <option value="">選択してください</option>
+                          {availableTeams.map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {t.teamName}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* スケジュール情報 */}
+              <div>
+                <h3 className="text-md font-medium text-gray-900 mb-3">スケジュール情報</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    label="調査予定日（オプション）"
+                    type="date"
+                    value={(formData.scheduledDate as string) || ''}
+                    onChange={(e) => handleChange('scheduledDate', e.target.value)}
+                    className="bg-white text-gray-900"
+                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      工事後報告
+                    </label>
+                    <select
+                      value={
+                        formData.postConstructionReport === true
+                          ? 'required'
+                          : formData.postConstructionReport === false
+                          ? 'notRequired'
+                          : ''
+                      }
+                      onChange={(e) => {
+                        const value = e.target.value === 'required'
+                          ? true
+                          : e.target.value === 'notRequired'
+                          ? false
+                          : undefined
+                        handleChange('postConstructionReport', value)
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
                     >
-                      <option value="">選択してください</option>
-                      {availableTeams.map((team) => (
-                        <option key={team.id} value={team.id}>
-                          {team.teamName}
-                        </option>
-                      ))}
-                    </SelectField>
+                      <option value="">未設定</option>
+                      <option value="required">必要</option>
+                      <option value="notRequired">不要</option>
+                    </select>
                   </div>
                 </div>
-              </section>
+                <p className="text-xs text-gray-500 mt-2">※ 調査予定日は後から入力・変更できます</p>
+              </div>
 
-              <section className="space-y-4 border-t border-gray-200 pt-4">
-                <RequestNotesComponent
-                  userRole="admin"
-                  notes={requestNotes}
-                  isEditing
-                  onChange={(notes) => setRequestNotes({ adminNotes: notes })}
-                />
-              </section>
+              {/* 申請情報 */}
+              <div>
+                <h3 className="text-md font-medium text-gray-900 mb-3">申請情報</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      申請要否 <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={formData.withdrawNeeded ? 'required' : 'notRequired'}
+                      onChange={(e) => handleChange('withdrawNeeded', e.target.value === 'required')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                      required
+                    >
+                      <option value="required">申請要</option>
+                      <option value="notRequired">申請不要</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
 
-              <section className="space-y-4 border-t border-gray-200 pt-4">
-                <FileAttachmentsComponent
-                  userRole="admin"
-                  attachments={attachments}
-                  isEditing
-                  onFileUpload={handleFileUpload}
-                  onFileDelete={handleFileDelete}
-                  onFileDownload={handleFileDownload}
-                  uploadingFiles={uploadingFiles}
-                />
-              </section>
+              {/* 管理者指示事項 */}
+              <RequestNotesComponent
+                userRole="admin"
+                notes={requestNotes}
+                onChange={(value) => setRequestNotes({ adminNotes: value })}
+                isEditing={true}
+              />
+
+              {/* ファイル添付 */}
+              <FileAttachmentsComponent
+                userRole="admin"
+                attachments={attachments}
+                onFileUpload={handleFileUpload}
+                onFileDelete={handleFileDelete}
+                onFileDownload={handleFileDownload}
+                uploadingFiles={uploadingFiles}
+              />
             </div>
 
-            <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <Button type="button" variant="secondary" onClick={onClose}>
+            <div className="sticky bottom-0 bg-gray-50 px-6 py-4 flex justify-end gap-3 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
                 キャンセル
-              </Button>
-              <Button type="submit">登録</Button>
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                作成
+              </button>
             </div>
           </form>
         </Dialog.Panel>
       </div>
     </Dialog>
-  )
-}
-
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h3 className="mb-3 text-md font-medium text-gray-900">{children}</h3>
-}
-
-function SelectField({
-  label,
-  value,
-  onChange,
-  children,
-  required = false,
-}: {
-  label: string
-  value: string
-  onChange: (value: string) => void
-  children: React.ReactNode
-  required?: boolean
-}) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label}
-        {required && <span className="text-red-500 ml-0.5">*</span>}
-      </label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900"
-      >
-        {children}
-      </select>
-    </div>
   )
 }
