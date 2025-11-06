@@ -360,26 +360,35 @@ export default function ContractorRequestsPage() {
                   <th className="px-3 py-2 font-medium">受注番号</th>
                   {activeTab === 'survey' && (
                     <>
-                      <th className="px-3 py-2 font-medium">個別/集合</th>
-                      <th className="px-3 py-2 font-medium">顧客コード</th>
-                      <th className="px-3 py-2 font-medium">顧客名</th>
-                      <th className="px-3 py-2 font-medium">集合コード</th>
-                      <th className="px-3 py-2 font-medium">集合住宅名</th>
-                      <th className="px-3 py-2 font-medium">住所</th>
-                      <th className="px-3 py-2 font-medium">予定日</th>
-                      <th className="px-3 py-2 font-medium">状態</th>
-                      <th className="px-3 py-2 font-medium">最終更新</th>
-                      <th className="px-3 py-2 font-medium text-right">操作</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">個別/集合</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">顧客コード</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">顧客名</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">集合コード</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">集合住宅名</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">住所</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">状態</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">依頼日</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">調査予定日</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">調査完了日</th>
+                      <th className="px-3 py-2 font-medium text-right whitespace-nowrap">操作</th>
                     </>
                   )}
                   {activeTab === 'attachment' && (
                     <>
-                      <th className="px-3 py-2 font-medium">顧客名</th>
-                      <th className="px-3 py-2 font-medium">住所</th>
-                      <th className="px-3 py-2 font-medium">予定日</th>
-                      <th className="px-3 py-2 font-medium">状態</th>
-                      <th className="px-3 py-2 font-medium">最終更新</th>
-                      <th className="px-3 py-2 font-medium text-right">操作</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">個別/集合</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">顧客コード</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">顧客名</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">集合住宅コード</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">集合住宅名</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">住所</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">状態</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">依頼日</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">申請提出日</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">申請許可日</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">申請要否</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">取下げ</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">工事後報告</th>
+                      <th className="px-3 py-2 font-medium text-right whitespace-nowrap">操作</th>
                     </>
                   )}
                   {activeTab === 'construction' && (
@@ -426,7 +435,7 @@ export default function ContractorRequestsPage() {
                         <td className="px-3 py-2">
                           {(request as SurveyRequest).propertyType === '個別'
                             ? ((request as SurveyRequest).customerName || '-')
-                            : '-'}
+                            : (request as SurveyRequest).customerName || '-'}
                         </td>
                         <td className="px-3 py-2">
                           {(request as SurveyRequest).propertyType === '集合'
@@ -441,15 +450,14 @@ export default function ContractorRequestsPage() {
                         <td className="px-3 py-2 max-w-[12rem] truncate" title={request.address}>
                           {request.address || '-'}
                         </td>
-                        <td className="px-3 py-2">{request.scheduledDate || '-'}</td>
                         <td className="px-3 py-2">
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
                             {request.status}
                           </span>
                         </td>
-                        <td className="px-3 py-2 text-xs text-gray-500">
-                          {request.lastUpdatedByName || '-'}
-                        </td>
+                        <td className="px-3 py-2">{request.requestedAt || '-'}</td>
+                        <td className="px-3 py-2">{request.scheduledDate || '-'}</td>
+                        <td className="px-3 py-2">{request.completedAt || '-'}</td>
                         <td className="px-3 py-2 text-right">
                           <Button
                             onClick={() => handleOpenProgress(request)}
@@ -464,18 +472,70 @@ export default function ContractorRequestsPage() {
                     )}
                     {activeTab === 'attachment' && (
                       <>
+                        <td className="px-3 py-2">
+                          {(request as AttachmentRequest).propertyType ? (
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              (request as AttachmentRequest).propertyType === '個別'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-purple-100 text-purple-800'
+                            }`}>
+                              {(request as AttachmentRequest).propertyType}
+                            </span>
+                          ) : '-'}
+                        </td>
+                        <td className="px-3 py-2">
+                          {(request as AttachmentRequest).propertyType === '個別'
+                            ? ((request as AttachmentRequest).customerCode || '-')
+                            : '-'}
+                        </td>
                         <td className="px-3 py-2">{request.customerName || '-'}</td>
+                        <td className="px-3 py-2">
+                          {(request as AttachmentRequest).propertyType === '集合'
+                            ? ((request as AttachmentRequest).collectiveCode || '-')
+                            : '-'}
+                        </td>
+                        <td className="px-3 py-2">
+                          {(request as AttachmentRequest).propertyType === '集合'
+                            ? ((request as AttachmentRequest).collectiveHousingName || '-')
+                            : '-'}
+                        </td>
                         <td className="px-3 py-2 max-w-[12rem] truncate" title={request.address}>
                           {request.address || '-'}
                         </td>
-                        <td className="px-3 py-2">{request.scheduledDate || '-'}</td>
                         <td className="px-3 py-2">
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
                             {request.status}
                           </span>
                         </td>
-                        <td className="px-3 py-2 text-xs text-gray-500">
-                          {request.lastUpdatedByName || '-'}
+                        <td className="px-3 py-2">{request.requestedAt || '-'}</td>
+                        <td className="px-3 py-2">{(request as AttachmentRequest).submittedAt || '-'}</td>
+                        <td className="px-3 py-2">{(request as AttachmentRequest).approvedAt || '-'}</td>
+                        <td className="px-3 py-2 text-center">
+                          {(request as AttachmentRequest).withdrawNeeded ? (
+                            <Badge variant="warning" size="sm">要</Badge>
+                          ) : (
+                            <Badge variant="default" size="sm">不要</Badge>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          {(request as AttachmentRequest).withdrawCreated ? (
+                            <Badge variant="success" size="sm">済</Badge>
+                          ) : (
+                            <Badge variant="default" size="sm">未</Badge>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          {(request as AttachmentRequest).postConstructionReport === true ? (
+                            request.status === '許可' ? (
+                              <Badge variant="success" size="sm">完了</Badge>
+                            ) : (
+                              <Badge variant="warning" size="sm">未完了</Badge>
+                            )
+                          ) : (request as AttachmentRequest).postConstructionReport === false ? (
+                            <Badge variant="default" size="sm">不要</Badge>
+                          ) : (
+                            <span className="text-gray-400 text-xs">-</span>
+                          )}
                         </td>
                         <td className="px-3 py-2 text-right">
                           <Button
@@ -562,8 +622,8 @@ export default function ContractorRequestsPage() {
                   <tr>
                     <td
                       colSpan={
-                        activeTab === 'survey' ? 12 :
-                        activeTab === 'attachment' ? 8 :
+                        activeTab === 'survey' ? 13 :
+                        activeTab === 'attachment' ? 16 :
                         14
                       }
                       className="px-3 py-10 text-center text-sm text-gray-500"
