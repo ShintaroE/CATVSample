@@ -9,7 +9,6 @@ import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Input, Textarea, Button } from '@/shared/components/ui'
 import FileAttachmentsComponent from './FileAttachments'
 import RequestNotesComponent from './RequestNotes'
-import ProgressHistory from './ProgressHistory'
 
 interface EditConstructionModalProps {
   item: ConstructionRequest
@@ -539,11 +538,6 @@ export default function EditConstructionModal({
                   onFileDownload={handleFileDownload}
                   uploadingFiles={uploadingFiles}
                 />
-              </section>
-
-              <section className="space-y-4 border-t border-gray-200 pt-4">
-                <SectionTitle>進捗履歴</SectionTitle>
-                <ProgressHistory history={item.progressHistory || []} />
               </section>
             </div>
 

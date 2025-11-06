@@ -138,6 +138,7 @@ export interface AttachmentRequest extends RequestBase {
   approvedAt?: string // 許可日
   withdrawNeeded?: boolean // 取下げ必要
   withdrawCreated?: boolean // 取下げ作成済
+  postConstructionReport?: boolean // 工事後報告（true: 必要, false: 不要）
   detail?: AttachmentDetail
   preparationStatus?: AttachmentPreparationStatus // 申請準備状況
   applicationReport?: AttachmentApplicationReport // 申請有無報告

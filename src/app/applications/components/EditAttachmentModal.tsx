@@ -218,14 +218,14 @@ export default function EditAttachmentModal({
                     className="bg-white text-gray-900"
                   />
                   <Input
-                    label="提出日"
+                    label="申請提出日"
                     type="date"
                     value={formData.submittedAt || ''}
                     onChange={(e) => handleChange('submittedAt', e.target.value)}
                     className="bg-white text-gray-900"
                   />
                   <Input
-                    label="許可日"
+                    label="申請許可日"
                     type="date"
                     value={formData.approvedAt || ''}
                     onChange={(e) => handleChange('approvedAt', e.target.value)}
@@ -233,7 +233,7 @@ export default function EditAttachmentModal({
                   />
 
                   <CheckboxField
-                    label="取下げ必要"
+                    label="申請要"
                     checked={!!formData.withdrawNeeded}
                     onChange={(checked) => handleChange('withdrawNeeded', checked)}
                   />
@@ -242,6 +242,101 @@ export default function EditAttachmentModal({
                     checked={!!formData.withdrawCreated}
                     onChange={(checked) => handleChange('withdrawCreated', checked)}
                   />
+                  <CheckboxField
+                    label="工事後報告が必要"
+                    checked={!!formData.postConstructionReport}
+                    onChange={(checked) => handleChange('postConstructionReport', checked)}
+                  />
+                </div>
+              </section>
+
+              <section className="space-y-4">
+                <SectionTitle>物件種別</SectionTitle>
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <RadioField
+                      label="個別"
+                      value="個別"
+                      checked={formData.propertyType === '個別'}
+                      onChange={(value) => handleChange('propertyType', value)}
+                    />
+                    <RadioField
+                      label="集合"
+                      value="集合"
+                      checked={formData.propertyType === '集合'}
+                      onChange={(value) => handleChange('propertyType', value)}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {formData.propertyType === '個別' ? (
+                      <>
+                        <Input
+                          label="顧客コード"
+                          value={formData.customerCode || ''}
+                          onChange={(e) => handleChange('customerCode', e.target.value)}
+                          className="bg-white text-gray-900"
+                          placeholder="例: 123456789"
+                        />
+                        <Input
+                          label="顧客名"
+                          value={formData.customerName || ''}
+                          onChange={(e) => handleChange('customerName', e.target.value)}
+                          className="bg-white text-gray-900"
+                          placeholder="例: 山田太郎"
+                        />
+                        <div className="md:col-span-2">
+                          <Input
+                            label="住所"
+                            value={formData.address || ''}
+                            onChange={(e) => handleChange('address', e.target.value)}
+                            className="bg-white text-gray-900"
+                            placeholder="例: 岡山県倉敷市○○町1-2-3"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <Input
+                          label="集合コード"
+                          value={formData.collectiveCode || ''}
+                          onChange={(e) => handleChange('collectiveCode', e.target.value)}
+                          className="bg-white text-gray-900"
+                          placeholder="例: K001"
+                        />
+                        <Input
+                          label="集合住宅名"
+                          value={formData.collectiveHousingName || ''}
+                          onChange={(e) => handleChange('collectiveHousingName', e.target.value)}
+                          className="bg-white text-gray-900"
+                          placeholder="例: サンハイツ倉敷"
+                        />
+                        <Input
+                          label="顧客コード"
+                          value={formData.customerCode || ''}
+                          onChange={(e) => handleChange('customerCode', e.target.value)}
+                          className="bg-white text-gray-900"
+                          placeholder="例: 123456789"
+                        />
+                        <Input
+                          label="顧客名"
+                          value={formData.customerName || ''}
+                          onChange={(e) => handleChange('customerName', e.target.value)}
+                          className="bg-white text-gray-900"
+                          placeholder="例: 田中花子"
+                        />
+                        <div className="md:col-span-2">
+                          <Input
+                            label="部屋番号・顧客名"
+                            value={formData.address || ''}
+                            onChange={(e) => handleChange('address', e.target.value)}
+                            className="bg-white text-gray-900"
+                            placeholder="例: 101号室 田中花子"
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               </section>
 
@@ -297,18 +392,6 @@ export default function EditAttachmentModal({
                     </SelectField>
                   </div>
                 </div>
-              </section>
-
-              <section className="space-y-4">
-                <SectionTitle>備考</SectionTitle>
-                <Textarea
-                  label="備考"
-                  value={formData.notes || ''}
-                  onChange={(e) => handleChange('notes', e.target.value)}
-                  placeholder="その他の情報（任意）"
-                  fullWidth
-                  className="min-h-[96px]"
-                />
               </section>
 
               <section className="space-y-4 border-t border-gray-200 pt-4">

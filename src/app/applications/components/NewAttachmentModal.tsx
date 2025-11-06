@@ -37,12 +37,20 @@ export default function NewAttachmentModal({
   const { user } = useAuth()
   const [formData, setFormData] = useState<Record<string, string | boolean | string[] | undefined>>({
     assigneeType: 'internal' as AssigneeType,
+    propertyType: '個別', // 個別/集合
     contractorId: '',
     teamId: '',
     orderNumber: '',
+    customerCode: '',
+    customerName: '',
+    collectiveCode: '', // 集合コード
+    collectiveHousingName: '', // 集合住宅名
+    address: '',
     requestedAt: '',
     scheduledDate: '',
     submittedAt: '',
+    withdrawNeeded: false, // 申請要否
+    postConstructionReport: false, // 工事後報告
   })
   const [attachments, setAttachments] = useState<FileAttachments>({
     fromAdmin: [],
@@ -168,6 +176,21 @@ export default function NewAttachmentModal({
       return
     }
 
+    if (!formData.propertyType) {
+      alert('個別/集合を選択してください')
+      return
+    }
+
+    if (formData.propertyType === '個別' && !formData.customerCode) {
+      alert('顧客コードを入力してください')
+      return
+    }
+
+    if (formData.propertyType === '集合' && !formData.collectiveCode) {
+      alert('集合コードを入力してください')
+      return
+    }
+
     onCreate('attachment', {
       ...formData,
       attachments,
@@ -221,12 +244,136 @@ export default function NewAttachmentModal({
                     className="bg-white text-gray-900"
                   />
                   <Input
-                    label="提出日"
+                    label="申請提出日"
                     type="date"
                     value={(formData.submittedAt as string) || ''}
                     onChange={(e) => handleChange('submittedAt', e.target.value)}
                     className="bg-white text-gray-900"
                   />
+                </div>
+              </section>
+
+              <section className="space-y-4">
+                <SectionTitle>物件種別</SectionTitle>
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        value="個別"
+                        checked={formData.propertyType === '個別'}
+                        onChange={(e) => handleChange('propertyType', e.target.value)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-700">個別</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        value="集合"
+                        checked={formData.propertyType === '集合'}
+                        onChange={(e) => handleChange('propertyType', e.target.value)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-700">集合</span>
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {formData.propertyType === '個別' ? (
+                      <>
+                        <Input
+                          label="顧客コード"
+                          value={(formData.customerCode as string) || ''}
+                          onChange={(e) => handleChange('customerCode', e.target.value)}
+                          required
+                          className="bg-white text-gray-900"
+                          placeholder="例: 123456789"
+                        />
+                        <Input
+                          label="顧客名"
+                          value={(formData.customerName as string) || ''}
+                          onChange={(e) => handleChange('customerName', e.target.value)}
+                          className="bg-white text-gray-900"
+                          placeholder="例: 山田太郎"
+                        />
+                        <div className="md:col-span-2">
+                          <Input
+                            label="住所"
+                            value={(formData.address as string) || ''}
+                            onChange={(e) => handleChange('address', e.target.value)}
+                            className="bg-white text-gray-900"
+                            placeholder="例: 岡山県倉敷市○○町1-2-3"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <Input
+                          label="集合コード"
+                          value={(formData.collectiveCode as string) || ''}
+                          onChange={(e) => handleChange('collectiveCode', e.target.value)}
+                          required
+                          className="bg-white text-gray-900"
+                          placeholder="例: K001"
+                        />
+                        <Input
+                          label="集合住宅名"
+                          value={(formData.collectiveHousingName as string) || ''}
+                          onChange={(e) => handleChange('collectiveHousingName', e.target.value)}
+                          className="bg-white text-gray-900"
+                          placeholder="例: サンハイツ倉敷"
+                        />
+                        <Input
+                          label="顧客コード"
+                          value={(formData.customerCode as string) || ''}
+                          onChange={(e) => handleChange('customerCode', e.target.value)}
+                          className="bg-white text-gray-900"
+                          placeholder="例: 123456789"
+                        />
+                        <Input
+                          label="顧客名"
+                          value={(formData.customerName as string) || ''}
+                          onChange={(e) => handleChange('customerName', e.target.value)}
+                          className="bg-white text-gray-900"
+                          placeholder="例: 田中花子"
+                        />
+                        <div className="md:col-span-2">
+                          <Input
+                            label="部屋番号・顧客名"
+                            value={(formData.address as string) || ''}
+                            onChange={(e) => handleChange('address', e.target.value)}
+                            className="bg-white text-gray-900"
+                            placeholder="例: 101号室 田中花子"
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              <section className="space-y-4">
+                <SectionTitle>その他設定</SectionTitle>
+                <div className="space-y-3">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.withdrawNeeded as boolean}
+                      onChange={(e) => handleChange('withdrawNeeded', e.target.checked)}
+                      className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <span className="text-sm text-gray-700">申請要</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.postConstructionReport as boolean}
+                      onChange={(e) => handleChange('postConstructionReport', e.target.checked)}
+                      className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <span className="text-sm text-gray-700">工事後報告が必要</span>
+                  </label>
                 </div>
               </section>
 
@@ -310,17 +457,6 @@ export default function NewAttachmentModal({
                   onFileDelete={handleFileDelete}
                   onFileDownload={handleFileDownload}
                   uploadingFiles={uploadingFiles}
-                />
-              </section>
-
-              <section className="space-y-2 border-t border-gray-200 pt-4">
-                <Textarea
-                  label="その他備考"
-                  value={(formData.notes as string) || ''}
-                  onChange={(e) => handleChange('notes', e.target.value)}
-                  placeholder="その他の情報（任意）"
-                  fullWidth
-                  className="min-h-[96px]"
                 />
               </section>
             </div>

@@ -4,7 +4,7 @@ import {
   PencilSquareIcon,
   ChartBarIcon,
 } from '@heroicons/react/24/outline'
-import { AttachmentRequest, AttachmentStatus, AttachmentNeeded } from '@/features/applications/types'
+import { AttachmentRequest, AttachmentStatus } from '@/features/applications/types'
 import { Contractor } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { Badge, BadgeVariant } from '@/shared/components/ui'
@@ -16,11 +16,15 @@ interface AttachmentTabProps {
 }
 
 export default function AttachmentTab({ data, contractors, onEdit }: AttachmentTabProps) {
+  // フィルター状態
   const [orderNumberFilter, setOrderNumberFilter] = useState('')
-  const [customerNameFilter, setCustomerNameFilter] = useState('')
+  const [applicationTypeFilter, setApplicationTypeFilter] = useState<'' | '個別' | '集合'>('')
+  const [customerCodeFilter, setCustomerCodeFilter] = useState('')
+  const [apartmentCodeFilter, setApartmentCodeFilter] = useState('')
   const [contractorIdFilter, setContractorIdFilter] = useState('')
   const [teamIdFilter, setTeamIdFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState<'' | AttachmentStatus>('')
+  const [postConstructionReportFilter, setPostConstructionReportFilter] = useState<'' | 'completed' | 'notCompleted' | 'notRequired'>('')
 
   // 依頼先選択時に利用可能な班を取得
   const availableTeams = useMemo(() => {
@@ -37,22 +41,43 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
   // フィルタクリア
   const handleClearFilters = () => {
     setOrderNumberFilter('')
-    setCustomerNameFilter('')
+    setApplicationTypeFilter('')
+    setCustomerCodeFilter('')
+    setApartmentCodeFilter('')
     setContractorIdFilter('')
     setTeamIdFilter('')
     setStatusFilter('')
+    setPostConstructionReportFilter('')
   }
 
+  // データフィルタリング
   const filtered = useMemo(() => {
     return data.filter((r) => {
-      // 受注番号
+      // 受注番号 (部分一致)
       if (orderNumberFilter && !(r.orderNumber || '').includes(orderNumberFilter)) {
         return false
       }
 
-      // 顧客名
-      if (customerNameFilter && !(r.customerName || '').includes(customerNameFilter)) {
+      // 個別/集合
+      if (applicationTypeFilter && r.propertyType !== applicationTypeFilter) {
         return false
+      }
+
+      // 顧客コード (部分一致)
+      if (customerCodeFilter && !(r.customerCode || '').includes(customerCodeFilter)) {
+        return false
+      }
+
+      // 集合コード (部分一致) - 集合の場合のみチェック
+      if (apartmentCodeFilter) {
+        if (r.propertyType === '集合') {
+          if (!(r.collectiveCode || '').includes(apartmentCodeFilter)) {
+            return false
+          }
+        } else {
+          // 個別の場合は集合コードでフィルタリングできない
+          return false
+        }
       }
 
       // 依頼先
@@ -61,7 +86,7 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
       }
 
       // 班
-      if (contractorIdFilter && teamIdFilter && r.teamId !== teamIdFilter) {
+      if (teamIdFilter && r.teamId !== teamIdFilter) {
         return false
       }
 
@@ -70,9 +95,41 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
         return false
       }
 
+      // 工事後報告
+      if (postConstructionReportFilter) {
+        if (postConstructionReportFilter === 'completed') {
+          // 完了：postConstructionReport === true かつ status === '完了'
+          if (!r.postConstructionReport || r.status !== '完了') {
+            return false
+          }
+        }
+        if (postConstructionReportFilter === 'notCompleted') {
+          // 未完了：postConstructionReport === true かつ status !== '完了'
+          if (!r.postConstructionReport || r.status === '完了') {
+            return false
+          }
+        }
+        if (postConstructionReportFilter === 'notRequired') {
+          // 不要：postConstructionReport === false
+          if (r.postConstructionReport) {
+            return false
+          }
+        }
+      }
+
       return true
     })
-  }, [data, orderNumberFilter, customerNameFilter, contractorIdFilter, teamIdFilter, statusFilter])
+  }, [
+    data,
+    orderNumberFilter,
+    applicationTypeFilter,
+    customerCodeFilter,
+    apartmentCodeFilter,
+    contractorIdFilter,
+    teamIdFilter,
+    statusFilter,
+    postConstructionReportFilter,
+  ])
 
   const getStatusBadge = (status: AttachmentStatus): BadgeVariant => {
     const variantMap: Record<AttachmentStatus, BadgeVariant> = {
@@ -83,24 +140,13 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
     return variantMap[status]
   }
 
-  const getApplicationNeededBadge = (needed: AttachmentNeeded): BadgeVariant => {
-    const variantMap: Record<AttachmentNeeded, BadgeVariant> = {
-      必要: 'danger',
-      不要: 'success',
-      未確認: 'default',
-    }
-    return variantMap[needed]
-  }
-
-  const formatDateTime = (isoString?: string): string => {
-    if (!isoString) return '-'
-    const date = new Date(isoString)
+  const formatDate = (dateStr?: string): string => {
+    if (!dateStr) return '-'
+    const date = new Date(dateStr)
     const year = date.getFullYear()
     const month = (date.getMonth() + 1).toString().padStart(2, '0')
     const day = date.getDate().toString().padStart(2, '0')
-    const hour = date.getHours().toString().padStart(2, '0')
-    const minute = date.getMinutes().toString().padStart(2, '0')
-    return `${year}-${month}-${day} ${hour}:${minute}`
+    return `${year}/${month}/${day}`
   }
 
   return (
@@ -145,18 +191,50 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
             />
           </div>
 
-          {/* 顧客名 */}
+          {/* 個別/集合 */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              顧客名
+              個別/集合
+            </label>
+            <select
+              value={applicationTypeFilter}
+              onChange={(e) => setApplicationTypeFilter(e.target.value as '' | '個別' | '集合')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
+            >
+              <option value="">全て</option>
+              <option value="個別">個別</option>
+              <option value="集合">集合</option>
+            </select>
+          </div>
+
+          {/* 顧客コード */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              顧客コード
             </label>
             <input
               type="text"
-              value={customerNameFilter}
-              onChange={(e) => setCustomerNameFilter(e.target.value)}
-              placeholder="山田太郎"
+              value={customerCodeFilter}
+              onChange={(e) => setCustomerCodeFilter(e.target.value)}
+              placeholder="123456789"
               className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
             />
+            <p className="text-xs text-gray-500 mt-1">※個別物件のみ</p>
+          </div>
+
+          {/* 集合コード */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              集合コード
+            </label>
+            <input
+              type="text"
+              value={apartmentCodeFilter}
+              onChange={(e) => setApartmentCodeFilter(e.target.value)}
+              placeholder="K001"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
+            />
+            <p className="text-xs text-gray-500 mt-1">※集合物件のみ</p>
           </div>
 
           {/* 依頼先 */}
@@ -206,9 +284,25 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
             >
               <option value="">全て</option>
               <option value="受付">受付</option>
-              <option value="提出済">提出済</option>
-              <option value="許可">許可</option>
-              <option value="取下げ">取下げ</option>
+              <option value="調査済み">調査済み</option>
+              <option value="完了">完了</option>
+            </select>
+          </div>
+
+          {/* 工事後報告 */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              工事後報告
+            </label>
+            <select
+              value={postConstructionReportFilter}
+              onChange={(e) => setPostConstructionReportFilter(e.target.value as '' | 'completed' | 'notCompleted' | 'notRequired')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
+            >
+              <option value="">全て</option>
+              <option value="completed">完了</option>
+              <option value="notCompleted">未完了</option>
+              <option value="notRequired">不要</option>
             </select>
           </div>
         </div>
@@ -229,34 +323,55 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 整理番号
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 受注番号
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                個別/集合
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                顧客コード
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 顧客名
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                集合住宅コード
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                集合住宅名
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                住所
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 依頼先
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                提出日
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                許可日
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 状態
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                申請有無
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                依頼日
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                申請提出日
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                申請許可日
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                申請要否
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 取下げ
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                工事後報告
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 操作
               </th>
             </tr>
@@ -264,22 +379,60 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
           <tbody className="bg-white divide-y divide-gray-200">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={10} className="px-4 py-8 text-center text-sm text-gray-500">
+                <td colSpan={17} className="px-4 py-8 text-center text-sm text-gray-500">
                   条件に一致するデータがありません
                 </td>
               </tr>
             ) : (
               filtered.map((r) => (
                 <tr key={r.id} className="hover:bg-gray-50">
+                  {/* 整理番号 */}
                   <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap tabular-nums">
                     {r.serialNumber}
                   </td>
+
+                  {/* 受注番号 */}
                   <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap font-medium">
                     {r.orderNumber || '-'}
                   </td>
+
+                  {/* 個別/集合 */}
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    {r.propertyType === '個別' && (
+                      <Badge variant="info" size="sm">個別</Badge>
+                    )}
+                    {r.propertyType === '集合' && (
+                      <Badge variant="warning" size="sm">集合</Badge>
+                    )}
+                    {!r.propertyType && '-'}
+                  </td>
+
+                  {/* 顧客コード */}
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    {r.customerCode || '-'}
+                  </td>
+
+                  {/* 顧客名 */}
                   <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.customerName || '-'}
                   </td>
+
+                  {/* 集合住宅コード */}
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    {r.propertyType === '集合' ? (r.collectiveCode || '-') : '-'}
+                  </td>
+
+                  {/* 集合住宅名 */}
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    {r.propertyType === '集合' ? (r.collectiveHousingName || '-') : '-'}
+                  </td>
+
+                  {/* 住所 */}
+                  <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate">
+                    {r.address || '-'}
+                  </td>
+
+                  {/* 依頼先 */}
                   <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.assigneeType === 'internal' ? (
                       <span className="text-blue-600 font-medium">自社 - {r.teamName}</span>
@@ -287,38 +440,65 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
                       <span className="text-gray-900">{r.contractorName} - {r.teamName}</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                    {r.submittedAt || '-'}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                    {r.approvedAt || '-'}
-                  </td>
+
+                  {/* 状態 */}
                   <td className="px-4 py-3 text-sm whitespace-nowrap">
                     <Badge variant={getStatusBadge(r.status)} size="sm">
                       {r.status}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-sm whitespace-nowrap">
-                    {r.applicationReport ? (
-                      <div className="flex flex-col gap-1">
-                        <Badge variant={getApplicationNeededBadge(r.applicationReport.applicationNeeded)} size="sm">
-                          {r.applicationReport.applicationNeeded}
-                        </Badge>
-                        <span className="text-xs text-gray-500">
-                          {formatDateTime(r.applicationReport.reportedAt)}
-                        </span>
-                      </div>
+
+                  {/* 依頼日 */}
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    {formatDate(r.requestedAt)}
+                  </td>
+
+                  {/* 申請提出日 */}
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    {formatDate(r.submittedAt)}
+                  </td>
+
+                  {/* 申請許可日 */}
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    {formatDate(r.approvedAt)}
+                  </td>
+
+                  {/* 申請要否 */}
+                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap text-center">
+                    {r.withdrawNeeded === true ? (
+                      <span className="text-red-600 text-sm font-semibold">要</span>
+                    ) : r.withdrawNeeded === false ? (
+                      <span className="text-gray-600 text-sm">不要</span>
                     ) : (
-                      <Badge variant="default" size="sm">未確認</Badge>
+                      <span className="text-gray-400 text-sm">-</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm whitespace-nowrap">
-                    {r.withdrawNeeded ? (
-                      <span className="text-red-600 text-xs font-semibold">要</span>
+
+                  {/* 取下げ */}
+                  <td className="px-4 py-3 text-sm whitespace-nowrap text-center">
+                    {r.withdrawCreated ? (
+                      <Badge variant="success" size="sm">作成済</Badge>
+                    ) : r.withdrawNeeded ? (
+                      <Badge variant="danger" size="sm">未作成</Badge>
                     ) : (
                       <span className="text-gray-400 text-xs">-</span>
                     )}
                   </td>
+
+                  {/* 工事後報告 */}
+                  <td className="px-4 py-3 text-sm whitespace-nowrap text-center">
+                    {r.postConstructionReport ? (
+                      r.status === '完了' ? (
+                        <Badge variant="success" size="sm">完了</Badge>
+                      ) : (
+                        <Badge variant="warning" size="sm">未完了</Badge>
+                      )
+                    ) : (
+                      <Badge variant="default" size="sm">不要</Badge>
+                    )}
+                  </td>
+
+                  {/* 操作 */}
                   <td className="px-4 py-3 text-sm whitespace-nowrap">
                     <button
                       className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"

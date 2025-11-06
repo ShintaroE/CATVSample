@@ -505,17 +505,6 @@ export default function NewConstructionModal({
                   uploadingFiles={uploadingFiles}
                 />
               </section>
-
-              <section className="space-y-2 border-t border-gray-200 pt-4">
-                <Textarea
-                  label="その他備考"
-                  value={(formData.notes as string) || ''}
-                  onChange={(e) => handleChange('notes', e.target.value)}
-                  placeholder="その他の情報（任意）"
-                  fullWidth
-                  className="min-h-[96px]"
-                />
-              </section>
             </div>
 
             <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">

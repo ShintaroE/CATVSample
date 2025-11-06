@@ -134,13 +134,14 @@ Note: There is also a `src/lib/` directory containing:
   - ダッシュボード (Dashboard) - システム概要と工事進捗サマリ
   - 工事依頼管理 (Order Management) - 小川オーダー表形式の工事依頼管理 + アポイント履歴にスケジュール統合表示
   - 工事日程調整 (Schedule Management) - Outlookライクなカレンダー + 協力会社除外日表示
-  - **申請番号管理 (Application Number Management)** - 3タブ構成（現地調査依頼・共架添架依頼・工事依頼）+ 進捗管理 + 協力会社への依頼機能
-  - **依頼一覧 (Contractor Requests)** - 協力会社専用：割り当てられた依頼の確認・進捗更新
+  - **申請番号管理 (Application Number Management)** - 3タブ構成（現地調査依頼・共架添架依頼・工事依頼）+ 進捗管理 + 協力会社への依頼機能 + 表示件数バッジ
+  - **依頼一覧 (Contractor Requests)** - 協力会社専用：割り当てられた依頼の確認・進捗更新 + 表示件数バッジ
   - 除外日管理 (My Exclusions) - 協力会社専用の作業不可日時登録
   - アカウント管理 (Account Management) - 管理者・協力会社・班アカウント管理（管理者専用）
 - **Exclusion Date Management**: Time-specific exclusions (終日/午前/午後/カスタム時間指定)
 - **Outlook-style overlapping layout** for schedules and exclusions with collision detection
 - **Progress Tracking System**: 進捗履歴の自動記録と表示（協力会社が更新、管理者が閲覧）
+- **Record Count Display**: Visual badges showing filtered/total counts (e.g., "5/10件") positioned in top-right corner of filter panels
 - TypeScript path aliases configured (@/* maps to ./src/*)
 
 ### Domain-Specific Functionality
@@ -353,11 +354,11 @@ This project is undergoing systematic refactoring to improve maintainability:
 | Page | Status | Current Lines | Target Lines | Components |
 |------|--------|---------------|--------------|------------|
 | applications | ✅ Complete | 222 | - | 13 components (includes FileAttachments, RequestNotes) |
+| contractor-requests | ✅ Complete | 518 | - | Includes FileAttachments integration |
 | schedule | ⏳ Planned | 1,847 | ~250 | 10+ components |
 | orders | ⏳ Planned | 1,664 | ~200 | 10+ components |
 | contractor-management | ⏳ Planned | 1,005 | ~150 | 11+ components |
 | my-exclusions | ⏳ Planned | 507 | ~150 | 4+ components |
-| contractor-requests | ✅ Updated | 518 | - | Includes FileAttachments integration |
 | login | ✅ Simple | 114 | - | Already clean |
 
 **Refactoring Phases**:
@@ -368,8 +369,7 @@ This project is undergoing systematic refactoring to improve maintainability:
 3. **Phase 2**: Orders page (second largest)
 4. **Phase 3**: Contractor management page
 5. **Phase 4**: My exclusions page
-6. **Phase 5**: Contractor requests page (already includes FileAttachments)
-7. **Phase 6**: Final integration testing and documentation
+6. **Phase 5**: Final integration testing and documentation
 
 ### Custom Hooks Patterns
 
@@ -1652,3 +1652,58 @@ const handleFileDownload = (file: AttachedFile) => {
 5. **Modal Integration**: All 5 modals follow same pattern for consistency
 6. **localStorage Limits**: Monitor file sizes to avoid quota issues
 7. **No Backend**: All file data stored client-side in Base64 format
+
+## Record Count Display System
+
+### Overview
+Visual badges showing filtered and total record counts, positioned consistently in the top-right corner of filter panels.
+
+### Design Specifications
+
+**Visual Style**:
+- Badge component with Info icon style (blue background, white text)
+- Format: "N/M件" (N = filtered count, M = total count)
+- Positioned absolutely in top-right corner of parent container
+- Styling: `bg-blue-600 text-white text-xs px-2 py-1 rounded-full`
+
+**Positioning Pattern**:
+```typescript
+// Parent container
+<div className="relative">
+  {/* Filter controls */}
+
+  {/* Record count badge - top-right */}
+  <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+    {filteredCount}/{totalCount}件
+  </div>
+</div>
+```
+
+### Implementation Locations
+
+1. **Application Management Page** (`src/app/applications/page.tsx`)
+   - 3 tabs (Survey, Attachment, Construction)
+   - Each tab displays filtered/total count in top-right
+   - Updates dynamically with filter changes
+
+2. **Contractor Requests Page** (`src/app/contractor-requests/page.tsx`)
+   - Shows assigned requests count
+   - Filters by team selection
+   - Badge updates when team filter changes
+
+### Usage Guidelines
+
+**When to use**:
+- Tables with filtering functionality
+- Lists that can be filtered by multiple criteria
+- Any data view where users need to understand filtered results
+
+**What to display**:
+- Filtered count (left): Number of visible records after filters applied
+- Total count (right): Total number of records in dataset
+- Example: "5/10件" means 5 visible out of 10 total
+
+**Positioning**:
+- Always top-right corner of filter panel or table header
+- Use absolute positioning within relative parent
+- Ensure badge doesn't overlap with interactive elements
