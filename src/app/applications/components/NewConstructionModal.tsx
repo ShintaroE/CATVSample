@@ -15,7 +15,7 @@ import {
 import { Contractor, Team } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { Input, Textarea, Button } from '@/shared/components/ui'
+import { Input, Button } from '@/shared/components/ui'
 import FileAttachmentsComponent from './FileAttachments'
 import RequestNotesComponent from './RequestNotes'
 

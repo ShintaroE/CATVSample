@@ -526,7 +526,7 @@ export default function ContractorRequestsPage() {
                         </td>
                         <td className="px-3 py-2 text-center">
                           {(request as AttachmentRequest).postConstructionReport === true ? (
-                            request.status === '許可' ? (
+                            request.status === '完了' ? (
                               <Badge variant="success" size="sm">完了</Badge>
                             ) : (
                               <Badge variant="warning" size="sm">未完了</Badge>

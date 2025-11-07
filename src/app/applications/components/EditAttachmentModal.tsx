@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { AttachmentRequest, AttachmentStatus, AttachedFile } from '@/features/applications/types'
+import { AttachmentRequest, AttachedFile } from '@/features/applications/types'
 import { Contractor, Team } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { downloadFile } from '@/features/applications/lib/applicationStorage'

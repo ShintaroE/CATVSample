@@ -1324,9 +1324,10 @@ interface ProgressEntry {
 - intermediateReport: Mid-progress report with rate, findings, issues
 
 **Attachment Request:**
-- Status: '受付' | '提出済' | '許可' | '取下げ'
+- Status: '受付' | '調査済み' | '完了'
 - submittedAt, approvedAt: Application dates
 - withdrawNeeded, withdrawCreated: Withdrawal flags
+- postConstructionReport: boolean (true: 必要, false: 不要)
 - detail: Application details (line type, mount height, photos)
 - preparationStatus: Document/photo readiness, expected submit date
 
