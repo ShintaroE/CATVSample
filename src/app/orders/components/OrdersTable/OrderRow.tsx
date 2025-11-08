@@ -22,15 +22,15 @@ export default function OrderRow({
   return (
     <tr key={order.orderNumber} className="hover:bg-gray-50">
       {/* 受注番号 */}
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+      <td className="px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
         {order.orderNumber}
       </td>
       {/* 受注先 */}
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="hidden lg:table-cell px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
         {order.orderSource}
       </td>
       {/* 個別/集合 */}
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
           order.constructionCategory === '個別'
             ? 'bg-blue-100 text-blue-800'
@@ -40,7 +40,7 @@ export default function OrderRow({
         </span>
       </td>
       {/* 工事種別 */}
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
         <select
           value={order.workType}
           onChange={(e) => onWorkTypeChange(order.orderNumber, e.target.value as IndividualWorkType | CollectiveWorkType)}
@@ -54,23 +54,23 @@ export default function OrderRow({
         </select>
       </td>
       {/* 顧客コード */}
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
         {order.customerCode}
       </td>
       {/* 顧客名 */}
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
         {order.customerName}
       </td>
       {/* 集合住宅コード */}
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="hidden lg:table-cell px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
         {order.apartmentCode || '—'}
       </td>
       {/* 集合住宅名 */}
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="hidden lg:table-cell px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
         {order.apartmentName || '—'}
       </td>
       {/* 新規/既存 */}
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
           order.customerType === '新規'
             ? 'bg-blue-100 text-blue-800'
@@ -80,7 +80,7 @@ export default function OrderRow({
         </span>
       </td>
       {/* アクション */}
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
         <button
           onClick={() => onViewDetails(order)}
           className="inline-flex items-center text-blue-600 hover:text-blue-900"
@@ -90,7 +90,7 @@ export default function OrderRow({
         </button>
       </td>
       {/* アポイント履歴 */}
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
         <div className="flex items-center space-x-2">
           <button
             onClick={() => onViewAppointmentHistory(order)}

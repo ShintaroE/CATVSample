@@ -24,7 +24,10 @@
       "Bash(git -C \"c:/Users/landf/Desktop/プログラム/CATVSample\" diff \"src/app/applications/components/NewConstructionModal.tsx\")",
       "Bash(git diff:*)",
       "Bash(npm run lint)",
-      "Bash(git -C \"c:/Users/landf/Desktop/プログラム/CATVSample\" diff \"src/app/orders/components/AppointmentHistoryModal/ScheduleViewer/WeekView.tsx\")"
+      "Bash(git -C \"c:/Users/landf/Desktop/プログラム/CATVSample\" diff \"src/app/orders/components/AppointmentHistoryModal/ScheduleViewer/WeekView.tsx\")",
+      "Bash(git -C \"c:/Users/landf/Desktop/プログラム/CATVSample\" status --short)",
+      "Bash(cat:*)",
+      "Bash(git -C \"c:/Users/landf/Desktop/プログラム/CATVSample\" diff \"src/app/orders/data/sampleData.ts\")"
     ],
     "deny": [],
     "ask": []
