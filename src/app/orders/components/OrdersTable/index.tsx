@@ -2,19 +2,18 @@
 
 import React from 'react'
 import { OrderData } from '../../types'
-import { IndividualWorkType, CollectiveWorkType } from '../../types'
 import OrderRow from './OrderRow'
 
 interface OrdersTableProps {
   orders: OrderData[]
-  onWorkTypeChange: (orderNumber: string, newWorkType: IndividualWorkType | CollectiveWorkType) => void
+  onEditOrder: (order: OrderData) => void
   onViewDetails: (order: OrderData) => void
   onViewAppointmentHistory: (order: OrderData) => void
 }
 
 export default function OrdersTable({
   orders,
-  onWorkTypeChange,
+  onEditOrder,
   onViewDetails,
   onViewAppointmentHistory,
 }: OrdersTableProps) {
@@ -72,7 +71,7 @@ export default function OrdersTable({
                 <OrderRow
                   key={order.orderNumber}
                   order={order}
-                  onWorkTypeChange={onWorkTypeChange}
+                  onEditOrder={onEditOrder}
                   onViewDetails={onViewDetails}
                   onViewAppointmentHistory={onViewAppointmentHistory}
                 />
@@ -84,4 +83,3 @@ export default function OrdersTable({
     </div>
   )
 }
-

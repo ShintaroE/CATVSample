@@ -9,16 +9,17 @@ import { useOrders } from './hooks/useOrders'
 import { Button } from '@/shared/components/ui'
 import ExcelUploadZone from './components/ExcelUploadZone'
 import OrdersTable from './components/OrdersTable'
-import OrderDetailModal from './components/OrderDetailModal'
 import AppointmentHistoryModal from './components/AppointmentHistoryModal'
 import NewOrderModal from './components/NewOrderModal'
+import EditOrderModal from './components/EditOrderModal'
 
 export default function OrdersPage() {
-  const { orders, setOrders, updateWorkType, updateStatus, updateMapPdfPath } = useOrders(sampleOrders)
-  const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null)
+  const { orders, setOrders } = useOrders(sampleOrders)
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [appointmentOrder, setAppointmentOrder] = useState<OrderData | null>(null)
   const [showNewOrderModal, setShowNewOrderModal] = useState(false)
+  const [editingOrder, setEditingOrder] = useState<OrderData | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   const handleUpload = (newOrders: OrderData[]) => {
     // ExcelUploadZoneから渡される新しい注文を追加
@@ -26,41 +27,8 @@ export default function OrdersPage() {
   }
 
   const handleViewDetails = (order: OrderData) => {
-    setSelectedOrder(order)
-  }
-
-  const handleCloseDetails = () => {
-    setSelectedOrder(null)
-  }
-
-  const handleStatusChange = (
-    orderNumber: string,
-    statusType: 'surveyStatus' | 'permissionStatus' | 'constructionStatus',
-    newStatus: 'pending' | 'in_progress' | 'completed'
-  ) => {
-    updateStatus(orderNumber, statusType, newStatus)
-    // selectedOrderも更新
-    if (selectedOrder && selectedOrder.orderNumber === orderNumber) {
-      setSelectedOrder(prev => prev ? { ...prev, [statusType]: newStatus } : null)
-    }
-  }
-
-  const handleMapUpload = (order: OrderData) => {
-    // 実際の実装では、ファイルをサーバーにアップロードして URL を取得
-    // ここではサンプルとして地図.pdfのパスを設定
-    const mapPath = '/地図.pdf'
-    updateMapPdfPath(order.orderNumber, mapPath)
-    // selectedOrderも更新
-    if (selectedOrder && selectedOrder.orderNumber === order.orderNumber) {
-      setSelectedOrder(prev => prev ? { ...prev, mapPdfPath: mapPath } : null)
-    }
-    alert('地図PDFがアップロードされました')
-  }
-
-  const handleViewMap = (order: OrderData) => {
-    if (order.mapPdfPath) {
-      window.open(order.mapPdfPath, '_blank')
-    }
+    // 詳細表示機能は未実装（将来的に実装予定）
+    console.log('View details for order:', order.orderNumber)
   }
 
   const handleViewAppointmentHistory = (order: OrderData) => {
@@ -72,8 +40,18 @@ export default function OrdersPage() {
     setShowAppointmentModal(false)
     setAppointmentOrder(null)
   }
+
   const handleCreateOrder = (newOrder: OrderData) => {
     setOrders([...orders, newOrder])
+  }
+
+  const handleEditOrder = (order: OrderData) => {
+    setEditingOrder(order)
+    setShowEditModal(true)
+  }
+
+  const handleUpdateOrder = (updatedOrder: OrderData) => {
+    setOrders(orders.map(o => o.orderNumber === updatedOrder.orderNumber ? updatedOrder : o))
   }
 
 
@@ -106,21 +84,12 @@ export default function OrdersPage() {
           </div>
           <OrdersTable
             orders={orders}
-            onWorkTypeChange={updateWorkType}
+            onEditOrder={handleEditOrder}
             onViewDetails={handleViewDetails}
             onViewAppointmentHistory={handleViewAppointmentHistory}
           />
         </main>
 
-        {selectedOrder && (
-          <OrderDetailModal
-            order={selectedOrder}
-            onClose={handleCloseDetails}
-            onStatusChange={handleStatusChange}
-            onMapUpload={handleMapUpload}
-            onViewMap={handleViewMap}
-          />
-        )}
 
         {showAppointmentModal && appointmentOrder && (
           <AppointmentHistoryModal
@@ -130,10 +99,19 @@ export default function OrdersPage() {
             onClose={handleCloseAppointmentModal}
           />
         )}
+
         {showNewOrderModal && (
           <NewOrderModal
             onClose={() => setShowNewOrderModal(false)}
             onCreate={handleCreateOrder}
+          />
+        )}
+
+        {showEditModal && editingOrder && (
+          <EditOrderModal
+            order={editingOrder}
+            onClose={() => setShowEditModal(false)}
+            onUpdate={handleUpdateOrder}
           />
         )}
 

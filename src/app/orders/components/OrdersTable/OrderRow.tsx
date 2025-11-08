@@ -1,24 +1,22 @@
 'use client'
 
 import React from 'react'
-import { EyeIcon, ClockIcon } from '@heroicons/react/24/outline'
-import { OrderData, IndividualWorkType, CollectiveWorkType, getWorkTypeOptions } from '../../types'
+import { EyeIcon, ClockIcon, PencilIcon } from '@heroicons/react/24/outline'
+import { OrderData } from '../../types'
 
 interface OrderRowProps {
   order: OrderData
-  onWorkTypeChange: (orderNumber: string, newWorkType: IndividualWorkType | CollectiveWorkType) => void
+  onEditOrder: (order: OrderData) => void
   onViewDetails: (order: OrderData) => void
   onViewAppointmentHistory: (order: OrderData) => void
 }
 
 export default function OrderRow({
   order,
-  onWorkTypeChange,
+  onEditOrder,
   onViewDetails,
   onViewAppointmentHistory,
 }: OrderRowProps) {
-  const workTypeOptions = getWorkTypeOptions(order.constructionCategory)
-
   return (
     <tr key={order.orderNumber} className="hover:bg-gray-50">
       {/* 受注番号 */}
@@ -39,19 +37,9 @@ export default function OrderRow({
           {order.constructionCategory}
         </span>
       </td>
-      {/* 工事種別 */}
+      {/* 工事種別（読み取り専用） */}
       <td className="px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
-        <select
-          value={order.workType}
-          onChange={(e) => onWorkTypeChange(order.orderNumber, e.target.value as IndividualWorkType | CollectiveWorkType)}
-          className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
-        >
-          {workTypeOptions.map(option => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
+        {order.workType}
       </td>
       {/* クロージャ番号 */}
       <td className="hidden lg:table-cell px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
@@ -85,13 +73,25 @@ export default function OrderRow({
       </td>
       {/* アクション */}
       <td className="px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
-        <button
-          onClick={() => onViewDetails(order)}
-          className="inline-flex items-center text-blue-600 hover:text-blue-900"
-        >
-          <EyeIcon className="h-4 w-4 mr-1" />
-          詳細表示
-        </button>
+        <div className="flex items-center space-x-2">
+          {/* 編集ボタン */}
+          <button
+            onClick={() => onEditOrder(order)}
+            className="inline-flex items-center text-blue-600 hover:text-blue-900"
+            title="編集"
+          >
+            <PencilIcon className="h-4 w-4 mr-1" />
+            編集
+          </button>
+          {/* 詳細表示ボタン */}
+          <button
+            onClick={() => onViewDetails(order)}
+            className="inline-flex items-center text-blue-600 hover:text-blue-900"
+          >
+            <EyeIcon className="h-4 w-4 mr-1" />
+            詳細
+          </button>
+        </div>
       </td>
       {/* アポイント履歴 */}
       <td className="px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
