@@ -70,60 +70,6 @@ export default function OrderDetailModal({
           </button>
         </div>
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">依頼日</label>
-              <p className="mt-1 text-sm text-gray-900">{order.constructionDate}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">顧客コード</label>
-              <p className="mt-1 text-sm text-gray-900">{order.customerCode}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">クロージャ番号</label>
-              <p className="mt-1 text-sm text-gray-900">{order.closureNumber}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">加入者名</label>
-              <p className="mt-1 text-sm text-gray-900">{order.customerName}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">個別/集合</label>
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                order.constructionCategory === '個別'
-                  ? 'bg-blue-100 text-blue-800'
-                  : 'bg-green-100 text-green-800'
-              }`}>
-                {order.constructionCategory}
-              </span>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">工事種別</label>
-              <p className="mt-1 text-sm text-gray-900">{order.workType}</p>
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">住所</label>
-            <p className="mt-1 text-sm text-gray-900">{order.address}</p>
-          </div>
-
-          {/* 集合住宅情報 (集合の場合のみ表示) */}
-          {order.constructionCategory === '集合' && (
-            <div className="bg-green-50 p-3 rounded-md border border-green-200">
-              <h5 className="text-sm font-medium text-green-900 mb-2">集合住宅情報</h5>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700">集合住宅コード</label>
-                  <p className="mt-1 text-sm text-gray-900">{order.apartmentCode || '—'}</p>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700">集合住宅名</label>
-                  <p className="mt-1 text-sm text-gray-900">{order.apartmentName || '—'}</p>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* 地図アップロード */}
           <div className="border-t pt-4">
@@ -208,7 +154,6 @@ export default function OrderDetailModal({
               </div>
             </div>
           </div>
-        </div>
 
         <div className="mt-6 flex justify-end">
           <Button

@@ -1,20 +1,24 @@
 'use client'
 
 import React, { useState } from 'react'
+import { PlusIcon } from '@heroicons/react/24/outline'
 import Layout from '@/shared/components/layout/Layout'
 import { OrderData } from './types'
 import { sampleOrders } from './data/sampleData'
 import { useOrders } from './hooks/useOrders'
+import { Button } from '@/shared/components/ui'
 import ExcelUploadZone from './components/ExcelUploadZone'
 import OrdersTable from './components/OrdersTable'
 import OrderDetailModal from './components/OrderDetailModal'
 import AppointmentHistoryModal from './components/AppointmentHistoryModal'
+import NewOrderModal from './components/NewOrderModal'
 
 export default function OrdersPage() {
   const { orders, setOrders, updateWorkType, updateStatus, updateMapPdfPath } = useOrders(sampleOrders)
   const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null)
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [appointmentOrder, setAppointmentOrder] = useState<OrderData | null>(null)
+  const [showNewOrderModal, setShowNewOrderModal] = useState(false)
 
   const handleUpload = (newOrders: OrderData[]) => {
     // ExcelUploadZoneから渡される新しい注文を追加
@@ -68,6 +72,10 @@ export default function OrdersPage() {
     setShowAppointmentModal(false)
     setAppointmentOrder(null)
   }
+  const handleCreateOrder = (newOrder: OrderData) => {
+    setOrders([...orders, newOrder])
+  }
+
 
   return (
     <Layout>
@@ -87,6 +95,15 @@ export default function OrdersPage() {
 
         <main className="max-w-full mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12">
           <ExcelUploadZone currentOrderCount={orders.length} onUpload={handleUpload} />
+          <div className="mb-6 flex justify-end">
+            <Button
+              variant="primary"
+              onClick={() => setShowNewOrderModal(true)}
+            >
+              <PlusIcon className="h-5 w-5 mr-2" />
+              新規工事依頼を作成
+            </Button>
+          </div>
           <OrdersTable
             orders={orders}
             onWorkTypeChange={updateWorkType}
@@ -113,6 +130,13 @@ export default function OrdersPage() {
             onClose={handleCloseAppointmentModal}
           />
         )}
+        {showNewOrderModal && (
+          <NewOrderModal
+            onClose={() => setShowNewOrderModal(false)}
+            onCreate={handleCreateOrder}
+          />
+        )}
+
       </div>
     </Layout>
   )
