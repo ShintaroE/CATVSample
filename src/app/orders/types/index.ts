@@ -80,10 +80,18 @@ export interface ScheduleData {
   workType: string
 }
 
+export type ConstructionCategory = '個別' | '集合'
+
+export type IndividualWorkType = '個別' | 'マンションタイプ光工事' | 'Gドット'
+export type CollectiveWorkType = 'HCNA一括導入工事' | 'G.fast導入工事' | '放送導入工事'
+
 export interface OrderData {
   orderNumber: string
   orderSource: string
-  workContent: string
+  constructionCategory: ConstructionCategory
+  workType: IndividualWorkType | CollectiveWorkType
+  apartmentCode?: string
+  apartmentName?: string
   customerCode: string
   customerType: '新規' | '既存'
   customerName: string
@@ -98,9 +106,20 @@ export interface OrderData {
   appointmentHistory?: AppointmentHistory[]
 }
 
-export const workContentOptions = [
-  '個別対応',
-  'HCNAー技術人工事',
-  'G・6ch追加人工事',
-  '放送波人工事'
+export const individualWorkTypeOptions: IndividualWorkType[] = [
+  '個別',
+  'マンションタイプ光工事',
+  'Gドット'
 ]
+
+export const collectiveWorkTypeOptions: CollectiveWorkType[] = [
+  'HCNA一括導入工事',
+  'G.fast導入工事',
+  '放送導入工事'
+]
+
+export function getWorkTypeOptions(category: ConstructionCategory) {
+  return category === '個別'
+    ? individualWorkTypeOptions
+    : collectiveWorkTypeOptions
+}

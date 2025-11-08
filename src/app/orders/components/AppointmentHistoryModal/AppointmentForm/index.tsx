@@ -56,9 +56,16 @@ export default function AppointmentForm({
             value={appointmentHooks.editingAppointment.status}
             onChange={(e) => {
               const newStatus = e.target.value as '工事決定' | '保留' | '不通' | '留守電'
+              const currentAppointment = appointmentHooks.editingAppointment
+              if (!currentAppointment) return
+
               appointmentHooks.setEditingAppointment({
-                ...appointmentHooks.editingAppointment,
-                status: newStatus
+                id: currentAppointment.id || '',
+                date: currentAppointment.date || '',
+                endTime: currentAppointment.endTime,
+                status: newStatus,
+                content: currentAppointment.content || '',
+                scheduleInfo: currentAppointment.scheduleInfo
               })
               if (newStatus !== '工事決定') {
                 appointmentHooks.handleContractorChange('')

@@ -154,7 +154,8 @@ export const sampleOrders: OrderData[] = [
   {
     orderNumber: '2025092900001',
     orderSource: 'KCT本社',
-    workContent: '個別対応',
+    constructionCategory: '個別',
+    workType: '個別',
     customerCode: '123456789',
     customerType: '新規',
     customerName: '田中太郎',
@@ -193,7 +194,10 @@ export const sampleOrders: OrderData[] = [
   {
     orderNumber: '2025093000002',
     orderSource: 'KCT水島',
-    workContent: 'HCNAー技術人工事',
+    constructionCategory: '集合',
+    workType: 'HCNA一括導入工事',
+    apartmentCode: 'AP-001',
+    apartmentName: 'サンライズマンション倉敷',
     customerCode: '234567890',
     customerType: '既存',
     customerName: '佐藤花子',
@@ -225,7 +229,8 @@ export const sampleOrders: OrderData[] = [
   {
     orderNumber: '2025100100003',
     orderSource: 'KCT玉島',
-    workContent: 'G・6ch追加人工事',
+    constructionCategory: '個別',
+    workType: 'Gドット',
     customerCode: '345678901',
     customerType: '新規',
     customerName: '山田次郎',

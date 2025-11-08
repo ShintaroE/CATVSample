@@ -39,7 +39,8 @@ export default function ExcelUploadZone({ currentOrderCount, onUpload }: ExcelUp
       const newOrder: OrderData = {
         orderNumber: `${year}${month}${day}${sequence}`,
         orderSource: 'KCT本社',
-        workContent: '個別対応',
+        constructionCategory: '個別',
+        workType: '個別',
         customerCode: `${Math.floor(Math.random() * 900000000) + 100000000}`,
         customerType: '新規',
         customerName: '新規顧客',
