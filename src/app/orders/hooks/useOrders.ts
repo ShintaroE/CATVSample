@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { OrderData } from '../types'
+import { OrderData, IndividualWorkType, CollectiveWorkType } from '../types'
 
 export function useOrders(initialOrders: OrderData[] = []) {
   const [orders, setOrders] = useState<OrderData[]>(initialOrders)
@@ -14,8 +14,8 @@ export function useOrders(initialOrders: OrderData[] = []) {
     setOrders(prev => [...prev, ...newOrders])
   }, [])
 
-  const updateWorkContent = useCallback((orderNumber: string, newContent: string) => {
-    updateOrder(orderNumber, { workContent: newContent })
+  const updateWorkType = useCallback((orderNumber: string, newWorkType: IndividualWorkType | CollectiveWorkType) => {
+    updateOrder(orderNumber, { workType: newWorkType })
   }, [updateOrder])
 
   const updateStatus = useCallback((
@@ -35,9 +35,8 @@ export function useOrders(initialOrders: OrderData[] = []) {
     setOrders,
     updateOrder,
     addOrders,
-    updateWorkContent,
+    updateWorkType,
     updateStatus,
     updateMapPdfPath,
   }
 }
-

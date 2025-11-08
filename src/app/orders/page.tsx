@@ -11,7 +11,7 @@ import OrderDetailModal from './components/OrderDetailModal'
 import AppointmentHistoryModal from './components/AppointmentHistoryModal'
 
 export default function OrdersPage() {
-  const { orders, setOrders, updateWorkContent, updateStatus, updateMapPdfPath } = useOrders(sampleOrders)
+  const { orders, setOrders, updateWorkType, updateStatus, updateMapPdfPath } = useOrders(sampleOrders)
   const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null)
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [appointmentOrder, setAppointmentOrder] = useState<OrderData | null>(null)
@@ -89,7 +89,7 @@ export default function OrdersPage() {
           <ExcelUploadZone currentOrderCount={orders.length} onUpload={handleUpload} />
           <OrdersTable
             orders={orders}
-            onWorkContentChange={updateWorkContent}
+            onWorkTypeChange={updateWorkType}
             onViewDetails={handleViewDetails}
             onViewAppointmentHistory={handleViewAppointmentHistory}
           />
