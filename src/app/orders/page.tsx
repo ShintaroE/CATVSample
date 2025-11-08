@@ -10,11 +10,14 @@ import { Button } from '@/shared/components/ui'
 import ExcelUploadZone from './components/ExcelUploadZone'
 import OrdersTable from './components/OrdersTable'
 import AppointmentHistoryModal from './components/AppointmentHistoryModal'
+import OrderDetailModal from './components/OrderDetailModal'
 import NewOrderModal from './components/NewOrderModal'
 import EditOrderModal from './components/EditOrderModal'
 
 export default function OrdersPage() {
   const { orders, setOrders } = useOrders(sampleOrders)
+  const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null)
+  const [showDetailModal, setShowDetailModal] = useState(false)
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [appointmentOrder, setAppointmentOrder] = useState<OrderData | null>(null)
   const [showNewOrderModal, setShowNewOrderModal] = useState(false)
@@ -27,8 +30,51 @@ export default function OrdersPage() {
   }
 
   const handleViewDetails = (order: OrderData) => {
-    // 詳細表示機能は未実装（将来的に実装予定）
-    console.log('View details for order:', order.orderNumber)
+    setSelectedOrder(order)
+    setShowDetailModal(true)
+  }
+
+  const handleCloseDetails = () => {
+    setShowDetailModal(false)
+    setSelectedOrder(null)
+  }
+
+  const handleStatusChange = (
+    orderNumber: string,
+    statusType: 'surveyStatus' | 'permissionStatus' | 'constructionStatus',
+    newStatus: 'pending' | 'in_progress' | 'completed'
+  ) => {
+    setOrders(orders.map(o =>
+      o.orderNumber === orderNumber
+        ? { ...o, [statusType]: newStatus }
+        : o
+    ))
+    // selectedOrderも更新
+    if (selectedOrder && selectedOrder.orderNumber === orderNumber) {
+      setSelectedOrder(prev => prev ? { ...prev, [statusType]: newStatus } : null)
+    }
+  }
+
+  const handleMapUpload = (order: OrderData, _file: File) => {
+    // ファイルをサーバーにアップロード（実装は将来）
+    // ここではサンプルとしてダミーパスを設定
+    const mapPath = `/maps/${order.orderNumber}.pdf`
+    setOrders(orders.map(o =>
+      o.orderNumber === order.orderNumber
+        ? { ...o, mapPdfPath: mapPath }
+        : o
+    ))
+    // selectedOrderも更新
+    if (selectedOrder && selectedOrder.orderNumber === order.orderNumber) {
+      setSelectedOrder(prev => prev ? { ...prev, mapPdfPath: mapPath } : null)
+    }
+    alert('地図PDFがアップロードされました')
+  }
+
+  const handleViewMap = (order: OrderData) => {
+    if (order.mapPdfPath) {
+      window.open(order.mapPdfPath, '_blank')
+    }
   }
 
   const handleViewAppointmentHistory = (order: OrderData) => {
@@ -90,6 +136,15 @@ export default function OrdersPage() {
           />
         </main>
 
+        {showDetailModal && selectedOrder && (
+          <OrderDetailModal
+            order={selectedOrder}
+            onClose={handleCloseDetails}
+            onStatusChange={handleStatusChange}
+            onMapUpload={handleMapUpload}
+            onViewMap={handleViewMap}
+          />
+        )}
 
         {showAppointmentModal && appointmentOrder && (
           <AppointmentHistoryModal

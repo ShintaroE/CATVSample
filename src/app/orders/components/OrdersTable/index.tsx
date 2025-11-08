@@ -59,10 +59,13 @@ export default function OrdersTable({
                   新規/既存
                 </th>
                 <th className="px-3 lg:px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  アクション
+                  詳細
                 </th>
                 <th className="px-3 lg:px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   アポイント履歴
+                </th>
+                <th className="px-3 lg:px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  編集
                 </th>
               </tr>
             </thead>

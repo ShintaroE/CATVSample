@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { EyeIcon, ClockIcon, PencilIcon } from '@heroicons/react/24/outline'
+import { EyeIcon, ClockIcon, PencilSquareIcon } from '@heroicons/react/24/outline'
 import { OrderData } from '../../types'
 
 interface OrderRowProps {
@@ -71,27 +71,15 @@ export default function OrderRow({
           {order.customerType}
         </span>
       </td>
-      {/* アクション */}
+      {/* 詳細 */}
       <td className="px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
-        <div className="flex items-center space-x-2">
-          {/* 編集ボタン */}
-          <button
-            onClick={() => onEditOrder(order)}
-            className="inline-flex items-center text-blue-600 hover:text-blue-900"
-            title="編集"
-          >
-            <PencilIcon className="h-4 w-4 mr-1" />
-            編集
-          </button>
-          {/* 詳細表示ボタン */}
-          <button
-            onClick={() => onViewDetails(order)}
-            className="inline-flex items-center text-blue-600 hover:text-blue-900"
-          >
-            <EyeIcon className="h-4 w-4 mr-1" />
-            詳細
-          </button>
-        </div>
+        <button
+          onClick={() => onViewDetails(order)}
+          className="inline-flex items-center text-blue-600 hover:text-blue-900"
+        >
+          <EyeIcon className="h-4 w-4 mr-1" />
+          詳細
+        </button>
       </td>
       {/* アポイント履歴 */}
       <td className="px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
@@ -107,6 +95,17 @@ export default function OrderRow({
             ({order.appointmentHistory?.length || 0}件)
           </span>
         </div>
+      </td>
+      {/* 編集 */}
+      <td className="px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
+        <button
+          onClick={() => onEditOrder(order)}
+          className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          title="編集"
+        >
+          <PencilSquareIcon className="h-4 w-4 mr-1" />
+          編集
+        </button>
       </td>
     </tr>
   )
