@@ -41,6 +41,9 @@ export default function OrdersTable({
                 <th className="px-3 lg:px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   工事種別
                 </th>
+                <th className="hidden lg:table-cell px-3 lg:px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  クロージャ番号
+                </th>
                 <th className="px-3 lg:px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   顧客コード
                 </th>

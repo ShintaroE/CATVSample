@@ -154,6 +154,20 @@ export default function NewOrderModal({ onClose, onCreate }: NewOrderModalProps)
                 <option value="KCT玉島">KCT玉島</option>
               </select>
             </div>
+
+            {/* クロージャ番号 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                クロージャ番号
+              </label>
+              <input
+                type="text"
+                value={formData.closureNumber || ''}
+                onChange={(e) => setFormData({ ...formData, closureNumber: e.target.value })}
+                placeholder="例: CL-123"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900"
+              />
+            </div>
           </div>
 
           {/* セクション2: 工事区分 */}
@@ -328,32 +342,6 @@ export default function NewOrderModal({ onClose, onCreate }: NewOrderModalProps)
             {showOptionalFields && (
               <div className="mt-3 p-4 bg-gray-50 rounded-md border border-gray-200">
                 <div className="grid grid-cols-2 gap-4">
-                  {/* 工事日 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      工事日
-                    </label>
-                    <input
-                      type="date"
-                      value={formData.constructionDate || ''}
-                      onChange={(e) => setFormData({ ...formData, constructionDate: e.target.value })}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900"
-                    />
-                  </div>
-
-                  {/* クロージャ番号 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      クロージャ番号
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.closureNumber || ''}
-                      onChange={(e) => setFormData({ ...formData, closureNumber: e.target.value })}
-                      placeholder="例: CL-123"
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900"
-                    />
-                  </div>
 
                   {/* 住所 */}
                   <div className="col-span-2">

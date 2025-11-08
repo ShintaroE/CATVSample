@@ -53,6 +53,10 @@ export default function OrderRow({
           ))}
         </select>
       </td>
+      {/* クロージャ番号 */}
+      <td className="hidden lg:table-cell px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
+        {order.closureNumber || '—'}
+      </td>
       {/* 顧客コード */}
       <td className="px-3 lg:px-4 xl:px-6 py-3 whitespace-nowrap text-sm text-gray-500">
         {order.customerCode}
