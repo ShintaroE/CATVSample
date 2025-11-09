@@ -101,7 +101,7 @@ export interface OrderData {
   phoneNumber?: string
   surveyStatus?: 'pending' | 'in_progress' | 'completed'
   permissionStatus?: 'pending' | 'in_progress' | 'completed'
-  constructionStatus?: 'pending' | 'in_progress' | 'completed'
+  constructionStatus?: 'pending' | 'in_progress' | 'completed' | 'canceled'
   mapPdfPath?: string
   appointmentHistory?: AppointmentHistory[]
 }
