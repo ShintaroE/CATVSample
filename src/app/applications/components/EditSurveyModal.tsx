@@ -447,7 +447,7 @@ export default function EditSurveyModal({
                     className="bg-white text-gray-900"
                   />
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">ステータス</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">状態</label>
                     <select
                       value={formData.status || '未着手'}
                       onChange={(e) => handleChange('status', e.target.value as SurveyStatus)}
