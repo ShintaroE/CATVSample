@@ -182,11 +182,6 @@ export default function NewConstructionModal({
       return
     }
 
-    if (!formData.constructionType) {
-      alert('工事種別を選択してください')
-      return
-    }
-
     if (!formData.postConstructionReport) {
       alert('工事後報告を選択してください')
       return
@@ -312,19 +307,6 @@ export default function NewConstructionModal({
               <section className="space-y-4">
                 <SectionTitle>工事情報</SectionTitle>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <SelectField
-                    label="工事種別"
-                    value={(formData.constructionType as string) || ''}
-                    onChange={(value) => handleChange('constructionType', value)}
-                    required
-                  >
-                    <option value="">選択してください</option>
-                    <option value="宅内引込">宅内引込</option>
-                    <option value="撤去">撤去</option>
-                    <option value="移設">移設</option>
-                    <option value="その他">その他</option>
-                  </SelectField>
-
                   <SelectField
                     label="工事後報告"
                     value={(formData.postConstructionReport as string) || ''}
