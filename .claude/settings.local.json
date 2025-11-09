@@ -27,7 +27,8 @@
       "Bash(git -C \"c:/Users/landf/Desktop/プログラム/CATVSample\" diff \"src/app/orders/components/AppointmentHistoryModal/ScheduleViewer/WeekView.tsx\")",
       "Bash(git -C \"c:/Users/landf/Desktop/プログラム/CATVSample\" status --short)",
       "Bash(cat:*)",
-      "Bash(git -C \"c:/Users/landf/Desktop/プログラム/CATVSample\" diff \"src/app/orders/data/sampleData.ts\")"
+      "Bash(git -C \"c:/Users/landf/Desktop/プログラム/CATVSample\" diff \"src/app/orders/data/sampleData.ts\")",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []

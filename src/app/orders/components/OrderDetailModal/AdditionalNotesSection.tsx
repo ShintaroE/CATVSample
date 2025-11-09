@@ -18,11 +18,12 @@ export default function AdditionalNotesSection({
     <div className="border-t pt-4">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full text-left"
+        className="w-full flex items-center justify-between mb-2 hover:bg-gray-50 -mx-2 px-2 py-1 rounded"
       >
-        <h4 className="text-md font-medium text-gray-900">
-          各追加情報 {isOpen ? '▼' : '▶'}
-        </h4>
+        <h4 className="text-md font-medium text-gray-900">各追加情報</h4>
+        <span className="text-gray-500 text-lg">
+          {isOpen ? '▼' : '▶'}
+        </span>
       </button>
 
       {isOpen && (
