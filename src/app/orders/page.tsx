@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import Layout from '@/shared/components/layout/Layout'
-import { OrderData, AdditionalCosts, AdditionalNotes } from './types'
+import { OrderData, AdditionalCosts, AdditionalNotes, CollectiveConstructionInfo } from './types'
 import { sampleOrders } from './data/sampleData'
 import { useOrders } from './hooks/useOrders'
 import { Button } from '@/shared/components/ui'
@@ -111,6 +111,23 @@ export default function OrdersPage() {
     }
   }
 
+  const handleCollectiveConstructionInfoChange = (
+    orderNumber: string,
+    collectiveConstructionInfo: CollectiveConstructionInfo
+  ) => {
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.orderNumber === orderNumber
+          ? { ...order, collectiveConstructionInfo }
+          : order
+      )
+    )
+    // selectedOrderも更新
+    if (selectedOrder && selectedOrder.orderNumber === orderNumber) {
+      setSelectedOrder(prev => prev ? { ...prev, collectiveConstructionInfo } : null)
+    }
+  }
+
   const handleViewAppointmentHistory = (order: OrderData) => {
     setAppointmentOrder(order)
     setShowAppointmentModal(true)
@@ -179,6 +196,7 @@ export default function OrdersPage() {
             onViewMap={handleViewMap}
             onAdditionalCostsChange={handleAdditionalCostsChange}
             onAdditionalNotesChange={handleAdditionalNotesChange}
+            onCollectiveConstructionInfoChange={handleCollectiveConstructionInfoChange}
           />
         )}
 

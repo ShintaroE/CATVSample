@@ -2,10 +2,11 @@
 
 import React, { useRef } from 'react'
 import { DocumentArrowUpIcon, MapIcon } from '@heroicons/react/24/outline'
-import { OrderData, AdditionalCosts, AdditionalNotes } from '../../types'
+import { OrderData, AdditionalCosts, AdditionalNotes, CollectiveConstructionInfo } from '../../types'
 import { Button } from '@/shared/components/ui'
 import AdditionalCostsSection from './AdditionalCostsSection'
 import AdditionalNotesSection from './AdditionalNotesSection'
+import CollectiveConstructionSection from './CollectiveConstructionSection'
 
 interface OrderDetailModalProps {
   order: OrderData
@@ -19,6 +20,7 @@ interface OrderDetailModalProps {
   onViewMap: (order: OrderData) => void
   onAdditionalCostsChange: (orderNumber: string, additionalCosts: AdditionalCosts) => void
   onAdditionalNotesChange: (orderNumber: string, additionalNotes: AdditionalNotes) => void
+  onCollectiveConstructionInfoChange: (orderNumber: string, collectiveConstructionInfo: CollectiveConstructionInfo) => void
 }
 
 export default function OrderDetailModal({
@@ -29,6 +31,7 @@ export default function OrderDetailModal({
   onViewMap,
   onAdditionalCostsChange,
   onAdditionalNotesChange,
+  onCollectiveConstructionInfoChange,
 }: OrderDetailModalProps) {
   const mapFileInputRef = useRef<HTMLInputElement>(null)
 
@@ -74,6 +77,21 @@ export default function OrderDetailModal({
       surveyRequestNotes: undefined,
       attachmentRequestNotes: undefined,
       constructionRequestNotes: undefined,
+    }
+  }
+
+  // デフォルト値を設定（order.collectiveConstructionInfoがない場合のみ）
+  const getCollectiveConstructionInfo = (): CollectiveConstructionInfo => {
+    if (order.collectiveConstructionInfo) {
+      return order.collectiveConstructionInfo
+    }
+    return {
+      floors: undefined,
+      units: undefined,
+      advanceMaterialPrinting: 'not_required',
+      boosterType: undefined,
+      distributorReplacement: undefined,
+      dropAdvance: undefined,
     }
   }
 
@@ -204,6 +222,14 @@ export default function OrderDetailModal({
               </div>
             </div>
           </div>
+
+          {/* 集合工事情報 - 集合の場合のみ表示 */}
+          {order.constructionCategory === '集合' && (
+            <CollectiveConstructionSection
+              data={getCollectiveConstructionInfo()}
+              onChange={(data) => onCollectiveConstructionInfoChange(order.orderNumber, data)}
+            />
+          )}
 
           {/* 各種追加費用 */}
           <AdditionalCostsSection
