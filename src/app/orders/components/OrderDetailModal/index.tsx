@@ -146,6 +146,7 @@ export default function OrderDetailModal({
                   <option value="pending" className="text-gray-600">未着手</option>
                   <option value="in_progress" className="text-blue-600">工事日決定</option>
                   <option value="completed" className="text-green-600">完了</option>
+                  <option value="canceled" className="text-purple-600">工事返却</option>
                 </select>
               </div>
             </div>
