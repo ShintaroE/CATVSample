@@ -127,6 +127,15 @@ export interface AdditionalNotes {
   constructionRequestNotes?: string  // 工事依頼備考
 }
 
+export interface CollectiveConstructionInfo {
+  floors?: number                    // 階数
+  units?: number                     // 世帯数
+  advanceMaterialPrinting: 'required' | 'not_required'  // 先行資料印刷要否
+  boosterType?: string               // ブースター型
+  distributorReplacement?: string    // 分配器交換
+  dropAdvance?: string               // ドロップ先行
+}
+
 export interface OrderData {
   orderNumber: string
   orderSource: string
@@ -148,6 +157,7 @@ export interface OrderData {
   appointmentHistory?: AppointmentHistory[]
   additionalCosts?: AdditionalCosts
   additionalNotes?: AdditionalNotes
+  collectiveConstructionInfo?: CollectiveConstructionInfo
 }
 
 export const individualWorkTypeOptions: IndividualWorkType[] = [
