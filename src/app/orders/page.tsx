@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import Layout from '@/shared/components/layout/Layout'
-import { OrderData } from './types'
+import { OrderData, AdditionalCosts } from './types'
 import { sampleOrders } from './data/sampleData'
 import { useOrders } from './hooks/useOrders'
 import { Button } from '@/shared/components/ui'
@@ -42,7 +42,7 @@ export default function OrdersPage() {
   const handleStatusChange = (
     orderNumber: string,
     statusType: 'surveyStatus' | 'permissionStatus' | 'constructionStatus',
-    newStatus: 'pending' | 'in_progress' | 'completed'
+    newStatus: 'pending' | 'in_progress' | 'completed' | 'canceled'
   ) => {
     setOrders(orders.map(o =>
       o.orderNumber === orderNumber
@@ -74,6 +74,23 @@ export default function OrdersPage() {
   const handleViewMap = (order: OrderData) => {
     if (order.mapPdfPath) {
       window.open(order.mapPdfPath, '_blank')
+    }
+  }
+
+  const handleAdditionalCostsChange = (
+    orderNumber: string,
+    additionalCosts: AdditionalCosts
+  ) => {
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.orderNumber === orderNumber
+          ? { ...order, additionalCosts }
+          : order
+      )
+    )
+    // selectedOrderも更新
+    if (selectedOrder && selectedOrder.orderNumber === orderNumber) {
+      setSelectedOrder(prev => prev ? { ...prev, additionalCosts } : null)
     }
   }
 
@@ -143,6 +160,7 @@ export default function OrdersPage() {
             onStatusChange={handleStatusChange}
             onMapUpload={handleMapUpload}
             onViewMap={handleViewMap}
+            onAdditionalCostsChange={handleAdditionalCostsChange}
           />
         )}
 

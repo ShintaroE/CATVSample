@@ -21,7 +21,7 @@ export function useOrders(initialOrders: OrderData[] = []) {
   const updateStatus = useCallback((
     orderNumber: string,
     statusType: 'surveyStatus' | 'permissionStatus' | 'constructionStatus',
-    newStatus: 'pending' | 'in_progress' | 'completed'
+    newStatus: 'pending' | 'in_progress' | 'completed' | 'canceled'
   ) => {
     updateOrder(orderNumber, { [statusType]: newStatus })
   }, [updateOrder])
