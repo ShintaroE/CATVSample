@@ -114,43 +114,39 @@ export default function OrderDetailModal({
           <div className="border-t pt-4">
             <h4 className="text-md font-medium text-gray-900 mb-2">工事進捗</h4>
             <div className="bg-gray-50 p-4 rounded-md">
-              <div className="grid grid-cols-1 gap-4 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-gray-900">調査状況:</span>
-                  <select
-                    value={order.surveyStatus || 'pending'}
-                    onChange={(e) => onStatusChange(order.orderNumber, 'surveyStatus', e.target.value as 'pending' | 'in_progress' | 'completed')}
-                    className={`rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 ${getSelectColor(order.surveyStatus || 'pending')}`}
-                  >
-                    <option value="pending" className="text-gray-600">未着手</option>
-                    <option value="in_progress" className="text-blue-600">調査中</option>
-                    <option value="completed" className="text-green-600">完了</option>
-                  </select>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-gray-900">共架OR添架許可申請:</span>
-                  <select
-                    value={order.permissionStatus || 'pending'}
-                    onChange={(e) => onStatusChange(order.orderNumber, 'permissionStatus', e.target.value as 'pending' | 'in_progress' | 'completed')}
-                    className={`rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 ${getSelectColor(order.permissionStatus || 'pending')}`}
-                  >
-                    <option value="pending" className="text-gray-600">未申請</option>
-                    <option value="in_progress" className="text-blue-600">申請中</option>
-                    <option value="completed" className="text-green-600">許可済</option>
-                  </select>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-gray-900">工事状況:</span>
-                  <select
-                    value={order.constructionStatus || 'pending'}
-                    onChange={(e) => onStatusChange(order.orderNumber, 'constructionStatus', e.target.value as 'pending' | 'in_progress' | 'completed')}
-                    className={`rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 ${getSelectColor(order.constructionStatus || 'pending')}`}
-                  >
-                    <option value="pending" className="text-gray-600">未着手</option>
-                    <option value="in_progress" className="text-blue-600">工事中</option>
-                    <option value="completed" className="text-green-600">完了</option>
-                  </select>
-                </div>
+              <div className="grid grid-cols-[auto_auto] gap-x-4 gap-y-4 text-sm items-center justify-between">
+                <span className="font-medium text-gray-900">調査状況:</span>
+                <select
+                  value={order.surveyStatus || 'pending'}
+                  onChange={(e) => onStatusChange(order.orderNumber, 'surveyStatus', e.target.value as 'pending' | 'in_progress' | 'completed')}
+                  className={`w-36 rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 ${getSelectColor(order.surveyStatus || 'pending')}`}
+                >
+                  <option value="pending" className="text-gray-600">未着手</option>
+                  <option value="in_progress" className="text-blue-600">調査日決定</option>
+                  <option value="completed" className="text-green-600">完了</option>
+                </select>
+
+                <span className="font-medium text-gray-900">共架OR添架許可申請:</span>
+                <select
+                  value={order.permissionStatus || 'pending'}
+                  onChange={(e) => onStatusChange(order.orderNumber, 'permissionStatus', e.target.value as 'pending' | 'in_progress' | 'completed')}
+                  className={`w-36 rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 ${getSelectColor(order.permissionStatus || 'pending')}`}
+                >
+                  <option value="pending" className="text-gray-600">未申請</option>
+                  <option value="in_progress" className="text-blue-600">申請中</option>
+                  <option value="completed" className="text-green-600">許可済</option>
+                </select>
+
+                <span className="font-medium text-gray-900">工事状況:</span>
+                <select
+                  value={order.constructionStatus || 'pending'}
+                  onChange={(e) => onStatusChange(order.orderNumber, 'constructionStatus', e.target.value as 'pending' | 'in_progress' | 'completed')}
+                  className={`w-36 rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 ${getSelectColor(order.constructionStatus || 'pending')}`}
+                >
+                  <option value="pending" className="text-gray-600">未着手</option>
+                  <option value="in_progress" className="text-blue-600">工事日決定</option>
+                  <option value="completed" className="text-green-600">完了</option>
+                </select>
               </div>
             </div>
           </div>
