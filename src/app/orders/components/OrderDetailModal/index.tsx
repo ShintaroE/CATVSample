@@ -183,7 +183,7 @@ export default function OrderDetailModal({
 
           {/* 進捗表の追加情報 */}
           <div className="border-t pt-4">
-            <h4 className="text-md font-medium text-gray-900 mb-2">工事進捗</h4>
+            <h4 className="text-md font-medium text-gray-900 mb-2">各進捗状況</h4>
             <div className="bg-gray-50 p-4 rounded-md">
               <div className="grid grid-cols-[auto_auto] gap-x-4 gap-y-4 text-sm items-center justify-between">
                 <span className="font-medium text-gray-900">調査状況:</span>
