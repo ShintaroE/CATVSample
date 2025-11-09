@@ -34,6 +34,8 @@ export default function OrderDetailModal({
         return 'text-blue-600 border-blue-300 bg-blue-50'
       case 'completed':
         return 'text-green-600 border-green-300 bg-green-50'
+      case 'canceled':
+        return 'text-purple-600 border-purple-300 bg-purple-50'
       default:
         return 'text-gray-600 border-gray-300 bg-gray-50'
     }
