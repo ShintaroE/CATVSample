@@ -121,6 +121,12 @@ export interface AdditionalCosts {
   }
 }
 
+export interface AdditionalNotes {
+  surveyRequestNotes?: string        // 現調依頼備考
+  attachmentRequestNotes?: string    // 共架・添架依頼備考
+  constructionRequestNotes?: string  // 工事依頼備考
+}
+
 export interface OrderData {
   orderNumber: string
   orderSource: string
@@ -141,6 +147,7 @@ export interface OrderData {
   mapPdfPath?: string
   appointmentHistory?: AppointmentHistory[]
   additionalCosts?: AdditionalCosts
+  additionalNotes?: AdditionalNotes
 }
 
 export const individualWorkTypeOptions: IndividualWorkType[] = [
