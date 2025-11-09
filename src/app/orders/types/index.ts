@@ -85,6 +85,42 @@ export type ConstructionCategory = '個別' | '集合'
 export type IndividualWorkType = '個別' | 'マンションタイプ光工事' | 'Gドット'
 export type CollectiveWorkType = 'HCNA一括導入工事' | 'G.fast導入工事' | '放送導入工事'
 
+export interface AdditionalCosts {
+  // クロージャ増設
+  closureExpansion: {
+    required: 'required' | 'not_required'
+    scheduledDate?: string
+  }
+
+  // 道路申請
+  roadApplication: {
+    required: 'required' | 'not_required'
+    applicationDate?: string
+    responseDate?: string
+    completionReport: 'incomplete' | 'completed'
+  }
+
+  // 他社改修
+  otherCompanyRepair: {
+    required: 'required' | 'not_required'
+    applicationDate?: string
+    responseDate?: string
+  }
+
+  // NWスパハンなど
+  nwEquipment: {
+    required: 'required' | 'not_required'
+    quotationCreatedDate?: string
+    quotationSubmittedDate?: string
+  }
+
+  // 引込用申請
+  serviceLineApplication: {
+    required: 'required' | 'not_required'
+    billingDate?: string
+  }
+}
+
 export interface OrderData {
   orderNumber: string
   orderSource: string
@@ -104,6 +140,7 @@ export interface OrderData {
   constructionStatus?: 'pending' | 'in_progress' | 'completed' | 'canceled'
   mapPdfPath?: string
   appointmentHistory?: AppointmentHistory[]
+  additionalCosts?: AdditionalCosts
 }
 
 export const individualWorkTypeOptions: IndividualWorkType[] = [

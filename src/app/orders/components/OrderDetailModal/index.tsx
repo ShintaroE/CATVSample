@@ -2,8 +2,9 @@
 
 import React, { useRef } from 'react'
 import { DocumentArrowUpIcon, MapIcon } from '@heroicons/react/24/outline'
-import { OrderData } from '../../types'
+import { OrderData, AdditionalCosts } from '../../types'
 import { Button } from '@/shared/components/ui'
+import AdditionalCostsSection from './AdditionalCostsSection'
 
 interface OrderDetailModalProps {
   order: OrderData
@@ -15,6 +16,7 @@ interface OrderDetailModalProps {
   ) => void
   onMapUpload: (order: OrderData, file: File) => void
   onViewMap: (order: OrderData) => void
+  onAdditionalCostsChange: (orderNumber: string, additionalCosts: AdditionalCosts) => void
 }
 
 export default function OrderDetailModal({
@@ -23,8 +25,42 @@ export default function OrderDetailModal({
   onStatusChange,
   onMapUpload,
   onViewMap,
+  onAdditionalCostsChange,
 }: OrderDetailModalProps) {
   const mapFileInputRef = useRef<HTMLInputElement>(null)
+
+  // デフォルト値を設定（order.additionalCostsがない場合のみ）
+  const getAdditionalCosts = (): AdditionalCosts => {
+    if (order.additionalCosts) {
+      return order.additionalCosts
+    }
+    return {
+      closureExpansion: {
+        required: 'not_required',
+        scheduledDate: undefined,
+      },
+      roadApplication: {
+        required: 'not_required',
+        applicationDate: undefined,
+        responseDate: undefined,
+        completionReport: 'incomplete',
+      },
+      otherCompanyRepair: {
+        required: 'not_required',
+        applicationDate: undefined,
+        responseDate: undefined,
+      },
+      nwEquipment: {
+        required: 'not_required',
+        quotationCreatedDate: undefined,
+        quotationSubmittedDate: undefined,
+      },
+      serviceLineApplication: {
+        required: 'not_required',
+        billingDate: undefined,
+      },
+    }
+  }
 
   const getSelectColor = (status: string) => {
     switch (status) {
@@ -153,6 +189,12 @@ export default function OrderDetailModal({
               </div>
             </div>
           </div>
+
+          {/* 各種追加費用 */}
+          <AdditionalCostsSection
+            data={getAdditionalCosts()}
+            onChange={(data) => onAdditionalCostsChange(order.orderNumber, data)}
+          />
 
         <div className="mt-6 flex justify-end">
           <Button
