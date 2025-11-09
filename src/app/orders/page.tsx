@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import Layout from '@/shared/components/layout/Layout'
-import { OrderData, AdditionalCosts } from './types'
+import { OrderData, AdditionalCosts, AdditionalNotes } from './types'
 import { sampleOrders } from './data/sampleData'
 import { useOrders } from './hooks/useOrders'
 import { Button } from '@/shared/components/ui'
@@ -94,6 +94,23 @@ export default function OrdersPage() {
     }
   }
 
+  const handleAdditionalNotesChange = (
+    orderNumber: string,
+    additionalNotes: AdditionalNotes
+  ) => {
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.orderNumber === orderNumber
+          ? { ...order, additionalNotes }
+          : order
+      )
+    )
+    // selectedOrderも更新
+    if (selectedOrder && selectedOrder.orderNumber === orderNumber) {
+      setSelectedOrder(prev => prev ? { ...prev, additionalNotes } : null)
+    }
+  }
+
   const handleViewAppointmentHistory = (order: OrderData) => {
     setAppointmentOrder(order)
     setShowAppointmentModal(true)
@@ -161,6 +178,7 @@ export default function OrdersPage() {
             onMapUpload={handleMapUpload}
             onViewMap={handleViewMap}
             onAdditionalCostsChange={handleAdditionalCostsChange}
+            onAdditionalNotesChange={handleAdditionalNotesChange}
           />
         )}
 

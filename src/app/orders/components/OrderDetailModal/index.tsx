@@ -2,9 +2,10 @@
 
 import React, { useRef } from 'react'
 import { DocumentArrowUpIcon, MapIcon } from '@heroicons/react/24/outline'
-import { OrderData, AdditionalCosts } from '../../types'
+import { OrderData, AdditionalCosts, AdditionalNotes } from '../../types'
 import { Button } from '@/shared/components/ui'
 import AdditionalCostsSection from './AdditionalCostsSection'
+import AdditionalNotesSection from './AdditionalNotesSection'
 
 interface OrderDetailModalProps {
   order: OrderData
@@ -17,6 +18,7 @@ interface OrderDetailModalProps {
   onMapUpload: (order: OrderData, file: File) => void
   onViewMap: (order: OrderData) => void
   onAdditionalCostsChange: (orderNumber: string, additionalCosts: AdditionalCosts) => void
+  onAdditionalNotesChange: (orderNumber: string, additionalNotes: AdditionalNotes) => void
 }
 
 export default function OrderDetailModal({
@@ -26,6 +28,7 @@ export default function OrderDetailModal({
   onMapUpload,
   onViewMap,
   onAdditionalCostsChange,
+  onAdditionalNotesChange,
 }: OrderDetailModalProps) {
   const mapFileInputRef = useRef<HTMLInputElement>(null)
 
@@ -59,6 +62,18 @@ export default function OrderDetailModal({
         required: 'not_required',
         billingDate: undefined,
       },
+    }
+  }
+
+  // デフォルト値を設定（order.additionalNotesがない場合のみ）
+  const getAdditionalNotes = (): AdditionalNotes => {
+    if (order.additionalNotes) {
+      return order.additionalNotes
+    }
+    return {
+      surveyRequestNotes: undefined,
+      attachmentRequestNotes: undefined,
+      constructionRequestNotes: undefined,
     }
   }
 
@@ -194,6 +209,12 @@ export default function OrderDetailModal({
           <AdditionalCostsSection
             data={getAdditionalCosts()}
             onChange={(data) => onAdditionalCostsChange(order.orderNumber, data)}
+          />
+
+          {/* 各追加情報 */}
+          <AdditionalNotesSection
+            data={getAdditionalNotes()}
+            onChange={(data) => onAdditionalNotesChange(order.orderNumber, data)}
           />
 
         <div className="mt-6 flex justify-end">
