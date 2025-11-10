@@ -1,12 +1,16 @@
 import { useState, useCallback } from 'react'
 import { ExclusionEntry } from '@/app/schedule/types'
+import { sampleExclusions } from '../data/sampleExclusions'
 
 /**
  * 除外日データ管理フック
  * 除外日のCRUD操作を提供
  */
 export function useExclusionData(contractorId: string) {
-  const [exclusions, setExclusions] = useState<ExclusionEntry[]>([])
+  // サンプルデータで初期化（contractorIdでフィルタリング）
+  const [exclusions, setExclusions] = useState<ExclusionEntry[]>(() =>
+    sampleExclusions.filter(e => e.contractorId === contractorId)
+  )
 
   /**
    * 除外日を追加
@@ -58,12 +62,15 @@ export function useExclusionData(contractorId: string) {
 
   /**
    * 指定された班IDで除外日をフィルタリング
+   * teamIds が空配列の場合は空配列を返す（何も表示しない）
    */
   const filterByTeams = useCallback(
     (teamIds: string[]) => {
+      // 空配列の場合は何も表示しない
       if (teamIds.length === 0) {
-        return exclusions
+        return []
       }
+      // 選択された班に含まれるもののみ返す
       return exclusions.filter(e => teamIds.includes(e.teamId))
     },
     [exclusions]

@@ -10,7 +10,7 @@ import { useScheduleData } from './hooks/useScheduleData'
 import { useExclusionData } from './hooks/useExclusionData'
 import ExclusionCalendar from './components/ExclusionCalendar'
 import TeamFilter from './components/TeamFilter'
-import DayDetailPanel from './components/DayDetailPanel'
+import DayDetailModal from './components/DayDetailModal'
 
 /**
  * 除外日管理ページ
@@ -117,38 +117,32 @@ export default function MyExclusionsPage() {
           />
         </div>
 
-        {/* メインコンテンツ: カレンダー + サイドパネル */}
-        <div className="flex gap-4">
-          {/* カレンダー (70%) */}
-          <div className="w-[70%]">
-            <ExclusionCalendar
-              currentMonth={currentMonth}
-              schedules={filteredSchedules}
-              exclusions={filteredExclusions}
-              selectedDate={selectedDate}
-              onDateClick={setSelectedDate}
-              onMonthChange={handleMonthChange}
-            />
-          </div>
-
-          {/* サイドパネル (30%) */}
-          {selectedDate && (
-            <div className="w-[30%] min-w-[320px] max-w-[480px]">
-              <DayDetailPanel
-                date={selectedDate}
-                schedules={selectedDateSchedules}
-                exclusions={selectedDateExclusions}
-                teams={teams}
-                contractorId={user.contractorId}
-                contractorName={user.contractor}
-                onExclusionAdd={handleExclusionAdd}
-                onExclusionUpdate={updateExclusion}
-                onExclusionDelete={deleteExclusion}
-                onClose={() => setSelectedDate(null)}
-              />
-            </div>
-          )}
+        {/* メインコンテンツ: カレンダー */}
+        <div className="max-w-7xl mx-auto">
+          <ExclusionCalendar
+            currentMonth={currentMonth}
+            schedules={filteredSchedules}
+            exclusions={filteredExclusions}
+            selectedDate={selectedDate}
+            onDateClick={setSelectedDate}
+            onMonthChange={handleMonthChange}
+          />
         </div>
+
+        {/* 日付詳細モーダル */}
+        <DayDetailModal
+          isOpen={selectedDate !== null}
+          date={selectedDate || ''}
+          schedules={selectedDateSchedules}
+          exclusions={selectedDateExclusions}
+          teams={teams}
+          contractorId={user.contractorId}
+          contractorName={user.contractor}
+          onExclusionAdd={handleExclusionAdd}
+          onExclusionUpdate={updateExclusion}
+          onExclusionDelete={deleteExclusion}
+          onClose={() => setSelectedDate(null)}
+        />
       </div>
     </Layout>
   )

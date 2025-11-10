@@ -11,7 +11,6 @@ interface ExclusionFormProps {
   contractorName: string
   initialData?: ExclusionEntry
   onSubmit: (data: Omit<ExclusionEntry, 'id'>) => void
-  onCancel: () => void
 }
 
 /**
@@ -24,8 +23,7 @@ function ExclusionForm({
   contractorId,
   contractorName,
   initialData,
-  onSubmit,
-  onCancel
+  onSubmit
 }: ExclusionFormProps) {
   const [teamId, setTeamId] = useState('')
   const [timeType, setTimeType] = useState<'all_day' | 'am' | 'pm' | 'custom'>('all_day')
@@ -55,10 +53,6 @@ function ExclusionForm({
     // バリデーション
     if (!teamId) {
       newErrors.push('班を選択してください')
-    }
-
-    if (!reason.trim()) {
-      newErrors.push('理由を入力してください')
     }
 
     if (timeType === 'custom') {
@@ -197,7 +191,7 @@ function ExclusionForm({
       {/* 理由入力 */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          理由 <span className="text-red-500">*</span>
+          理由
         </label>
         <textarea
           value={reason}
@@ -209,12 +203,9 @@ function ExclusionForm({
       </div>
 
       {/* ボタン */}
-      <div className="flex gap-2">
-        <Button type="submit" variant="primary" className="flex-1">
+      <div>
+        <Button type="submit" variant="primary" className="w-full">
           {mode === 'create' ? '登録' : '更新'}
-        </Button>
-        <Button type="button" variant="secondary" onClick={onCancel}>
-          キャンセル
         </Button>
       </div>
     </form>

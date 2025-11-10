@@ -49,12 +49,15 @@ export function useScheduleData(contractorId: string) {
 
   /**
    * 指定された班IDでスケジュールをフィルタリング
+   * teamIds が空配列の場合は空配列を返す（何も表示しない）
    */
   const filterByTeams = useCallback(
     (teamIds: string[]) => {
+      // 空配列の場合は何も表示しない
       if (teamIds.length === 0) {
-        return schedules
+        return []
       }
+      // teamIdが存在し、選択された班に含まれるもののみ返す
       return schedules.filter(s => s.teamId && teamIds.includes(s.teamId))
     },
     [schedules]
