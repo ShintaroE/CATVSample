@@ -39,7 +39,7 @@ export default function ContractorRequestsPage() {
   const { user, isAuthenticated } = useAuth()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabType>('survey')
-  const [selectedTeamId, setSelectedTeamId] = useState<string>('')
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('all')
   const [surveyData, setSurveyData] = useState<SurveyRequest[]>([])
   const [attachmentData, setAttachmentData] = useState<AttachmentRequest[]>([])
   const [constructionData, setConstructionData] = useState<ConstructionRequest[]>([])
@@ -63,37 +63,44 @@ export default function ContractorRequestsPage() {
     return getTeamsByContractorId(user.contractorId)
   }, [user])
 
-  // 初回読み込み時に最初の班を選択
-  useEffect(() => {
-    if (availableTeams.length > 0 && !selectedTeamId) {
-      setSelectedTeamId(availableTeams[0].id)
-    }
-  }, [availableTeams, selectedTeamId])
+  // 初回読み込み時に「全て」を選択（既に選択されている場合は何もしない）
+  // デフォルトで「全て」が選択されているため、このuseEffectは不要
 
   // データ読み込み
   useEffect(() => {
-    if (!user?.contractorId || !selectedTeamId) return
+    if (!user?.contractorId) return
 
     const allSurvey = getApplications<SurveyRequest>('survey')
     const allAttachment = getApplications<AttachmentRequest>('attachment')
     const allConstruction = getApplications<ConstructionRequest>('construction')
 
-    // 選択した班に割り当てられた依頼のみフィルタ
-    setSurveyData(
-      allSurvey.filter(
-        (r) => r.contractorId === user.contractorId && r.teamId === selectedTeamId
-      )
+    // 協力会社に割り当てられた依頼をフィルタ
+    const contractorSurvey = allSurvey.filter(
+      (r) => r.contractorId === user.contractorId
     )
-    setAttachmentData(
-      allAttachment.filter(
-        (r) => r.contractorId === user.contractorId && r.teamId === selectedTeamId
-      )
+    const contractorAttachment = allAttachment.filter(
+      (r) => r.contractorId === user.contractorId
     )
-    setConstructionData(
-      allConstruction.filter(
-        (r) => r.contractorId === user.contractorId && r.teamId === selectedTeamId
-      )
+    const contractorConstruction = allConstruction.filter(
+      (r) => r.contractorId === user.contractorId
     )
+
+    // 「全て」が選択されている場合は全ての班のデータを表示、それ以外は選択した班のみ
+    if (selectedTeamId === 'all') {
+      setSurveyData(contractorSurvey)
+      setAttachmentData(contractorAttachment)
+      setConstructionData(contractorConstruction)
+    } else {
+      setSurveyData(
+        contractorSurvey.filter((r) => r.teamId === selectedTeamId)
+      )
+      setAttachmentData(
+        contractorAttachment.filter((r) => r.teamId === selectedTeamId)
+      )
+      setConstructionData(
+        contractorConstruction.filter((r) => r.teamId === selectedTeamId)
+      )
+    }
   }, [user, selectedTeamId])
 
   // 進捗更新を開く
@@ -154,11 +161,14 @@ export default function ContractorRequestsPage() {
     })
 
     // 進捗履歴追加
+    const updatedByTeam = selectedTeamId === 'all' 
+      ? undefined 
+      : availableTeams.find((t) => t.id === selectedTeamId)?.teamName
     addProgressEntry(type, id, {
       timestamp: new Date().toISOString(),
       updatedBy: user?.contractorId || '',
       updatedByName: user?.contractor || '',
-      updatedByTeam: availableTeams.find((t) => t.id === selectedTeamId)?.teamName,
+      updatedByTeam,
       status,
       comment,
     })
@@ -183,13 +193,13 @@ export default function ContractorRequestsPage() {
               依頼一覧
             </h1>
 
-            {availableTeams.length === 1 ? (
-              // 班が1つの場合: 情報表示のみ
-              <p className="text-sm text-gray-600 mt-1">
-                {user.contractor} {availableTeams[0].teamName} に割り当てられた依頼
+            {availableTeams.length === 0 ? (
+              // 班がない場合
+              <p className="text-sm text-gray-500 mt-1">
+                班が割り当てられていません
               </p>
-            ) : availableTeams.length > 1 ? (
-              // 班が複数の場合: セレクトボックス表示
+            ) : (
+              // 班がある場合: セレクトボックス表示（「全て」オプション含む）
               <div className="flex items-center gap-2 mt-2">
                 <label className="text-sm font-medium text-gray-700">
                   表示する班:
@@ -199,6 +209,7 @@ export default function ContractorRequestsPage() {
                   onChange={(e) => setSelectedTeamId(e.target.value)}
                   className="px-3 py-1.5 border rounded-md bg-white text-gray-900 text-sm"
                 >
+                  <option value="all">全て</option>
                   {availableTeams.map((team) => (
                     <option key={team.id} value={team.id}>
                       {team.teamName}
@@ -206,11 +217,6 @@ export default function ContractorRequestsPage() {
                   ))}
                 </select>
               </div>
-            ) : (
-              // 班がない場合
-              <p className="text-sm text-gray-500 mt-1">
-                班が割り当てられていません
-              </p>
             )}
           </div>
         </div>
