@@ -308,6 +308,7 @@ export default function ContractorRequestsPage() {
                     <option value="受付">受付</option>
                     <option value="提出済">提出済</option>
                     <option value="許可">許可</option>
+                    <option value="不許可">不許可</option>
                     <option value="取下げ">取下げ</option>
                   </>
                 )}
@@ -532,7 +533,7 @@ export default function ContractorRequestsPage() {
                         </td>
                         <td className="px-3 py-2 text-center">
                           {(request as AttachmentRequest).postConstructionReport === true ? (
-                            request.status === '完了' ? (
+                            request.status === '許可' ? (
                               <Badge variant="success" size="sm">完了</Badge>
                             ) : (
                               <Badge variant="warning" size="sm">未完了</Badge>

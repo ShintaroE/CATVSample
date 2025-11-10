@@ -6,7 +6,7 @@ export type AssigneeType = 'internal' | 'contractor' // 自社 or 協力会社
 
 // 各タブのステータス定義
 export type SurveyStatus = '未着手' | '調査中' | '完了' | 'キャンセル'
-export type AttachmentStatus = '受付' | '調査済み' | '完了'
+export type AttachmentStatus = '受付' | '提出済' | '許可' | '不許可' | '取下げ'
 export type ConstructionStatus = '未着手' | '施工中' | '完了' | '一部完了' | '中止' | '延期' | '保留'
 
 // ========== 協力会社報告機能の型定義 ==========

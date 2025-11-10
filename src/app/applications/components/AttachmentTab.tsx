@@ -98,14 +98,14 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
       // 工事後報告
       if (postConstructionReportFilter) {
         if (postConstructionReportFilter === 'completed') {
-          // 完了：postConstructionReport === true かつ status === '完了'
-          if (!r.postConstructionReport || r.status !== '完了') {
+          // 完了：postConstructionReport === true かつ status === '許可'
+          if (!r.postConstructionReport || r.status !== '許可') {
             return false
           }
         }
         if (postConstructionReportFilter === 'notCompleted') {
-          // 未完了：postConstructionReport === true かつ status !== '完了'
-          if (!r.postConstructionReport || r.status === '完了') {
+          // 未完了：postConstructionReport === true かつ status !== '許可'
+          if (!r.postConstructionReport || r.status === '許可') {
             return false
           }
         }
@@ -134,8 +134,10 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
   const getStatusBadge = (status: AttachmentStatus): BadgeVariant => {
     const variantMap: Record<AttachmentStatus, BadgeVariant> = {
       受付: 'info',
-      調査済み: 'warning',
-      完了: 'success',
+      提出済: 'warning',
+      許可: 'success',
+      不許可: 'danger',
+      取下げ: 'default',
     }
     return variantMap[status]
   }
@@ -284,8 +286,10 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
             >
               <option value="">全て</option>
               <option value="受付">受付</option>
-              <option value="調査済み">調査済み</option>
-              <option value="完了">完了</option>
+              <option value="提出済">提出済</option>
+              <option value="許可">許可</option>
+              <option value="不許可">不許可</option>
+              <option value="取下げ">取下げ</option>
             </select>
           </div>
 
@@ -488,7 +492,7 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
                   {/* 工事後報告 */}
                   <td className="px-4 py-3 text-sm whitespace-nowrap text-center">
                     {r.postConstructionReport ? (
-                      r.status === '完了' ? (
+                      r.status === '許可' ? (
                         <Badge variant="success" size="sm">完了</Badge>
                       ) : (
                         <Badge variant="warning" size="sm">未完了</Badge>

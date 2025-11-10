@@ -146,6 +146,7 @@ export default function AttachmentProgressModal({
                 <option value="受付">受付</option>
                 <option value="提出済">提出済</option>
                 <option value="許可">許可</option>
+                <option value="不許可">不許可</option>
                 <option value="取下げ">取下げ</option>
               </select>
             </div>
