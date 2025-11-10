@@ -5,6 +5,7 @@ import { ScheduleItem, ExclusionEntry } from '@/app/schedule/types'
 import { Team } from '@/features/contractor/types'
 import ExclusionForm from '../ExclusionForm'
 import { Button } from '@/shared/components/ui/Button'
+import ExclusionItemEditor from './ExclusionItemEditor'
 
 interface DayDetailModalProps {
   isOpen: boolean
@@ -73,7 +74,6 @@ export default function DayDetailModal({
     form: true
   })
   const [editingExclusionId, setEditingExclusionId] = useState<string | null>(null)
-  const [formMode, setFormMode] = useState<'create' | 'edit'>('create')
 
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({
@@ -88,25 +88,20 @@ export default function DayDetailModal({
       id: 'exclusion-' + Date.now()
     }
     onExclusionAdd(newExclusion)
-    setFormMode('create')
-    setEditingExclusionId(null)
-  }
-
-  const handleUpdateExclusion = (data: Omit<ExclusionEntry, 'id'>) => {
-    if (editingExclusionId) {
-      onExclusionUpdate(editingExclusionId, data)
-      setFormMode('create')
-      setEditingExclusionId(null)
-    }
   }
 
   const handleEditClick = (exclusion: ExclusionEntry) => {
-    setFormMode('edit')
     setEditingExclusionId(exclusion.id)
-    setExpandedSections(prev => ({ ...prev, form: true }))
   }
 
-  const editingExclusion = exclusions.find(e => e.id === editingExclusionId)
+  const handleCancelEdit = () => {
+    setEditingExclusionId(null)
+  }
+
+  const handleSaveEdit = (id: string, updates: Partial<ExclusionEntry>) => {
+    onExclusionUpdate(id, updates)
+    setEditingExclusionId(null)
+  }
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -226,46 +221,62 @@ export default function DayDetailModal({
                           </div>
                         ) : (
                           exclusions.map(exclusion => (
-                            <div
-                              key={exclusion.id}
-                              className="bg-red-50 border border-red-200 rounded-lg p-3"
-                            >
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="text-lg">🚫</span>
-                                <span className="font-medium text-red-700">
-                                  {getTimeDisplay(exclusion)}
-                                </span>
-                              </div>
-                              <div className="text-sm space-y-1 mb-3">
-                                <div className="text-gray-700">
-                                  <span className="font-medium">{exclusion.teamName}</span>
+                            editingExclusionId === exclusion.id ? (
+                              <ExclusionItemEditor
+                                key={exclusion.id}
+                                exclusion={exclusion}
+                                teams={teams}
+                                contractorId={contractorId}
+                                contractorName={contractorName}
+                                onSave={(updates: Partial<ExclusionEntry>) => handleSaveEdit(exclusion.id, updates)}
+                                onCancel={handleCancelEdit}
+                                onDelete={() => {
+                                  onExclusionDelete(exclusion.id)
+                                  setEditingExclusionId(null)
+                                }}
+                              />
+                            ) : (
+                              <div
+                                key={exclusion.id}
+                                className="bg-red-50 border border-red-200 rounded-lg p-3"
+                              >
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="text-lg">🚫</span>
+                                  <span className="font-medium text-red-700">
+                                    {getTimeDisplay(exclusion)}
+                                  </span>
                                 </div>
-                                <div className="text-gray-900">{exclusion.reason}</div>
+                                <div className="text-sm space-y-1 mb-3">
+                                  <div className="text-gray-700">
+                                    <span className="font-medium">{exclusion.teamName}</span>
+                                  </div>
+                                  <div className="text-gray-900">{exclusion.reason}</div>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => handleEditClick(exclusion)}
+                                  >
+                                    編集
+                                  </Button>
+                                  <Button
+                                    variant="danger"
+                                    size="sm"
+                                    onClick={() => onExclusionDelete(exclusion.id)}
+                                  >
+                                    削除
+                                  </Button>
+                                </div>
                               </div>
-                              <div className="flex gap-2">
-                                <Button
-                                  variant="secondary"
-                                  size="sm"
-                                  onClick={() => handleEditClick(exclusion)}
-                                >
-                                  編集
-                                </Button>
-                                <Button
-                                  variant="danger"
-                                  size="sm"
-                                  onClick={() => onExclusionDelete(exclusion.id)}
-                                >
-                                  削除
-                                </Button>
-                              </div>
-                            </div>
+                            )
                           ))
                         )}
                       </div>
                     )}
                   </div>
 
-                  {/* 除外日登録フォームセクション */}
+                  {/* 除外日追加フォームセクション */}
                   <div>
                     <button
                       onClick={() => toggleSection('form')}
@@ -278,7 +289,7 @@ export default function DayDetailModal({
                           <ChevronRightIcon className="w-4 h-4" />
                         )}
                         <h4 className="font-semibold text-gray-900">
-                          {formMode === 'create' ? '除外日を登録' : '除外日を編集'}
+                          除外日を追加
                         </h4>
                       </div>
                     </button>
@@ -286,13 +297,12 @@ export default function DayDetailModal({
                     {expandedSections.form && (
                       <div className="mt-2 bg-gray-50 border border-gray-200 rounded-lg p-4">
                         <ExclusionForm
-                          mode={formMode}
+                          mode="create"
                           date={date}
                           teams={teams}
                           contractorId={contractorId}
                           contractorName={contractorName}
-                          initialData={editingExclusion}
-                          onSubmit={formMode === 'create' ? handleAddExclusion : handleUpdateExclusion}
+                          onSubmit={handleAddExclusion}
                         />
                       </div>
                     )}
