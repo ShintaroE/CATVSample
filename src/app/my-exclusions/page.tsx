@@ -27,9 +27,8 @@ export default function MyExclusionsPage() {
   const [teams, setTeams] = useState<ReturnType<typeof getTeamsByContractorId>>([])
 
   // データ取得
-  const { schedules, filterByTeams: filterSchedulesByTeams } = useScheduleData(user?.contractorId || '')
+  const { filterByTeams: filterSchedulesByTeams } = useScheduleData(user?.contractorId || '')
   const {
-    exclusions,
     addExclusion,
     updateExclusion,
     deleteExclusion,

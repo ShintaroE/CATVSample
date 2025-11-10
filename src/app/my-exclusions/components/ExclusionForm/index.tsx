@@ -131,7 +131,7 @@ function ExclusionForm({
               type="radio"
               value="all_day"
               checked={timeType === 'all_day'}
-              onChange={(e) => setTimeType(e.target.value as any)}
+              onChange={(e) => setTimeType(e.target.value as 'all_day' | 'am' | 'pm' | 'custom')}
               className="w-4 h-4 text-blue-600"
             />
             <span className="text-sm">終日 (9:00-18:00)</span>
@@ -141,7 +141,7 @@ function ExclusionForm({
               type="radio"
               value="am"
               checked={timeType === 'am'}
-              onChange={(e) => setTimeType(e.target.value as any)}
+              onChange={(e) => setTimeType(e.target.value as 'all_day' | 'am' | 'pm' | 'custom')}
               className="w-4 h-4 text-blue-600"
             />
             <span className="text-sm">午前 (9:00-12:00)</span>
@@ -151,7 +151,7 @@ function ExclusionForm({
               type="radio"
               value="pm"
               checked={timeType === 'pm'}
-              onChange={(e) => setTimeType(e.target.value as any)}
+              onChange={(e) => setTimeType(e.target.value as 'all_day' | 'am' | 'pm' | 'custom')}
               className="w-4 h-4 text-blue-600"
             />
             <span className="text-sm">午後 (12:00-18:00)</span>
@@ -161,7 +161,7 @@ function ExclusionForm({
               type="radio"
               value="custom"
               checked={timeType === 'custom'}
-              onChange={(e) => setTimeType(e.target.value as any)}
+              onChange={(e) => setTimeType(e.target.value as 'all_day' | 'am' | 'pm' | 'custom')}
               className="w-4 h-4 text-blue-600"
             />
             <span className="text-sm">カスタム</span>

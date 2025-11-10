@@ -226,8 +226,6 @@ export default function DayDetailModal({
                                 key={exclusion.id}
                                 exclusion={exclusion}
                                 teams={teams}
-                                contractorId={contractorId}
-                                contractorName={contractorName}
                                 onSave={(updates: Partial<ExclusionEntry>) => handleSaveEdit(exclusion.id, updates)}
                                 onCancel={handleCancelEdit}
                                 onDelete={() => {

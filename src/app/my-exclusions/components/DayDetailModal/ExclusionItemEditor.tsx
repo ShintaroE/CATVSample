@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { ExclusionEntry } from '@/app/schedule/types'
 import { Team } from '@/features/contractor/types'
 import { Button } from '@/shared/components/ui/Button'
@@ -6,8 +6,6 @@ import { Button } from '@/shared/components/ui/Button'
 interface ExclusionItemEditorProps {
   exclusion: ExclusionEntry
   teams: Team[]
-  contractorId: string
-  contractorName: string
   onSave: (updates: Partial<ExclusionEntry>) => void
   onCancel: () => void
   onDelete: () => void
@@ -19,8 +17,6 @@ interface ExclusionItemEditorProps {
 export default function ExclusionItemEditor({
   exclusion,
   teams,
-  contractorId,
-  contractorName,
   onSave,
   onCancel,
   onDelete
@@ -119,7 +115,7 @@ export default function ExclusionItemEditor({
                 type="radio"
                 value="all_day"
                 checked={timeType === 'all_day'}
-                onChange={(e) => setTimeType(e.target.value as any)}
+                onChange={(e) => setTimeType(e.target.value as 'all_day' | 'am' | 'pm' | 'custom')}
                 className="w-4 h-4 text-blue-600"
               />
               <span className="text-sm">終日 (9:00-18:00)</span>
@@ -129,7 +125,7 @@ export default function ExclusionItemEditor({
                 type="radio"
                 value="am"
                 checked={timeType === 'am'}
-                onChange={(e) => setTimeType(e.target.value as any)}
+                onChange={(e) => setTimeType(e.target.value as 'all_day' | 'am' | 'pm' | 'custom')}
                 className="w-4 h-4 text-blue-600"
               />
               <span className="text-sm">午前 (9:00-12:00)</span>
@@ -139,7 +135,7 @@ export default function ExclusionItemEditor({
                 type="radio"
                 value="pm"
                 checked={timeType === 'pm'}
-                onChange={(e) => setTimeType(e.target.value as any)}
+                onChange={(e) => setTimeType(e.target.value as 'all_day' | 'am' | 'pm' | 'custom')}
                 className="w-4 h-4 text-blue-600"
               />
               <span className="text-sm">午後 (12:00-18:00)</span>
@@ -149,7 +145,7 @@ export default function ExclusionItemEditor({
                 type="radio"
                 value="custom"
                 checked={timeType === 'custom'}
-                onChange={(e) => setTimeType(e.target.value as any)}
+                onChange={(e) => setTimeType(e.target.value as 'all_day' | 'am' | 'pm' | 'custom')}
                 className="w-4 h-4 text-blue-600"
               />
               <span className="text-sm">カスタム</span>
