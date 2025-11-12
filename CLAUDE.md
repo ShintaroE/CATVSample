@@ -86,19 +86,19 @@ src/
     │       └── RequestNotes/        # Admin instructions display
     │           └── index.tsx        # Role-based notes component
     │
-    ├── schedule/                    # ⏳ Refactoring planned (1,847 lines)
-    │   ├── page.tsx                 # Will be reduced to ~250 lines
-    │   ├── components/              # To be created
-    │   ├── hooks/                   # To be created
-    │   ├── lib/                     # To be created
+    ├── schedule/                    # ✅ Refactored (156 lines)
+    │   ├── page.tsx                 # Main page
+    │   ├── components/              # Component modules
+    │   ├── hooks/                   # Custom hooks
+    │   ├── lib/                     # Business logic
     │   ├── types/index.ts
     │   └── data/sampleData.ts
     │
-    ├── orders/                      # ⏳ Refactoring planned (1,664 lines)
-    │   ├── page.tsx                 # Will be reduced to ~200 lines
-    │   ├── components/              # To be created
-    │   ├── hooks/                   # To be created
-    │   ├── lib/                     # To be created
+    ├── orders/                      # ✅ Refactored (230 lines)
+    │   ├── page.tsx                 # Main page
+    │   ├── components/              # Component modules
+    │   ├── hooks/                   # Custom hooks
+    │   ├── lib/                     # Business logic
     │   ├── types/index.ts
     │   └── data/sampleData.ts
     │
@@ -107,24 +107,23 @@ src/
     │   ├── components/              # To be created
     │   └── hooks/                   # To be created
     │
-    ├── contractor-requests/         # ⏳ Refactoring planned (345 lines)
+    ├── contractor-requests/         # ✅ Complete (518 lines)
     │   ├── page.tsx
-    │   ├── components/              # To be created
-    │   └── hooks/                   # To be created
+    │   └── components/              # Includes FileAttachments integration
     │
-    ├── my-exclusions/               # ⏳ Refactoring planned (507 lines)
+    ├── my-exclusions/               # ✅ Refactored (148 lines)
     │   ├── page.tsx
-    │   ├── components/              # To be created
-    │   ├── hooks/                   # To be created
-    │   └── lib/                     # To be created
+    │   ├── components/              # Component modules
+    │   ├── hooks/                   # Custom hooks
+    │   └── lib/                     # Business logic
     │
     ├── login/page.tsx               # ✅ Simple (114 lines)
     ├── page.tsx                     # ✅ Dashboard
     ├── layout.tsx                   # Root layout
     └── globals.css
 
-Note: There is also a `src/lib/` directory containing:
-- `password-generator.ts` - To be moved to `src/shared/utils/password.ts` in Phase 0
+Note: There is currently a `src/lib/` directory containing:
+- `password-generator.ts` - Should be moved to `src/shared/utils/password.ts` (Phase 0 pending)
 ```
 
 ### Key Features
@@ -351,25 +350,22 @@ import { AddScheduleModal, EditScheduleModal } from '@/app/schedule/components/S
 
 This project is undergoing systematic refactoring to improve maintainability:
 
-| Page | Status | Current Lines | Target Lines | Components |
-|------|--------|---------------|--------------|------------|
-| applications | ✅ Complete | 222 | - | 13 components (includes FileAttachments, RequestNotes) |
-| contractor-requests | ✅ Complete | 518 | - | Includes FileAttachments integration |
-| schedule | ⏳ Planned | 1,847 | ~250 | 10+ components |
-| orders | ⏳ Planned | 1,664 | ~200 | 10+ components |
-| contractor-management | ⏳ Planned | 1,005 | ~150 | 11+ components |
-| my-exclusions | ⏳ Planned | 507 | ~150 | 4+ components |
-| login | ✅ Simple | 114 | - | Already clean |
+| Page | Status | Current Lines | Components |
+|------|--------|---------------|------------|
+| applications | ✅ Complete | 222 | 13 components (includes FileAttachments, RequestNotes) |
+| contractor-requests | ✅ Complete | 518 | Includes FileAttachments integration |
+| schedule | ✅ Complete | 156 | Multiple components, hooks, and lib modules |
+| orders | ✅ Complete | 230 | Multiple components, hooks, and lib modules |
+| my-exclusions | ✅ Complete | 148 | Multiple components, hooks, and lib modules |
+| contractor-management | ⏳ To refactor | 1,005 | 11+ components needed |
+| login | ✅ Simple | 114 | Already clean |
 
-**Refactoring Phases**:
+**Remaining Work**:
 1. **Phase 0**: Shared library cleanup - ⏳ Pending
    - Move `src/lib/password-generator.ts` → `src/shared/utils/password.ts`
-   - This is a prerequisite for other refactoring phases
-2. **Phase 1**: Schedule page (highest priority - most complex)
-3. **Phase 2**: Orders page (second largest)
-4. **Phase 3**: Contractor management page
-5. **Phase 4**: My exclusions page
-6. **Phase 5**: Final integration testing and documentation
+   - Required before contractor-management refactoring
+2. **Phase 1**: Contractor management page refactoring
+3. **Phase 2**: Final integration testing and documentation
 
 ### Custom Hooks Patterns
 
@@ -624,7 +620,7 @@ initializeDefaultData(): void  // Creates default admins/contractors/teams if no
 
 ### Password Generation (src/lib/password-generator.ts)
 
-**Note**: This file should be moved to `src/shared/utils/password.ts` as part of Phase 0 refactoring.
+**Note**: This file is currently located at `src/lib/password-generator.ts` and should be moved to `src/shared/utils/password.ts` as part of Phase 0 refactoring to align with the three-layer architecture.
 
 ```typescript
 generateSimplePassword(length: number = 10): string
