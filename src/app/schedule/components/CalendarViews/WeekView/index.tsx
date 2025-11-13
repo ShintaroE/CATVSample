@@ -83,6 +83,19 @@ export default function WeekView({
     }
   }
 
+  const getColorDotClass = (color: string): string => {
+    switch (color) {
+      case 'blue':
+        return 'bg-blue-500'
+      case 'green':
+        return 'bg-green-500'
+      case 'purple':
+        return 'bg-purple-500'
+      default:
+        return 'bg-gray-500'
+    }
+  }
+
   const timeSlots = getHourlyTimeSlots()
 
   // グリッドテンプレートカラムを計算: 時間列(60px) + 7日分 × 各日のチーム数
@@ -92,7 +105,7 @@ export default function WeekView({
 
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-scroll">
         <div style={{ minWidth: minWidthCalc }}>
           {/* ヘッダー第1行: 日付 */}
           <div
@@ -108,7 +121,7 @@ export default function WeekView({
                 <div
                   key={day.dateStr}
                   className={`p-3 text-center border-r-2 border-gray-300 last:border-r-0 ${
-                    isWeekend ? 'bg-red-50' : 'bg-blue-50'
+                    isWeekend ? 'bg-red-50' : 'bg-white'
                   }`}
                   style={{ gridColumn: `span ${visibleTeamsCount}` }}
                 >
@@ -129,18 +142,26 @@ export default function WeekView({
               return (
                 <div
                   key={`${col.day.dateStr}-${col.team.teamId}`}
-                  className={`p-2 text-center text-xs cursor-pointer hover:bg-gray-100 ${
-                    col.day.dateStr === selectedDateForAdd ? 'bg-blue-200' :
-                    col.team.color === 'blue' ? 'bg-blue-100' :
-                    col.team.color === 'green' ? 'bg-green-100' :
-                    col.team.color === 'purple' ? 'bg-purple-100' : 'bg-gray-100'
+                  className={`p-2 text-center text-xs flex flex-col items-center justify-center h-16 cursor-pointer hover:bg-gray-100 ${
+                    col.day.dateStr === selectedDateForAdd ? 'bg-blue-200' : 'bg-white'
                   } ${
                     isDateBoundary ? 'border-r-2 border-gray-300' : 'border-r border-gray-200'
                   }`}
                   onClick={() => onDateSelect(col.day.date)}
                   onDoubleClick={() => onDateDoubleClick(col.day.date)}
                 >
-                  <div className="font-medium text-gray-700">{col.team.shortName}</div>
+                  {/* 1行目: 点 + 協力会社名 */}
+                  <div className="flex items-center space-x-1 mb-0.5">
+                    <div className={`w-2 h-2 rounded-full ${getColorDotClass(col.team.color)}`} />
+                    <span className="font-semibold text-gray-700 truncate">
+                      {col.team.contractorName}
+                    </span>
+                  </div>
+
+                  {/* 2行目: 班名 */}
+                  <span className="text-xs text-gray-500 truncate">
+                    {col.team.teamName}
+                  </span>
                 </div>
               )
             })}
