@@ -189,11 +189,7 @@ export function useScheduleLayout(
     dayColumns.forEach(day => {
       visibleTeams.forEach(team => {
         // 短縮名を生成（例: "直営班-A班" → "直A"）
-        const contractorShort =
-          team.contractorName === '直営班' ? '直' :
-          team.contractorName === '栄光電気' ? '栄' :
-          team.contractorName === 'スライヴ' ? 'ス' :
-          team.contractorName.substring(0, 1)
+        const contractorShort = team.contractorName.substring(0, 1)
         const teamShort = team.teamName.replace('班', '').replace('第', '')
         const shortName = `${contractorShort}${teamShort}`
 
