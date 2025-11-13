@@ -38,6 +38,26 @@ export interface WeekViewColumn {
   teamDisplayName: string
 }
 
+export interface DayColumn {
+  date: Date
+  dateStr: string
+  displayName: string
+  dayOfWeek: number
+}
+
+export interface TeamColumnInDay {
+  day: DayColumn
+  team: {
+    teamId: string
+    teamName: string
+    contractorName: string
+    contractorId: string
+    color: string
+    displayName: string
+    shortName: string
+  }
+}
+
 export interface TeamGroup {
   teamId: string
   teamName: string
