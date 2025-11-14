@@ -2,8 +2,8 @@
 
 import React from 'react'
 import { useScheduleViewer } from '../../../hooks/useScheduleViewer'
-import { getContractorSolidColorClass, getContractorHeaderColorClasses } from '@/shared/utils/contractorColors'
-import { ExclusionEntry, ScheduleData, TeamGroup, WeekViewColumn } from '../../../types'
+import { getContractorSolidColorClass } from '@/shared/utils/contractorColors'
+import { ExclusionEntry, ScheduleData, TeamColumnInDay } from '../../../types'
 
 interface WeekViewProps {
   scheduleHooks: ReturnType<typeof useScheduleViewer>
@@ -67,6 +67,19 @@ export default function WeekView({ scheduleHooks }: WeekViewProps) {
     return slots
   }
 
+  const getColorDotClass = (color: string): string => {
+    switch (color) {
+      case 'blue':
+        return 'bg-blue-500'
+      case 'green':
+        return 'bg-green-500'
+      case 'purple':
+        return 'bg-purple-500'
+      default:
+        return 'bg-gray-500'
+    }
+  }
+
   interface LayoutItem {
     data: ExclusionEntry | ScheduleData
     width: string
@@ -111,12 +124,18 @@ export default function WeekView({ scheduleHooks }: WeekViewProps) {
     }
   }
 
-  const teamGroups = scheduleHooks.getTeamGroups()
-  const weekColumns = scheduleHooks.getWeekViewColumns()
-  const columnWidth = scheduleHooks.getColumnWidth(teamGroups.length)
-  const totalColumns = weekColumns.length
+  // 日付軸ビュー用のデータ取得
+  const dayColumns = scheduleHooks.getWeekDayColumns()
+  const teamColumns = scheduleHooks.getWeekColumnsByDate()
+  const visibleTeamsCount = scheduleHooks.teamFilters.filter(f => f.isVisible).length
+  const teamColumnWidth = scheduleHooks.getTeamColumnWidth(visibleTeamsCount)
 
-  if (teamGroups.length === 0) {
+  // グリッド計算
+  const totalColumns = 7 * visibleTeamsCount
+  const gridTemplateColumns = `60px repeat(${totalColumns}, ${teamColumnWidth})`
+  const minWidthCalc = `calc(60px + ${totalColumns} * ${teamColumnWidth})`
+
+  if (visibleTeamsCount === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
         フィルターで班を選択してください
@@ -127,151 +146,174 @@ export default function WeekView({ scheduleHooks }: WeekViewProps) {
   return (
     <>
       <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          {/* 2段ヘッダー */}
-          <div className="grid border-b-2 border-gray-300" style={{gridTemplateColumns: `60px repeat(${totalColumns}, ${columnWidth})`}}>
-            {/* 第1行: 左上の空白 + 班名（7列span） */}
-            <div className="bg-gray-100 border-r border-gray-300" />
-            {teamGroups.map((group: TeamGroup) => {
-              // group.contractorNameから色を取得
-              const contractorName = group.contractorName || group.displayName.split('-')[0] || ''
-              return (
-              <div
-                key={group.teamId}
-                className={`text-center font-semibold text-sm py-2 border-r border-gray-300 ${getContractorHeaderColorClasses(contractorName)}`}
-                style={{gridColumn: `span ${group.columnCount}`}}
-              >
-                {group.displayName}
+        <div className="overflow-x-scroll">
+          <div style={{ minWidth: minWidthCalc }}>
+            {/* ヘッダー第1行: 日付 */}
+            <div className="grid border-b border-gray-200" style={{ gridTemplateColumns }}>
+              <div className="p-3 bg-gray-50 border-r-2 border-gray-300 text-sm font-medium text-gray-700 sticky left-0 z-20">
+                時刻
               </div>
-              )
-            })}
-          </div>
-
-          {/* 第2行: 時刻列ヘッダー + 日付（各1列） */}
-          <div className="grid border-b border-gray-300" style={{gridTemplateColumns: `60px repeat(${totalColumns}, ${columnWidth})`}}>
-            <div className="bg-gray-50 text-center text-xs font-medium text-gray-600 py-2 border-r border-gray-300">
-              時刻
-            </div>
-            {weekColumns.map((col) => (
-              <div
-                key={`${col.teamId}-${col.dateStr}`}
-                className="bg-gray-50 text-center text-xs font-medium text-gray-700 py-2 border-r border-gray-300"
-              >
-                {col.displayName}
-              </div>
-            ))}
-          </div>
-
-          {/* タイムグリッド */}
-          <div className="relative">
-            {/* 背景: 時間行 */}
-            {getHourlyTimeSlots().map((hour) => (
-              <div
-                key={hour}
-                className="grid border-b border-gray-100"
-                style={{gridTemplateColumns: `60px repeat(${totalColumns}, ${columnWidth})`, height: '4rem'}}
-              >
-                {/* 時刻セル */}
-                <div className="bg-gray-50 text-center text-xs text-gray-600 py-1 border-r-2 border-gray-300 flex items-start justify-center">
-                  {hour}
-                </div>
-                {/* 空の列セル */}
-                {weekColumns.map((col) => (
-                  <div
-                    key={`${col.teamId}-${col.dateStr}-${hour}`}
-                    className="border-r border-gray-200"
-                  />
-                ))}
-              </div>
-            ))}
-
-            {/* 前景: スケジュールと除外日の絶対配置レイヤー */}
-            <div
-              className="absolute inset-0 pointer-events-none grid"
-              style={{gridTemplateColumns: `60px repeat(${totalColumns}, ${columnWidth})`}}
-            >
-              <div />
-              {weekColumns.map((col: WeekViewColumn) => {
-                const layout = calculateSeparatedLayout(
-                  scheduleHooks.filteredSchedules,
-                  scheduleHooks.filteredExclusions,
-                  col.teamId,
-                  col.dateStr
-                )
-
+              {dayColumns.map((day) => {
+                const isWeekend = day.dayOfWeek === 0 || day.dayOfWeek === 6
                 return (
-                  <div key={`${col.teamId}-${col.dateStr}-overlay`} className="relative border-r border-gray-200">
-                    {/* 除外日 */}
-                    {layout.exclusions.map((item: LayoutItem, idx: number) => {
-                      const exclusionData = item.data as ExclusionEntry
-                      const timeSlot = getExclusionTimeSlot(exclusionData)
-                      return (
-                        <div
-                          key={`exclusion-${exclusionData.id}-${idx}`}
-                          className="absolute border-2 border-dashed border-red-500 bg-red-50 rounded p-1 overflow-hidden pointer-events-auto cursor-pointer hover:opacity-90"
-                          style={{
-                            top: calculateTopPosition(timeSlot),
-                            height: calculateHeight(timeSlot),
-                            width: item.width,
-                            left: item.left,
-                            zIndex: 10 + idx
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            scheduleHooks.handleScheduleDateClick(col.date)
-                          }}
-                        >
-                          <div className="text-[10px] text-red-700 font-medium italic truncate">
-                            🚫 {getExclusionTimeText(exclusionData)}
-                          </div>
-                          <div className="text-[9px] text-red-600 italic truncate">
-                            {exclusionData.reason}
-                          </div>
-                        </div>
-                      )
-                    })}
-
-                    {/* スケジュール */}
-                    {layout.schedules.map((item: LayoutItem, idx: number) => {
-                      // item.data.contractorから色を取得
-                      const scheduleData = item.data as ScheduleData
-                      const contractorName = scheduleData.contractor || ''
-                      const bgColorClass = getContractorSolidColorClass(contractorName)
-
-                      return (
-                        <div
-                          key={`schedule-${scheduleData.customerCode}-${idx}`}
-                          className={`absolute ${bgColorClass} text-white rounded p-1 overflow-hidden pointer-events-auto cursor-pointer hover:opacity-90`}
-                          style={{
-                            top: calculateTopPosition(scheduleData.timeSlot),
-                            height: calculateHeight(scheduleData.timeSlot),
-                            width: item.width,
-                            left: item.left,
-                            zIndex: 5 + idx
-                          }}
-                          title={`${scheduleData.customerName} - ${scheduleData.address}`}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            scheduleHooks.handleScheduleDateClick(col.date)
-                          }}
-                        >
-                          <div className="text-[10px] font-semibold truncate">
-                            {scheduleData.timeSlot}
-                          </div>
-                          <div className="text-[9px] truncate">
-                            {scheduleData.customerName}
-                          </div>
-                          {scheduleData.workType && (
-                            <div className="text-[8px] truncate opacity-90">
-                              {scheduleData.workType}
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
+                  <div
+                    key={day.dateStr}
+                    className={`p-3 text-center border-r-2 border-gray-300 last:border-r-0 ${
+                      isWeekend ? 'bg-red-50' : 'bg-white'
+                    }`}
+                    style={{ gridColumn: `span ${visibleTeamsCount}` }}
+                  >
+                    <span className="text-sm font-semibold text-gray-900">{day.displayName}</span>
                   </div>
                 )
               })}
+            </div>
+
+            {/* ヘッダー第2行: 班名 */}
+            <div className="grid border-b-2 border-gray-300" style={{ gridTemplateColumns }}>
+              <div className="bg-gray-50 border-r-2 border-gray-300 sticky left-0 z-20" />
+              {teamColumns.map((col: TeamColumnInDay, idx: number) => {
+                const isDateBoundary = (idx + 1) % visibleTeamsCount === 0
+                return (
+                  <div
+                    key={`${col.day.dateStr}-${col.team.teamId}`}
+                    className={`p-2 text-center text-xs flex flex-col items-center justify-center h-16 bg-white ${
+                      isDateBoundary ? 'border-r-2 border-gray-300' : 'border-r border-gray-200'
+                    }`}
+                  >
+                    {/* 1行目: 点 + 協力会社名 */}
+                    <div className="flex items-center space-x-1 mb-0.5">
+                      <div className={`w-2 h-2 rounded-full ${getColorDotClass(col.team.color)}`} />
+                      <span className="font-semibold text-gray-700 truncate">
+                        {col.team.contractorName}
+                      </span>
+                    </div>
+
+                    {/* 2行目: 班名 */}
+                    <span className="text-xs text-gray-500 truncate">
+                      {col.team.teamName}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* タイムグリッド */}
+            <div className="relative">
+              {/* 背景: 時間行 */}
+              {getHourlyTimeSlots().map((hour) => (
+                <div
+                  key={hour}
+                  className="grid border-b border-gray-100"
+                  style={{ gridTemplateColumns, height: '4rem' }}
+                >
+                  {/* 時刻セル */}
+                  <div className="bg-gray-50 text-center text-xs text-gray-600 py-1 border-r-2 border-gray-300 flex items-start justify-center sticky left-0 z-10">
+                    {hour}
+                  </div>
+                  {/* 空の列セル */}
+                  {teamColumns.map((col: TeamColumnInDay, idx: number) => {
+                    const isDateBoundary = (idx + 1) % visibleTeamsCount === 0
+                    const isWeekend = col.day.dayOfWeek === 0 || col.day.dayOfWeek === 6
+                    return (
+                      <div
+                        key={`${col.day.dateStr}-${col.team.teamId}-${hour}`}
+                        className={`${
+                          isDateBoundary ? 'border-r-2 border-gray-300' : 'border-r border-gray-200'
+                        } ${isWeekend ? 'bg-red-50/30' : ''}`}
+                      />
+                    )
+                  })}
+                </div>
+              ))}
+
+              {/* 前景: スケジュールと除外日の絶対配置レイヤー */}
+              <div
+                className="absolute inset-0 pointer-events-none grid"
+                style={{ gridTemplateColumns }}
+              >
+                <div />
+                {teamColumns.map((col: TeamColumnInDay) => {
+                  const layout = calculateSeparatedLayout(
+                    scheduleHooks.filteredSchedules,
+                    scheduleHooks.filteredExclusions,
+                    col.team.teamId,
+                    col.day.dateStr
+                  )
+
+                  return (
+                    <div key={`${col.day.dateStr}-${col.team.teamId}-overlay`} className="relative">
+                      {/* 除外日 */}
+                      {layout.exclusions.map((item: LayoutItem, idx: number) => {
+                        const exclusionData = item.data as ExclusionEntry
+                        const timeSlot = getExclusionTimeSlot(exclusionData)
+                        return (
+                          <div
+                            key={`exclusion-${exclusionData.id}-${idx}`}
+                            className="absolute border-2 border-dashed border-red-500 bg-red-50 rounded p-1 overflow-hidden pointer-events-auto cursor-pointer hover:opacity-90"
+                            style={{
+                              top: calculateTopPosition(timeSlot),
+                              height: calculateHeight(timeSlot),
+                              width: item.width,
+                              left: item.left,
+                              zIndex: 10 + idx
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              scheduleHooks.handleScheduleDateClick(col.day.date)
+                            }}
+                          >
+                            <div className="text-[10px] text-red-700 font-medium italic truncate">
+                              🚫 {getExclusionTimeText(exclusionData)}
+                            </div>
+                            <div className="text-[9px] text-red-600 italic truncate">
+                              {exclusionData.reason}
+                            </div>
+                          </div>
+                        )
+                      })}
+
+                      {/* スケジュール */}
+                      {layout.schedules.map((item: LayoutItem, idx: number) => {
+                        const scheduleData = item.data as ScheduleData
+                        const contractorName = scheduleData.contractor || ''
+                        const bgColorClass = getContractorSolidColorClass(contractorName)
+
+                        return (
+                          <div
+                            key={`schedule-${scheduleData.customerCode}-${idx}`}
+                            className={`absolute ${bgColorClass} text-white rounded p-1 overflow-hidden pointer-events-auto cursor-pointer hover:opacity-90`}
+                            style={{
+                              top: calculateTopPosition(scheduleData.timeSlot),
+                              height: calculateHeight(scheduleData.timeSlot),
+                              width: item.width,
+                              left: item.left,
+                              zIndex: 5 + idx
+                            }}
+                            title={`${scheduleData.customerName} - ${scheduleData.address}`}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              scheduleHooks.handleScheduleDateClick(col.day.date)
+                            }}
+                          >
+                            <div className="text-[10px] font-semibold truncate">
+                              {scheduleData.timeSlot}
+                            </div>
+                            <div className="text-[9px] truncate">
+                              {scheduleData.customerName}
+                            </div>
+                            {scheduleData.workType && (
+                              <div className="text-[8px] truncate opacity-90">
+                                {scheduleData.workType}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -369,4 +411,3 @@ export default function WeekView({ scheduleHooks }: WeekViewProps) {
     </>
   )
 }
-
