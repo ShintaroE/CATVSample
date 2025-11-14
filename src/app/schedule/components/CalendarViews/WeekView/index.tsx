@@ -235,9 +235,10 @@ export default function WeekView({
                       >
                         <div className="text-xs text-red-700 font-bold flex items-center justify-center space-x-1">
                           <span>🚫</span>
+                          <span>{getTimeLabel(exclusion)}</span>
                         </div>
-                        <div className="text-xs text-red-600 italic truncate text-center">
-                          {getTimeLabel(exclusion)}
+                        <div className="text-xs text-red-600 italic truncate text-center mt-1">
+                          {exclusion.reason}
                         </div>
                       </div>
                     ))}
