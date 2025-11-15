@@ -18,10 +18,14 @@ export default function NewOrderModal({ onClose, onCreate }: NewOrderModalProps)
     orderNumber: '',
     customerCode: '',
     customerName: '',
+    address: '',
+    phoneNumber: '',
+    apartmentCode: '',
+    apartmentName: '',
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [showOptionalFields, setShowOptionalFields] = useState(false)
+  const [showOptionalFields, setShowOptionalFields] = useState(true)
 
   const handleCategoryChange = (category: ConstructionCategory) => {
     setFormData(prev => ({
@@ -32,10 +36,20 @@ export default function NewOrderModal({ onClose, onCreate }: NewOrderModalProps)
         : collectiveWorkTypeOptions[0],
       // 個別に変更時は集合住宅情報をクリア
       ...(category === '個別' && {
-        apartmentCode: undefined,
-        apartmentName: undefined,
+        apartmentCode: '',
+        apartmentName: '',
       })
     }))
+
+    // 個別に切り替えた時、集合住宅関連のエラーをクリア
+    if (category === '個別') {
+      setErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors.apartmentCode
+        delete newErrors.apartmentName
+        return newErrors
+      })
+    }
   }
 
   const validateForm = (): boolean => {
@@ -56,9 +70,24 @@ export default function NewOrderModal({ onClose, onCreate }: NewOrderModalProps)
       newErrors.customerName = '顧客名を入力してください'
     }
 
-    // 電話番号: 10-11桁の数字（入力がある場合のみ）
-    if (formData.phoneNumber && !/^\d{10,11}$/.test(formData.phoneNumber)) {
+    // 住所: 必須
+    if (!formData.address || formData.address.trim() === '') {
+      newErrors.address = '住所を入力してください'
+    }
+
+    // 電話番号: 必須 + 10-11桁の数字
+    if (!formData.phoneNumber || !/^\d{10,11}$/.test(formData.phoneNumber)) {
       newErrors.phoneNumber = '10-11桁の数字を入力してください'
+    }
+
+    // 集合住宅の場合: 集合住宅コードと集合住宅名が必須
+    if (formData.constructionCategory === '集合') {
+      if (!formData.apartmentCode || formData.apartmentCode.trim() === '') {
+        newErrors.apartmentCode = '集合住宅コードを入力してください'
+      }
+      if (!formData.apartmentName || formData.apartmentName.trim() === '') {
+        newErrors.apartmentName = '集合住宅名を入力してください'
+      }
     }
 
     setErrors(newErrors)
@@ -224,11 +253,13 @@ export default function NewOrderModal({ onClose, onCreate }: NewOrderModalProps)
             {/* 集合住宅情報（集合の場合のみ表示） */}
             {formData.constructionCategory === '集合' && (
               <div className="mt-4 p-3 bg-white rounded-md border border-gray-300">
-                <h5 className="text-sm font-medium text-gray-700 mb-3">集合住宅情報</h5>
+                <h5 className="text-sm font-medium text-gray-700 mb-3">
+                  集合住宅情報 <span className="text-red-500">*</span>
+                </h5>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">
-                      集合住宅コード
+                      集合住宅コード <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -236,11 +267,15 @@ export default function NewOrderModal({ onClose, onCreate }: NewOrderModalProps)
                       onChange={(e) => setFormData({ ...formData, apartmentCode: e.target.value })}
                       placeholder="例: AP-001"
                       className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
+                      required
                     />
+                    {errors.apartmentCode && (
+                      <p className="text-xs text-red-500 mt-1">{errors.apartmentCode}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">
-                      集合住宅名
+                      集合住宅名 <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -248,7 +283,11 @@ export default function NewOrderModal({ onClose, onCreate }: NewOrderModalProps)
                       onChange={(e) => setFormData({ ...formData, apartmentName: e.target.value })}
                       placeholder="例: サンライズマンション"
                       className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
+                      required
                     />
+                    {errors.apartmentName && (
+                      <p className="text-xs text-red-500 mt-1">{errors.apartmentName}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -329,14 +368,14 @@ export default function NewOrderModal({ onClose, onCreate }: NewOrderModalProps)
             </div>
           </div>
 
-          {/* セクション4: その他の情報（折りたたみ） */}
+          {/* セクション4: 連絡先情報（折りたたみ） */}
           <div>
             <button
               type="button"
               onClick={() => setShowOptionalFields(!showOptionalFields)}
               className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-900"
             >
-              {showOptionalFields ? '▼' : '▶'} その他の情報（任意）
+              {showOptionalFields ? '▼' : '▶'} 連絡先情報
             </button>
 
             {showOptionalFields && (
@@ -346,7 +385,7 @@ export default function NewOrderModal({ onClose, onCreate }: NewOrderModalProps)
                   {/* 住所 */}
                   <div className="col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      住所
+                      住所 <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -354,13 +393,17 @@ export default function NewOrderModal({ onClose, onCreate }: NewOrderModalProps)
                       onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       placeholder="例: 岡山県倉敷市..."
                       className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900"
+                      required
                     />
+                    {errors.address && (
+                      <p className="text-xs text-red-500 mt-1">{errors.address}</p>
+                    )}
                   </div>
 
                   {/* 電話番号 */}
                   <div className="col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      電話番号
+                      電話番号 <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="tel"
@@ -369,6 +412,7 @@ export default function NewOrderModal({ onClose, onCreate }: NewOrderModalProps)
                       placeholder="例: 08612345678"
                       pattern="\d{10,11}"
                       className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900"
+                      required
                     />
                     {errors.phoneNumber && (
                       <p className="text-xs text-red-500 mt-1">{errors.phoneNumber}</p>
