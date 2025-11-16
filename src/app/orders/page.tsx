@@ -154,40 +154,36 @@ export default function OrdersPage() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-50">
-        <header className="bg-white shadow">
-          <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
-            <div className="flex justify-between items-center py-6">
-              <h1 className="text-3xl font-bold text-gray-900">
-                工事依頼管理
-              </h1>
-              <div className="text-sm text-gray-600">
-                小川オーダー表形式
-              </div>
-            </div>
+      <div className="px-6 py-6">
+        {/* ヘッダー */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">工事依頼管理</h1>
+            <p className="text-sm text-gray-500 mt-1">小川オーダー表形式</p>
           </div>
-        </header>
+          <Button
+            variant="primary"
+            onClick={() => setShowNewOrderModal(true)}
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            新規工事依頼を作成
+          </Button>
+        </div>
 
-        <main className="max-w-full mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12">
-          <ExcelUploadZone currentOrderCount={orders.length} onUpload={handleUpload} />
-          <div className="mb-6 flex justify-end">
-            <Button
-              variant="primary"
-              onClick={() => setShowNewOrderModal(true)}
-            >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              新規工事依頼を作成
-            </Button>
-          </div>
-          <OrdersTable
-            orders={orders}
-            onEditOrder={handleEditOrder}
-            onViewDetails={handleViewDetails}
-            onViewAppointmentHistory={handleViewAppointmentHistory}
-          />
-        </main>
+        {/* Excel アップロード */}
+        <ExcelUploadZone currentOrderCount={orders.length} onUpload={handleUpload} />
 
-        {showDetailModal && selectedOrder && (
+        {/* テーブル */}
+        <OrdersTable
+          orders={orders}
+          onEditOrder={handleEditOrder}
+          onViewDetails={handleViewDetails}
+          onViewAppointmentHistory={handleViewAppointmentHistory}
+        />
+      </div>
+
+      {/* モーダル */}
+      {showDetailModal && selectedOrder && (
           <OrderDetailModal
             order={selectedOrder}
             onClose={handleCloseDetails}
@@ -223,8 +219,6 @@ export default function OrdersPage() {
             onUpdate={handleUpdateOrder}
           />
         )}
-
-      </div>
     </Layout>
   )
 }

@@ -23,8 +23,8 @@ export default function OrderRow({
       <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
         {order.orderNumber}
       </td>
-      {/* 受注先 */}
-      <td className="hidden lg:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+      {/* 受注先（折り返しOK） */}
+      <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-500">
         {order.orderSource}
       </td>
       {/* 個別/集合 */}
@@ -37,32 +37,32 @@ export default function OrderRow({
           {order.constructionCategory}
         </span>
       </td>
-      {/* 工事種別（読み取り専用） */}
-      <td className="hidden md:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+      {/* 工事種別（折り返しOK） */}
+      <td className="hidden md:table-cell px-4 py-3 text-sm text-gray-500">
         {order.workType}
       </td>
       {/* クロージャ番号 */}
-      <td className="hidden lg:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+      <td className="hidden xl:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
         {order.closureNumber || '—'}
       </td>
       {/* 顧客コード */}
-      <td className="hidden lg:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+      <td className="hidden xl:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
         {order.customerCode}
       </td>
-      {/* 顧客名 */}
-      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+      {/* 顧客名（折り返しOK、最大幅制限） */}
+      <td className="px-4 py-3 text-sm text-gray-500 max-w-xs">
         {order.customerName}
       </td>
       {/* 集合住宅コード */}
-      <td className="hidden lg:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+      <td className="hidden xl:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
         {order.apartmentCode || '—'}
       </td>
-      {/* 集合住宅名 */}
-      <td className="hidden lg:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+      {/* 集合住宅名（折り返しOK、最大幅制限） */}
+      <td className="hidden xl:table-cell px-4 py-3 text-sm text-gray-500 max-w-xs">
         {order.apartmentName || '—'}
       </td>
       {/* 新規/既存 */}
-      <td className="hidden md:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+      <td className="hidden lg:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
           order.customerType === '新規'
             ? 'bg-blue-100 text-blue-800'
@@ -78,11 +78,11 @@ export default function OrderRow({
           className="inline-flex items-center text-blue-600 hover:text-blue-900"
         >
           <EyeIcon className="h-4 w-4 mr-1" />
-          詳細
+          <span className="hidden sm:inline">詳細</span>
         </button>
       </td>
       {/* アポイント履歴 */}
-      <td className="hidden md:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+      <td className="hidden lg:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
         <div className="flex items-center space-x-2">
           <button
             onClick={() => onViewAppointmentHistory(order)}
@@ -97,7 +97,7 @@ export default function OrderRow({
         </div>
       </td>
       {/* 編集 */}
-      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+      <td className="hidden md:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
         <button
           onClick={() => onEditOrder(order)}
           className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"

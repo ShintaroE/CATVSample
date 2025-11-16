@@ -400,7 +400,7 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
                         variant={item.propertyType === '個別' ? 'info' : item.propertyType === '集合' ? 'warning' : 'default'}
                         size="sm"
                       >
-                        {item.propertyType === '個別' ? '個別' : '集合'}
+                        {item.propertyType || '-'}
                       </Badge>
                     </td>
                     <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
