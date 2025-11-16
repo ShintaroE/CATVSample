@@ -247,7 +247,7 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
               onChange={(e) => handleContractorChange(e.target.value)}
             >
               <option value="">全て</option>
-              {contractors.map(contractor => (
+              {contractors.filter(c => c.isActive).map(contractor => (
                 <option key={contractor.id} value={contractor.id}>
                   {contractor.name}
                 </option>
@@ -267,7 +267,7 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
               disabled={!contractorIdFilter}
             >
               <option value="">全て</option>
-              {availableTeams.map(team => (
+              {availableTeams.filter(t => t.isActive).map(team => (
                 <option key={team.id} value={team.id}>
                   {team.teamName}
                 </option>
