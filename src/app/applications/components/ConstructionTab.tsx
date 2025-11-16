@@ -333,43 +333,43 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 整理番号
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden md:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 受注番号
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden md:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 個別/集合
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 顧客コード
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 顧客名
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 集合コード
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 集合住宅名
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 住所
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden md:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 依頼先
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 状態
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 工事依頼日
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 工事予定日
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 工事完了日
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 工事後報告
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -389,48 +389,57 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
                 const reportBadge = getPostConstructionReportBadge(item.postConstructionReport)
                 return (
                   <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap tabular-nums">
                       {item.serialNumber}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    <td className="hidden md:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap font-medium">
                       {item.orderNumber || '-'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                      {item.propertyType === '個別' ? '個別' : '集合'}
+                    <td className="hidden md:table-cell px-4 py-3 text-sm whitespace-nowrap">
+                      <Badge
+                        variant={item.propertyType === '個別' ? 'info' : item.propertyType === '集合' ? 'warning' : 'default'}
+                        size="sm"
+                      >
+                        {item.propertyType === '個別' ? '個別' : '集合'}
+                      </Badge>
+                    </td>
+                    <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                      {item.propertyType === '個別' ? (item.customerCode || '-') : '-'}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                      {item.propertyType === '個別' ? item.customerCode : '-'}
+                      {item.propertyType === '個別' ? (item.customerName || '-') : (item.collectiveHousingName || '-')}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                      {item.customerName}
+                    <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                      {item.propertyType === '集合' ? (item.collectiveCode || '-') : '-'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                      {item.propertyType === '集合' ? item.collectiveCode : '-'}
+                    <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                      {item.propertyType === '集合' ? (item.collectiveHousingName || '-') : '-'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                      {item.propertyType === '集合' ? item.collectiveHousingName : '-'}
+                    <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900" title={item.address}>
+                      {item.address || '-'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
-                      {item.address}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                      {item.contractorName} - {item.teamName}
+                    <td className="hidden md:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                      {item.assigneeType === 'internal' ? (
+                        <span className="text-blue-600 font-medium">自社 - {item.teamName}</span>
+                      ) : (
+                        <span className="text-gray-900">{item.contractorName} - {item.teamName}</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-sm whitespace-nowrap">
                       <Badge variant={getStatusBadge(item.status)} size="sm">
                         {item.status}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       {item.constructionRequestedDate || '-'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       {item.constructionDate || '-'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       {item.constructionCompletedDate || '-'}
                     </td>
-                    <td className="px-4 py-3 text-sm whitespace-nowrap">
+                    <td className="hidden lg:table-cell px-4 py-3 text-sm whitespace-nowrap">
                       <Badge variant={reportBadge.variant} size="sm">
                         {reportBadge.text}
                       </Badge>

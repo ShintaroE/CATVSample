@@ -263,40 +263,40 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 整理番号
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden md:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 受注番号
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden md:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 個別/集合
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 顧客コード
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 顧客名
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 集合コード
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 集合住宅名
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 住所
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden md:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 依頼先
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 状態
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 依頼日
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 調査予定日
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 調査完了日
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -317,10 +317,10 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
                   <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap tabular-nums">
                     {r.serialNumber}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap font-medium">
+                  <td className="hidden md:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap font-medium">
                     {r.orderNumber || '-'}
                   </td>
-                  <td className="px-4 py-3 text-sm whitespace-nowrap">
+                  <td className="hidden md:table-cell px-4 py-3 text-sm whitespace-nowrap">
                     <Badge
                       variant={r.propertyType === '個別' ? 'info' : r.propertyType === '集合' ? 'warning' : 'default'}
                       size="sm"
@@ -328,22 +328,22 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
                       {r.propertyType || '-'}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                  <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.propertyType === '個別' ? (r.customerCode || '-') : '-'}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                    {r.propertyType === '個別' ? (r.customerName || '-') : '-'}
+                    {r.propertyType === '個別' ? (r.customerName || '-') : (r.collectiveHousingName || '-')}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                  <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.propertyType === '集合' ? (r.collectiveCode || '-') : '-'}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                  <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.propertyType === '集合' ? (r.collectiveHousingName || '-') : '-'}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900" title={r.address}>
+                  <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900" title={r.address}>
                     {r.address || '-'}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                  <td className="hidden md:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.assigneeType === 'internal' ? (
                       <span className="text-blue-600 font-medium">自社 - {r.teamName}</span>
                     ) : (
@@ -355,13 +355,13 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
                       {r.status}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                  <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.requestedAt || '-'}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                  <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.scheduledDate || '-'}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                  <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.completedAt || '-'}
                   </td>
                   <td className="px-4 py-3 text-sm whitespace-nowrap">
