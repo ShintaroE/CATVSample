@@ -156,6 +156,7 @@ export interface CollectiveConstructionInfo {
 }
 
 export type OrderSurveyStatus = '不要' | '未依頼' | '依頼済み' | '調査日決定' | '完了' | 'キャンセル'
+export type OrderPermissionStatus = '不要' | '未依頼' | '依頼済み' | '調査済み' | '申請中' | '申請許可' | '申請不許可' | 'キャンセル'
 
 export interface OrderData {
   orderNumber: string
@@ -172,7 +173,7 @@ export interface OrderData {
   address?: string
   phoneNumber?: string
   surveyStatus?: OrderSurveyStatus
-  permissionStatus?: 'pending' | 'in_progress' | 'completed' | 'not_required'
+  permissionStatus?: OrderPermissionStatus
   constructionStatus?: 'pending' | 'in_progress' | 'completed' | 'canceled'
   mapPdfPath?: string
   appointmentHistory?: AppointmentHistory[]

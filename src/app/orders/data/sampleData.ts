@@ -164,7 +164,7 @@ export const sampleOrders: OrderData[] = [
     address: '倉敷市水島青葉町1-1-1',
     phoneNumber: '086-123-4567',
     surveyStatus: '完了',
-    permissionStatus: 'in_progress',
+    permissionStatus: '申請中',
     constructionStatus: 'pending',
     appointmentHistory: [
       {
@@ -206,7 +206,7 @@ export const sampleOrders: OrderData[] = [
     address: '倉敷市児島駅前2-2-2',
     phoneNumber: '086-234-5678',
     surveyStatus: '完了',
-    permissionStatus: 'completed',
+    permissionStatus: '申請許可',
     constructionStatus: 'in_progress',
     appointmentHistory: [
       {
@@ -239,7 +239,7 @@ export const sampleOrders: OrderData[] = [
     address: '倉敷市玉島中央町3-3-3',
     phoneNumber: '086-345-6789',
     surveyStatus: '調査日決定',
-    permissionStatus: 'pending',
+    permissionStatus: '未依頼',
     constructionStatus: 'pending',
     appointmentHistory: [
       {

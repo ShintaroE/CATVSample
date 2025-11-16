@@ -48,7 +48,7 @@ export default function ExcelUploadZone({ currentOrderCount, onUpload }: ExcelUp
         closureNumber: `CL-${String(currentOrderCount + 1).padStart(3, '0')}-A`,
         address: '倉敷市新規住所',
         surveyStatus: '未依頼',
-        permissionStatus: 'pending',
+        permissionStatus: '未依頼',
         constructionStatus: 'pending'
       }
 

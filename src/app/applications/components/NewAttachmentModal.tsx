@@ -39,11 +39,12 @@ export default function NewAttachmentModal({
     assigneeType: 'internal' as AssigneeType,
     contractorId: '',
     teamId: '',
+    status: '依頼済み',
     orderNumber: '',
     requestedAt: '',
     scheduledDate: '',
+    surveyCompletedAt: '',
     submittedAt: '',
-    withdrawNeeded: false, // 申請要否（デフォルト: 申請不要）
     postConstructionReport: undefined, // 工事後報告（デフォルト: 未設定）
   })
   const [attachments, setAttachments] = useState<FileAttachments>({
