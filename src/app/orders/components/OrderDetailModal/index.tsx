@@ -210,17 +210,29 @@ export default function OrderDetailModal({
                   className="w-36 rounded-md px-3 py-2 text-sm font-medium bg-gray-100 text-gray-700 cursor-not-allowed"
                 />
 
-                <span className="font-medium text-gray-900">共架OR添架許可申請:</span>
-                <select
-                  value={order.permissionStatus || 'pending'}
-                  onChange={(e) => onStatusChange(order.orderNumber, 'permissionStatus', e.target.value as 'pending' | 'in_progress' | 'completed' | 'not_required')}
-                  className={`w-36 rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 ${getSelectColor(order.permissionStatus || 'pending')}`}
-                >
-                  <option value="pending" className="text-gray-600">未申請</option>
-                  <option value="in_progress" className="text-blue-600">申請中</option>
-                  <option value="completed" className="text-green-600">許可済</option>
-                  <option value="not_required" className="text-orange-600">不要</option>
-                </select>
+                <div className="relative group">
+                  <span className="font-medium text-gray-900">
+                    共架OR添架許可申請:
+                    <span className="ml-1 text-gray-400 cursor-help">ℹ️</span>
+                  </span>
+                  {/* ツールチップ */}
+                  <div className="absolute invisible group-hover:visible z-50 bg-gray-800 text-white text-xs rounded p-3 w-72 left-0 top-full mt-1 shadow-lg">
+                    <p className="mb-1"><strong>不要:</strong> 共架・添架申請が不要な案件</p>
+                    <p className="mb-1"><strong>未依頼:</strong> まだ協力会社に依頼していない</p>
+                    <p className="mb-1"><strong>依頼済み:</strong> 協力会社に依頼済み</p>
+                    <p className="mb-1"><strong>調査済み:</strong> 現地調査が完了</p>
+                    <p className="mb-1"><strong>申請中:</strong> 申請書を提出済み</p>
+                    <p className="mb-1"><strong>申請許可:</strong> 申請が許可された</p>
+                    <p className="mb-1"><strong>申請不許可:</strong> 申請が不許可となった</p>
+                    <p><strong>キャンセル:</strong> 申請がキャンセルされた</p>
+                  </div>
+                </div>
+                <input
+                  type="text"
+                  value={order.permissionStatus || '未依頼'}
+                  disabled
+                  className="w-36 rounded-md px-3 py-2 text-sm font-medium bg-gray-100 text-gray-700 cursor-not-allowed"
+                />
 
                 <span className="font-medium text-gray-900">工事状況:</span>
                 <select

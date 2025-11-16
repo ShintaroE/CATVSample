@@ -13,7 +13,7 @@ import RequestNotes from '@/app/applications/components/RequestNotes'
 interface AttachmentProgressModalProps {
   request: AttachmentRequest
   onClose: () => void
-  onSave: (type: RequestType, id: string, status: string, comment: string) => void
+  onSave: (type: RequestType, id: string, status: string, comment: string, scheduledDate?: string, surveyCompletedAt?: string) => void
 }
 
 export default function AttachmentProgressModal({
@@ -21,7 +21,7 @@ export default function AttachmentProgressModal({
   onClose,
   onSave,
 }: AttachmentProgressModalProps) {
-  const [status, setStatus] = useState(request.status)
+  const [progressStatus, setProgressStatus] = useState('未完了')
   const [comment, setComment] = useState('')
   const [uploadingFiles, setUploadingFiles] = useState(false)
   const [formData, setFormData] = useState<AttachmentRequest>(request)
@@ -94,7 +94,15 @@ export default function AttachmentProgressModal({
       return
     }
 
-    onSave('attachment', request.id, status, comment)
+    // 協力会社のステータス選択を実際のステータスに変換
+    const actualStatus = progressStatus === '完了' ? '調査済み' : '依頼済み'
+
+    // 完了時は調査完了日を自動設定
+    const surveyCompletedAt = progressStatus === '完了'
+      ? new Date().toISOString().split('T')[0]
+      : undefined
+
+    onSave('attachment', request.id, actualStatus, comment, undefined, surveyCompletedAt)
   }
 
   return (
@@ -136,18 +144,15 @@ export default function AttachmentProgressModal({
             {/* ステータス更新 */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">
-                ステータス
+                ステータス<span className="text-red-500">*</span>
               </label>
               <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as AttachmentRequest['status'])}
+                value={progressStatus}
+                onChange={(e) => setProgressStatus(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
               >
-                <option value="受付">受付</option>
-                <option value="提出済">提出済</option>
-                <option value="許可">許可</option>
-                <option value="不許可">不許可</option>
-                <option value="取下げ">取下げ</option>
+                <option value="未完了">未完了</option>
+                <option value="完了">完了</option>
               </select>
             </div>
 

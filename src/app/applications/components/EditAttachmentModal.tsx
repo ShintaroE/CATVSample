@@ -366,13 +366,21 @@ export default function EditAttachmentModal({
                       className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
                       required
                     >
-                      <option value="受付">受付</option>
-                      <option value="提出済">提出済</option>
-                      <option value="許可">許可</option>
-                      <option value="不許可">不許可</option>
-                      <option value="取下げ">取下げ</option>
+                      <option value="依頼済み">依頼済み</option>
+                      <option value="調査済み">調査済み</option>
+                      <option value="申請中">申請中</option>
+                      <option value="申請許可">申請許可</option>
+                      <option value="申請不許可">申請不許可</option>
+                      <option value="キャンセル">キャンセル</option>
                     </select>
                   </div>
+                  <Input
+                    label="調査完了日"
+                    type="date"
+                    value={formData.surveyCompletedAt || ''}
+                    onChange={(e) => handleChange('surveyCompletedAt', e.target.value)}
+                    className="bg-white text-gray-900"
+                  />
                   <Input
                     label="申請提出日"
                     type="date"
@@ -387,20 +395,6 @@ export default function EditAttachmentModal({
                     onChange={(e) => handleChange('approvedAt', e.target.value)}
                     className="bg-white text-gray-900"
                   />
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      申請要否 <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={formData.withdrawNeeded ? 'required' : 'notRequired'}
-                      onChange={(e) => handleChange('withdrawNeeded', e.target.value === 'required')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
-                      required
-                    >
-                      <option value="required">申請要</option>
-                      <option value="notRequired">申請不要</option>
-                    </select>
-                  </div>
                 </div>
               </div>
 
@@ -411,11 +405,11 @@ export default function EditAttachmentModal({
                   <label className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={!!formData.withdrawCreated}
-                      onChange={(e) => handleChange('withdrawCreated', e.target.checked)}
+                      checked={!!formData.postConstructionReport}
+                      onChange={(e) => handleChange('postConstructionReport', e.target.checked)}
                       className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
-                    <span className="text-sm text-gray-700">取下げ作成</span>
+                    <span className="text-sm text-gray-700">工事後報告が必要</span>
                   </label>
                 </div>
               </div>

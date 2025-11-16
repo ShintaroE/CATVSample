@@ -154,21 +154,20 @@ export default function ContractorRequestsPage() {
     id: string,
     status: string,
     comment: string,
-    scheduledDate?: string
+    scheduledDate?: string,
+    surveyCompletedAt?: string
   ) => {
-    // ステータス更新と調査予定日更新
-    const updates: Partial<ApplicationRequest> = {
-      status: status as SurveyStatus | AttachmentStatus | ConstructionStatus
-    }
-
-    // 調査予定日が指定されている場合のみ更新
-    if (scheduledDate !== undefined) {
-      updates.scheduledDate = scheduledDate
-    }
-
-    // 完了時は完了日を自動設定
-    if (status === '完了') {
-      updates.completedAt = new Date().toISOString().split('T')[0]
+    // 型に応じて適切な更新オブジェクトを作成
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updates: any = {
+      status: status as SurveyStatus | AttachmentStatus | ConstructionStatus,
+      completedAt: (status === '完了' || status === '調査済み')
+        ? new Date().toISOString().split('T')[0]
+        : undefined,
+      // 調査予定日が指定されている場合のみ更新（現地調査用）
+      ...(scheduledDate !== undefined && { scheduledDate }),
+      // 調査完了日が指定されている場合のみ更新（共架・添架用）
+      ...(surveyCompletedAt !== undefined && { surveyCompletedAt }),
     }
 
     updateApplication(type, id, updates)
@@ -405,8 +404,6 @@ export default function ContractorRequestsPage() {
                       <th className="px-3 py-2 font-medium whitespace-nowrap">依頼日</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">申請提出日</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">申請許可日</th>
-                      <th className="px-3 py-2 font-medium whitespace-nowrap">申請要否</th>
-                      <th className="px-3 py-2 font-medium whitespace-nowrap">取下げ</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">工事後報告</th>
                       <th className="px-3 py-2 font-medium text-right whitespace-nowrap">操作</th>
                     </>
@@ -531,22 +528,8 @@ export default function ContractorRequestsPage() {
                         <td className="px-3 py-2">{(request as AttachmentRequest).submittedAt || '-'}</td>
                         <td className="px-3 py-2">{(request as AttachmentRequest).approvedAt || '-'}</td>
                         <td className="px-3 py-2 text-center">
-                          {(request as AttachmentRequest).withdrawNeeded ? (
-                            <Badge variant="warning" size="sm">要</Badge>
-                          ) : (
-                            <Badge variant="default" size="sm">不要</Badge>
-                          )}
-                        </td>
-                        <td className="px-3 py-2 text-center">
-                          {(request as AttachmentRequest).withdrawCreated ? (
-                            <Badge variant="success" size="sm">済</Badge>
-                          ) : (
-                            <Badge variant="default" size="sm">未</Badge>
-                          )}
-                        </td>
-                        <td className="px-3 py-2 text-center">
                           {(request as AttachmentRequest).postConstructionReport === true ? (
-                            request.status === '許可' ? (
+                            request.status === '申請許可' ? (
                               <Badge variant="success" size="sm">完了</Badge>
                             ) : (
                               <Badge variant="warning" size="sm">未完了</Badge>

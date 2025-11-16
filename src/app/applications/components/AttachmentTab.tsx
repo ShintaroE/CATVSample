@@ -98,14 +98,14 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
       // 工事後報告
       if (postConstructionReportFilter) {
         if (postConstructionReportFilter === 'completed') {
-          // 完了：postConstructionReport === true かつ status === '許可'
-          if (!r.postConstructionReport || r.status !== '許可') {
+          // 完了：postConstructionReport === true かつ status === '申請許可'
+          if (!r.postConstructionReport || r.status !== '申請許可') {
             return false
           }
         }
         if (postConstructionReportFilter === 'notCompleted') {
-          // 未完了：postConstructionReport === true かつ status !== '許可'
-          if (!r.postConstructionReport || r.status === '許可') {
+          // 未完了：postConstructionReport === true かつ status !== '申請許可'
+          if (!r.postConstructionReport || r.status === '申請許可') {
             return false
           }
         }
@@ -133,11 +133,12 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
 
   const getStatusBadge = (status: AttachmentStatus): BadgeVariant => {
     const variantMap: Record<AttachmentStatus, BadgeVariant> = {
-      受付: 'info',
-      提出済: 'warning',
-      許可: 'success',
-      不許可: 'danger',
-      取下げ: 'default',
+      依頼済み: 'default',
+      調査済み: 'info',
+      申請中: 'warning',
+      申請許可: 'success',
+      申請不許可: 'danger',
+      キャンセル: 'danger',
     }
     return variantMap[status]
   }
@@ -285,11 +286,12 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
               className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
             >
               <option value="">全て</option>
-              <option value="受付">受付</option>
-              <option value="提出済">提出済</option>
-              <option value="許可">許可</option>
-              <option value="不許可">不許可</option>
-              <option value="取下げ">取下げ</option>
+              <option value="依頼済み">依頼済み</option>
+              <option value="調査済み">調査済み</option>
+              <option value="申請中">申請中</option>
+              <option value="申請許可">申請許可</option>
+              <option value="申請不許可">申請不許可</option>
+              <option value="キャンセル">キャンセル</option>
             </select>
           </div>
 
@@ -361,6 +363,9 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
                 依頼日
               </th>
               <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                調査完了日
+              </th>
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 申請提出日
               </th>
               <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -368,9 +373,6 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
               </th>
               <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 申請要否
-              </th>
-              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                取下げ
               </th>
               <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 工事後報告
@@ -456,6 +458,11 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
                     {formatDate(r.requestedAt)}
                   </td>
 
+                  {/* 調査完了日 */}
+                  <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    {formatDate(r.surveyCompletedAt)}
+                  </td>
+
                   {/* 申請提出日 */}
                   <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {formatDate(r.submittedAt)}
@@ -468,30 +475,19 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
 
                   {/* 申請要否 */}
                   <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap text-center">
-                    {r.withdrawNeeded === true ? (
+                    {r.applicationReport?.applicationNeeded === '必要' ? (
                       <span className="text-red-600 text-sm font-semibold">要</span>
-                    ) : r.withdrawNeeded === false ? (
+                    ) : r.applicationReport?.applicationNeeded === '不要' ? (
                       <span className="text-gray-600 text-sm">不要</span>
                     ) : (
                       <span className="text-gray-400 text-sm">-</span>
                     )}
                   </td>
 
-                  {/* 取下げ */}
-                  <td className="hidden lg:table-cell px-4 py-3 text-sm whitespace-nowrap text-center">
-                    {r.withdrawCreated ? (
-                      <Badge variant="success" size="sm">作成済</Badge>
-                    ) : r.withdrawNeeded ? (
-                      <Badge variant="danger" size="sm">未作成</Badge>
-                    ) : (
-                      <span className="text-gray-400 text-xs">-</span>
-                    )}
-                  </td>
-
                   {/* 工事後報告 */}
                   <td className="hidden lg:table-cell px-4 py-3 text-sm whitespace-nowrap text-center">
                     {r.postConstructionReport ? (
-                      r.status === '許可' ? (
+                      r.status === '申請許可' ? (
                         <Badge variant="success" size="sm">完了</Badge>
                       ) : (
                         <Badge variant="warning" size="sm">未完了</Badge>
