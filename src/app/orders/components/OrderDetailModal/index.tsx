@@ -2,8 +2,8 @@
 
 import React, { useRef } from 'react'
 import { DocumentArrowUpIcon, MapIcon } from '@heroicons/react/24/outline'
-import { OrderData, AdditionalCosts, AdditionalNotes, CollectiveConstructionInfo } from '../../types'
-import { Button } from '@/shared/components/ui'
+import { OrderData, AdditionalCosts, AdditionalNotes, CollectiveConstructionInfo, OrderSurveyStatus, OrderPermissionStatus } from '../../types'
+import { Button, Badge, BadgeVariant } from '@/shared/components/ui'
 import AdditionalCostsSection from './AdditionalCostsSection'
 import AdditionalNotesSection from './AdditionalNotesSection'
 import CollectiveConstructionSection from './CollectiveConstructionSection'
@@ -34,6 +34,36 @@ export default function OrderDetailModal({
   onCollectiveConstructionInfoChange,
 }: OrderDetailModalProps) {
   const mapFileInputRef = useRef<HTMLInputElement>(null)
+
+  // 調査状況のステータスバッジを取得
+  const getSurveyStatusBadge = (status?: OrderSurveyStatus) => {
+    const currentStatus = status || '未依頼'
+    const config: Record<OrderSurveyStatus, { variant: BadgeVariant; label: string }> = {
+      不要: { variant: 'default', label: '不要' },
+      未依頼: { variant: 'default', label: '未依頼' },
+      依頼済み: { variant: 'info', label: '依頼済み' },
+      調査日決定: { variant: 'warning', label: '調査日決定' },
+      完了: { variant: 'success', label: '完了' },
+      キャンセル: { variant: 'danger', label: 'キャンセル' },
+    }
+    return config[currentStatus]
+  }
+
+  // 共架OR添架許可申請のステータスバッジを取得
+  const getPermissionStatusBadge = (status?: OrderPermissionStatus) => {
+    const currentStatus = status || '未依頼'
+    const config: Record<OrderPermissionStatus, { variant: BadgeVariant; label: string }> = {
+      不要: { variant: 'default', label: '不要' },
+      未依頼: { variant: 'default', label: '未依頼' },
+      依頼済み: { variant: 'info', label: '依頼済み' },
+      調査済み: { variant: 'info', label: '調査済み' },
+      申請中: { variant: 'warning', label: '申請中' },
+      申請許可: { variant: 'success', label: '申請許可' },
+      申請不許可: { variant: 'danger', label: '申請不許可' },
+      キャンセル: { variant: 'danger', label: 'キャンセル' },
+    }
+    return config[currentStatus]
+  }
 
   // デフォルト値を設定（order.additionalCostsがない場合のみ）
   const getAdditionalCosts = (): AdditionalCosts => {
@@ -203,12 +233,12 @@ export default function OrderDetailModal({
                     <p><strong>キャンセル:</strong> 調査がキャンセルされた</p>
                   </div>
                 </div>
-                <input
-                  type="text"
-                  value={order.surveyStatus || '未依頼'}
-                  disabled
-                  className="w-36 rounded-md px-3 py-2 text-sm font-medium bg-gray-100 text-gray-700 cursor-not-allowed"
-                />
+                <Badge
+                  variant={getSurveyStatusBadge(order.surveyStatus).variant}
+                  size="md"
+                >
+                  {getSurveyStatusBadge(order.surveyStatus).label}
+                </Badge>
 
                 <div className="relative group">
                   <span className="font-medium text-gray-900">
@@ -227,12 +257,12 @@ export default function OrderDetailModal({
                     <p><strong>キャンセル:</strong> 申請がキャンセルされた</p>
                   </div>
                 </div>
-                <input
-                  type="text"
-                  value={order.permissionStatus || '未依頼'}
-                  disabled
-                  className="w-36 rounded-md px-3 py-2 text-sm font-medium bg-gray-100 text-gray-700 cursor-not-allowed"
-                />
+                <Badge
+                  variant={getPermissionStatusBadge(order.permissionStatus).variant}
+                  size="md"
+                >
+                  {getPermissionStatusBadge(order.permissionStatus).label}
+                </Badge>
 
                 <span className="font-medium text-gray-900">工事状況:</span>
                 <select

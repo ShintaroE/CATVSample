@@ -546,6 +546,29 @@ export const initializeApplicationData = (): void => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
+      // 個別の例3: キャンセル
+      {
+        id: 'survey-5',
+        type: 'survey',
+        serialNumber: 5,
+        orderNumber: '2024032000005',
+        propertyType: '個別',
+        customerCode: 'C901234',
+        customerName: '中村健太',
+        address: '岡山県倉敷市玉島13-14-15',
+        phoneNumber: '086-678-9012',
+        assigneeType: 'contractor',
+        contractorId: 'contractor-2',
+        contractorName: '栄光電気通信',
+        teamId: 'team-3',
+        teamName: '1班',
+        status: 'キャンセル',
+        kctReceivedDate: '2025-02-01',
+        requestedAt: '2025-02-03',
+        notes: 'お客様都合によりキャンセル',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
     ]
     saveApplications('survey', sampleSurvey)
   }
