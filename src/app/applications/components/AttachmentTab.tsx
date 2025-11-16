@@ -327,55 +327,55 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 整理番号
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              <th className="hidden md:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 受注番号
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              <th className="hidden md:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 個別/集合
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 顧客コード
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 顧客名
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 集合住宅コード
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 集合住宅名
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 住所
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              <th className="hidden md:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 依頼先
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 状態
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 依頼日
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 申請提出日
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 申請許可日
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 申請要否
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 取下げ
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 工事後報告
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 操作
               </th>
             </tr>
@@ -396,48 +396,47 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
                   </td>
 
                   {/* 受注番号 */}
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap font-medium">
+                  <td className="hidden md:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap font-medium">
                     {r.orderNumber || '-'}
                   </td>
 
                   {/* 個別/集合 */}
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                    {r.propertyType === '個別' && (
-                      <Badge variant="info" size="sm">個別</Badge>
-                    )}
-                    {r.propertyType === '集合' && (
-                      <Badge variant="warning" size="sm">集合</Badge>
-                    )}
-                    {!r.propertyType && '-'}
+                  <td className="hidden md:table-cell px-4 py-3 text-sm whitespace-nowrap">
+                    <Badge
+                      variant={r.propertyType === '個別' ? 'info' : r.propertyType === '集合' ? 'warning' : 'default'}
+                      size="sm"
+                    >
+                      {r.propertyType || '-'}
+                    </Badge>
                   </td>
 
                   {/* 顧客コード */}
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                    {r.customerCode || '-'}
+                  <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    {r.propertyType === '個別' ? (r.customerCode || '-') : '-'}
                   </td>
 
                   {/* 顧客名 */}
                   <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                    {r.customerName || '-'}
+                    {r.propertyType === '個別' ? (r.customerName || '-') : (r.collectiveHousingName || '-')}
                   </td>
 
                   {/* 集合住宅コード */}
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                  <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.propertyType === '集合' ? (r.collectiveCode || '-') : '-'}
                   </td>
 
                   {/* 集合住宅名 */}
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                  <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.propertyType === '集合' ? (r.collectiveHousingName || '-') : '-'}
                   </td>
 
                   {/* 住所 */}
-                  <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate">
+                  <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900" title={r.address}>
                     {r.address || '-'}
                   </td>
 
                   {/* 依頼先 */}
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                  <td className="hidden md:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.assigneeType === 'internal' ? (
                       <span className="text-blue-600 font-medium">自社 - {r.teamName}</span>
                     ) : (
@@ -453,22 +452,22 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
                   </td>
 
                   {/* 依頼日 */}
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                  <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {formatDate(r.requestedAt)}
                   </td>
 
                   {/* 申請提出日 */}
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                  <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {formatDate(r.submittedAt)}
                   </td>
 
                   {/* 申請許可日 */}
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                  <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {formatDate(r.approvedAt)}
                   </td>
 
                   {/* 申請要否 */}
-                  <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap text-center">
+                  <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap text-center">
                     {r.withdrawNeeded === true ? (
                       <span className="text-red-600 text-sm font-semibold">要</span>
                     ) : r.withdrawNeeded === false ? (
@@ -479,7 +478,7 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
                   </td>
 
                   {/* 取下げ */}
-                  <td className="px-4 py-3 text-sm whitespace-nowrap text-center">
+                  <td className="hidden lg:table-cell px-4 py-3 text-sm whitespace-nowrap text-center">
                     {r.withdrawCreated ? (
                       <Badge variant="success" size="sm">作成済</Badge>
                     ) : r.withdrawNeeded ? (
@@ -490,7 +489,7 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
                   </td>
 
                   {/* 工事後報告 */}
-                  <td className="px-4 py-3 text-sm whitespace-nowrap text-center">
+                  <td className="hidden lg:table-cell px-4 py-3 text-sm whitespace-nowrap text-center">
                     {r.postConstructionReport ? (
                       r.status === '許可' ? (
                         <Badge variant="success" size="sm">完了</Badge>
