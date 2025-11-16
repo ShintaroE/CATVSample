@@ -94,8 +94,8 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
 
   const getStatusBadge = (status: SurveyStatus): BadgeVariant => {
     const variantMap: Record<SurveyStatus, BadgeVariant> = {
-      未着手: 'default',
-      調査中: 'warning',
+      依頼済み: 'default',
+      調査日決定: 'warning',
       完了: 'success',
       キャンセル: 'danger',
     }
@@ -236,8 +236,8 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
               className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
             >
               <option value="">全て</option>
-              <option value="未着手">未着手</option>
-              <option value="調査中">調査中</option>
+              <option value="依頼済み">依頼済み</option>
+              <option value="調査日決定">調査日決定</option>
               <option value="完了">完了</option>
               <option value="キャンセル">キャンセル</option>
             </select>

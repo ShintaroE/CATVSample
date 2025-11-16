@@ -153,16 +153,29 @@ export default function ContractorRequestsPage() {
     type: RequestType,
     id: string,
     status: string,
-    comment: string
+    comment: string,
+    scheduledDate?: string
   ) => {
-    // ステータス更新
-    updateApplication(type, id, {
+    // ステータス更新と調査予定日更新
+    const updates: Partial<ApplicationRequest> = {
       status: status as SurveyStatus | AttachmentStatus | ConstructionStatus
-    })
+    }
+
+    // 調査予定日が指定されている場合のみ更新
+    if (scheduledDate !== undefined) {
+      updates.scheduledDate = scheduledDate
+    }
+
+    // 完了時は完了日を自動設定
+    if (status === '完了') {
+      updates.completedAt = new Date().toISOString().split('T')[0]
+    }
+
+    updateApplication(type, id, updates)
 
     // 進捗履歴追加
-    const updatedByTeam = selectedTeamId === 'all' 
-      ? undefined 
+    const updatedByTeam = selectedTeamId === 'all'
+      ? undefined
       : availableTeams.find((t) => t.id === selectedTeamId)?.teamName
     addProgressEntry(type, id, {
       timestamp: new Date().toISOString(),

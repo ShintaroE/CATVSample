@@ -35,7 +35,7 @@ export default function NewSurveyModal({
     assigneeType: 'internal' as AssigneeType,
     contractorId: '',
     teamId: '',
-    status: '未着手',
+    status: '依頼済み',
   })
   const [attachments, setAttachments] = useState<FileAttachments>({
     fromAdmin: [],
