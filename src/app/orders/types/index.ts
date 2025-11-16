@@ -155,6 +155,8 @@ export interface CollectiveConstructionInfo {
   dropAdvance?: string               // ドロップ先行
 }
 
+export type OrderSurveyStatus = '不要' | '未依頼' | '依頼済み' | '調査日決定' | '完了' | 'キャンセル'
+
 export interface OrderData {
   orderNumber: string
   orderSource: string
@@ -169,7 +171,7 @@ export interface OrderData {
   closureNumber?: string
   address?: string
   phoneNumber?: string
-  surveyStatus?: 'pending' | 'in_progress' | 'completed' | 'not_required'
+  surveyStatus?: OrderSurveyStatus
   permissionStatus?: 'pending' | 'in_progress' | 'completed' | 'not_required'
   constructionStatus?: 'pending' | 'in_progress' | 'completed' | 'canceled'
   mapPdfPath?: string

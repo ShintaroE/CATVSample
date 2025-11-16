@@ -348,12 +348,12 @@ export default function EditSurveyModal({
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">状態</label>
                     <select
-                      value={formData.status || '未着手'}
+                      value={formData.status || '依頼済み'}
                       onChange={(e) => handleChange('status', e.target.value as SurveyStatus)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
                     >
-                      <option value="未着手">未着手</option>
-                      <option value="調査中">調査中</option>
+                      <option value="依頼済み">依頼済み</option>
+                      <option value="調査日決定">調査日決定</option>
                       <option value="完了">完了</option>
                       <option value="キャンセル">キャンセル</option>
                     </select>

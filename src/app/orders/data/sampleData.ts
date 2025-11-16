@@ -163,7 +163,7 @@ export const sampleOrders: OrderData[] = [
     closureNumber: 'CL-001-A',
     address: '倉敷市水島青葉町1-1-1',
     phoneNumber: '086-123-4567',
-    surveyStatus: 'completed',
+    surveyStatus: '完了',
     permissionStatus: 'in_progress',
     constructionStatus: 'pending',
     appointmentHistory: [
@@ -205,7 +205,7 @@ export const sampleOrders: OrderData[] = [
     closureNumber: 'CL-002-B',
     address: '倉敷市児島駅前2-2-2',
     phoneNumber: '086-234-5678',
-    surveyStatus: 'completed',
+    surveyStatus: '完了',
     permissionStatus: 'completed',
     constructionStatus: 'in_progress',
     appointmentHistory: [
@@ -238,7 +238,7 @@ export const sampleOrders: OrderData[] = [
     closureNumber: 'CL-003-C',
     address: '倉敷市玉島中央町3-3-3',
     phoneNumber: '086-345-6789',
-    surveyStatus: 'in_progress',
+    surveyStatus: '調査日決定',
     permissionStatus: 'pending',
     constructionStatus: 'pending',
     appointmentHistory: [

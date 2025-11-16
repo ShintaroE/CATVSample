@@ -13,7 +13,7 @@ import RequestNotes from '@/app/applications/components/RequestNotes'
 interface SurveyProgressModalProps {
   request: SurveyRequest
   onClose: () => void
-  onSave: (type: RequestType, id: string, status: string, comment: string) => void
+  onSave: (type: RequestType, id: string, status: string, comment: string, scheduledDate?: string) => void
 }
 
 export default function SurveyProgressModal({
@@ -21,7 +21,8 @@ export default function SurveyProgressModal({
   onClose,
   onSave,
 }: SurveyProgressModalProps) {
-  const [status, setStatus] = useState(request.status)
+  const [progressStatus, setProgressStatus] = useState('未完了')
+  const [scheduledDate, setScheduledDate] = useState(request.scheduledDate || '')
   const [comment, setComment] = useState('')
   const [uploadingFiles, setUploadingFiles] = useState(false)
   const [formData, setFormData] = useState<SurveyRequest>(request)
@@ -94,7 +95,9 @@ export default function SurveyProgressModal({
       return
     }
 
-    onSave('survey', request.id, status, comment)
+    // 協力会社のステータス選択を実際のステータスに変換
+    const actualStatus = progressStatus === '完了' ? '完了' : '依頼済み'
+    onSave('survey', request.id, actualStatus, comment, scheduledDate || undefined)
   }
 
   return (
@@ -136,18 +139,29 @@ export default function SurveyProgressModal({
             {/* ステータス更新 */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">
-                ステータス
+                ステータス<span className="text-red-500">*</span>
               </label>
               <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as SurveyRequest['status'])}
+                value={progressStatus}
+                onChange={(e) => setProgressStatus(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
               >
-                <option value="未着手">未着手</option>
-                <option value="調査中">調査中</option>
+                <option value="未完了">未完了</option>
                 <option value="完了">完了</option>
-                <option value="キャンセル">キャンセル</option>
               </select>
+            </div>
+
+            {/* 調査予定日 */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                調査予定日(任意)
+              </label>
+              <input
+                type="date"
+                value={scheduledDate}
+                onChange={(e) => setScheduledDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+              />
             </div>
 
             {/* 進捗コメント */}

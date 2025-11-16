@@ -188,17 +188,27 @@ export default function OrderDetailModal({
             <h4 className="text-md font-medium text-gray-900 mb-2">各進捗状況</h4>
             <div className="bg-gray-50 p-4 rounded-md">
               <div className="grid grid-cols-[auto_auto] gap-x-4 gap-y-4 text-sm items-center justify-between">
-                <span className="font-medium text-gray-900">調査状況:</span>
-                <select
-                  value={order.surveyStatus || 'pending'}
-                  onChange={(e) => onStatusChange(order.orderNumber, 'surveyStatus', e.target.value as 'pending' | 'in_progress' | 'completed' | 'not_required')}
-                  className={`w-36 rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 ${getSelectColor(order.surveyStatus || 'pending')}`}
-                >
-                  <option value="pending" className="text-gray-600">未着手</option>
-                  <option value="in_progress" className="text-blue-600">調査日決定</option>
-                  <option value="completed" className="text-green-600">完了</option>
-                  <option value="not_required" className="text-orange-600">不要</option>
-                </select>
+                <div className="relative group">
+                  <span className="font-medium text-gray-900">
+                    調査状況:
+                    <span className="ml-1 text-gray-400 cursor-help">ℹ️</span>
+                  </span>
+                  {/* ツールチップ */}
+                  <div className="absolute invisible group-hover:visible z-50 bg-gray-800 text-white text-xs rounded p-3 w-72 left-0 top-full mt-1 shadow-lg">
+                    <p className="mb-1"><strong>不要:</strong> 現地調査が不要な案件</p>
+                    <p className="mb-1"><strong>未依頼:</strong> まだ協力会社に依頼していない</p>
+                    <p className="mb-1"><strong>依頼済み:</strong> 協力会社に依頼済み(調査日未定)</p>
+                    <p className="mb-1"><strong>調査日決定:</strong> 調査日が確定</p>
+                    <p className="mb-1"><strong>完了:</strong> 現地調査が完了</p>
+                    <p><strong>キャンセル:</strong> 調査がキャンセルされた</p>
+                  </div>
+                </div>
+                <input
+                  type="text"
+                  value={order.surveyStatus || '未依頼'}
+                  disabled
+                  className="w-36 rounded-md px-3 py-2 text-sm font-medium bg-gray-100 text-gray-700 cursor-not-allowed"
+                />
 
                 <span className="font-medium text-gray-900">共架OR添架許可申請:</span>
                 <select
