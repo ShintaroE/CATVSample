@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { AttachmentRequest, RequestType, AttachedFile } from '@/features/applications/types'
+import { AttachmentRequest, RequestType, AttachedFile, FileAttachments as FileAttachmentsType } from '@/features/applications/types'
 import { Textarea } from '@/shared/components/ui'
 import FileAttachments from '@/app/applications/components/FileAttachments'
 import { useAuth } from '@/features/auth/hooks/useAuth'
@@ -13,7 +13,7 @@ import RequestNotes from '@/app/applications/components/RequestNotes'
 interface AttachmentProgressModalProps {
   request: AttachmentRequest
   onClose: () => void
-  onSave: (type: RequestType, id: string, status: string, comment: string, scheduledDate?: string, surveyCompletedAt?: string) => void
+  onSave: (type: RequestType, id: string, status: string, comment: string, attachments?: FileAttachmentsType, scheduledDate?: string, surveyCompletedAt?: string) => void
 }
 
 export default function AttachmentProgressModal({
@@ -102,7 +102,8 @@ export default function AttachmentProgressModal({
       ? new Date().toISOString().split('T')[0]
       : undefined
 
-    onSave('attachment', request.id, actualStatus, comment, undefined, surveyCompletedAt)
+    // アップロードされたファイルを含めて保存
+    onSave('attachment', request.id, actualStatus, comment, formData.attachments, undefined, surveyCompletedAt)
   }
 
   return (

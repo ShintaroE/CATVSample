@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { ConstructionRequest, RequestType, AttachedFile, ConstructionStatus } from '@/features/applications/types'
+import { ConstructionRequest, RequestType, AttachedFile, ConstructionStatus, FileAttachments as FileAttachmentsType } from '@/features/applications/types'
 import { Textarea } from '@/shared/components/ui'
 import FileAttachments from '@/app/applications/components/FileAttachments'
 import { useAuth } from '@/features/auth/hooks/useAuth'
@@ -13,7 +13,7 @@ import RequestNotes from '@/app/applications/components/RequestNotes'
 interface ConstructionProgressModalProps {
   request: ConstructionRequest
   onClose: () => void
-  onSave: (type: RequestType, id: string, status: string, comment: string) => void
+  onSave: (type: RequestType, id: string, status: string, comment: string, attachments?: FileAttachmentsType) => void
 }
 
 export default function ConstructionProgressModal({
@@ -118,7 +118,8 @@ export default function ConstructionProgressModal({
       }
     }
 
-    onSave('construction', request.id, newStatus, comment)
+    // アップロードされたファイルを含めて保存
+    onSave('construction', request.id, newStatus, comment, formData.attachments)
   }
 
   return (

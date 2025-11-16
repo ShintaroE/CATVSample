@@ -14,6 +14,7 @@ import {
   AttachmentStatus,
   ConstructionStatus,
   PostConstructionReport,
+  FileAttachments,
 } from '@/features/applications/types'
 import {
   getApplications,
@@ -154,6 +155,7 @@ export default function ContractorRequestsPage() {
     id: string,
     status: string,
     comment: string,
+    attachments?: FileAttachments,
     scheduledDate?: string,
     surveyCompletedAt?: string
   ) => {
@@ -168,6 +170,8 @@ export default function ContractorRequestsPage() {
       ...(scheduledDate !== undefined && { scheduledDate }),
       // 調査完了日が指定されている場合のみ更新（共架・添架用）
       ...(surveyCompletedAt !== undefined && { surveyCompletedAt }),
+      // アップロードされたファイルがある場合は更新
+      ...(attachments !== undefined && { attachments }),
     }
 
     updateApplication(type, id, updates)
