@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { ConstructionRequest, RequestType, AttachedFile } from '@/features/applications/types'
+import { ConstructionRequest, RequestType, AttachedFile, ConstructionStatus, FileAttachments as FileAttachmentsType } from '@/features/applications/types'
 import { Textarea } from '@/shared/components/ui'
 import FileAttachments from '@/app/applications/components/FileAttachments'
 import { useAuth } from '@/features/auth/hooks/useAuth'
@@ -13,7 +13,7 @@ import RequestNotes from '@/app/applications/components/RequestNotes'
 interface ConstructionProgressModalProps {
   request: ConstructionRequest
   onClose: () => void
-  onSave: (type: RequestType, id: string, status: string, comment: string) => void
+  onSave: (type: RequestType, id: string, status: string, comment: string, attachments?: FileAttachmentsType) => void
 }
 
 export default function ConstructionProgressModal({
@@ -21,7 +21,8 @@ export default function ConstructionProgressModal({
   onClose,
   onSave,
 }: ConstructionProgressModalProps) {
-  const [status, setStatus] = useState(request.status)
+  // 協力会社用のステータス: 完了なら「完了」、それ以外は「未完了」
+  const [displayStatus, setDisplayStatus] = useState(request.status === '完了' ? '完了' : '未完了')
   const [comment, setComment] = useState('')
   const [uploadingFiles, setUploadingFiles] = useState(false)
   const [formData, setFormData] = useState<ConstructionRequest>(request)
@@ -94,7 +95,31 @@ export default function ConstructionProgressModal({
       return
     }
 
-    onSave('construction', request.id, status, comment)
+    let newStatus: ConstructionStatus
+
+    if (displayStatus === '完了') {
+      // 「完了」を選択した場合
+      newStatus = '完了'
+    } else {
+      // 「未完了」を選択した場合の処理
+      // 終了状態（工事返却、工事キャンセル）は協力会社の進捗更新で変更できない
+      // これらの状態の場合は「依頼済み」にマッピングする
+      const terminalStates: ConstructionStatus[] = ['工事返却', '工事キャンセル']
+      
+      if (terminalStates.includes(request.status)) {
+        // 終了状態からは「依頼済み」に戻す
+        newStatus = '依頼済み'
+      } else if (request.status === '未着手') {
+        // 「未着手」の場合は「依頼済み」に進める
+        newStatus = '依頼済み'
+      } else {
+        // それ以外（「依頼済み」「工事日決定」）の場合は現在のステータスを保持
+        newStatus = request.status
+      }
+    }
+
+    // アップロードされたファイルを含めて保存
+    onSave('construction', request.id, newStatus, comment, formData.attachments)
   }
 
   return (
@@ -139,14 +164,12 @@ export default function ConstructionProgressModal({
                 ステータス
               </label>
               <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as ConstructionRequest['status'])}
+                value={displayStatus}
+                onChange={(e) => setDisplayStatus(e.target.value as '未完了' | '完了')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
               >
-                <option value="未着手">未着手</option>
-                <option value="施工中">施工中</option>
+                <option value="未完了">未完了</option>
                 <option value="完了">完了</option>
-                <option value="保留">保留</option>
               </select>
             </div>
 

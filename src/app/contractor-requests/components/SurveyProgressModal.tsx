@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { SurveyRequest, RequestType, AttachedFile } from '@/features/applications/types'
+import { SurveyRequest, RequestType, AttachedFile, FileAttachments as FileAttachmentsType } from '@/features/applications/types'
 import { Textarea } from '@/shared/components/ui'
 import FileAttachments from '@/app/applications/components/FileAttachments'
 import { useAuth } from '@/features/auth/hooks/useAuth'
@@ -13,7 +13,7 @@ import RequestNotes from '@/app/applications/components/RequestNotes'
 interface SurveyProgressModalProps {
   request: SurveyRequest
   onClose: () => void
-  onSave: (type: RequestType, id: string, status: string, comment: string, scheduledDate?: string) => void
+  onSave: (type: RequestType, id: string, status: string, comment: string, attachments?: FileAttachmentsType, scheduledDate?: string, surveyCompletedAt?: string) => void
 }
 
 export default function SurveyProgressModal({
@@ -97,7 +97,8 @@ export default function SurveyProgressModal({
 
     // 協力会社のステータス選択を実際のステータスに変換
     const actualStatus = progressStatus === '完了' ? '完了' : '依頼済み'
-    onSave('survey', request.id, actualStatus, comment, scheduledDate || undefined)
+    // アップロードされたファイルを含めて保存
+    onSave('survey', request.id, actualStatus, comment, formData.attachments, scheduledDate || undefined)
   }
 
   return (

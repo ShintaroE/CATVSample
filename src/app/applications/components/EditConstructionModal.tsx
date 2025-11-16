@@ -349,12 +349,11 @@ export default function EditConstructionModal({
                     required
                   >
                     <option value="未着手">未着手</option>
-                    <option value="施工中">施工中</option>
+                    <option value="依頼済み">依頼済み</option>
+                    <option value="工事日決定">工事日決定</option>
                     <option value="完了">完了</option>
-                    <option value="一部完了">一部完了</option>
-                    <option value="中止">中止</option>
-                    <option value="延期">延期</option>
-                    <option value="保留">保留</option>
+                    <option value="工事返却">工事返却</option>
+                    <option value="工事キャンセル">工事キャンセル</option>
                   </SelectField>
 
                   <Input

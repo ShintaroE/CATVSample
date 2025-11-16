@@ -39,22 +39,6 @@ export default function OrdersPage() {
     setSelectedOrder(null)
   }
 
-  const handleStatusChange = (
-    orderNumber: string,
-    statusType: 'surveyStatus' | 'permissionStatus' | 'constructionStatus',
-    newStatus: 'pending' | 'in_progress' | 'completed' | 'canceled' | 'not_required'
-  ) => {
-    setOrders(orders.map(o =>
-      o.orderNumber === orderNumber
-        ? { ...o, [statusType]: newStatus }
-        : o
-    ))
-    // selectedOrderも更新
-    if (selectedOrder && selectedOrder.orderNumber === orderNumber) {
-      setSelectedOrder(prev => prev ? { ...prev, [statusType]: newStatus } : null)
-    }
-  }
-
   const handleMapUpload = (order: OrderData, _file: File) => {
     // ファイルをサーバーにアップロード（実装は将来）
     // ここではサンプルとしてダミーパスを設定
@@ -187,7 +171,6 @@ export default function OrdersPage() {
           <OrderDetailModal
             order={selectedOrder}
             onClose={handleCloseDetails}
-            onStatusChange={handleStatusChange}
             onMapUpload={handleMapUpload}
             onViewMap={handleViewMap}
             onAdditionalCostsChange={handleAdditionalCostsChange}
