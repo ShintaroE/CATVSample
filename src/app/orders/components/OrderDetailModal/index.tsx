@@ -14,7 +14,7 @@ interface OrderDetailModalProps {
   onStatusChange: (
     orderNumber: string,
     statusType: 'surveyStatus' | 'permissionStatus' | 'constructionStatus',
-    newStatus: 'pending' | 'in_progress' | 'completed'
+    newStatus: 'pending' | 'in_progress' | 'completed' | 'canceled' | 'not_required'
   ) => void
   onMapUpload: (order: OrderData, file: File) => void
   onViewMap: (order: OrderData) => void
@@ -105,6 +105,8 @@ export default function OrderDetailModal({
         return 'text-green-600 border-green-300 bg-green-50'
       case 'canceled':
         return 'text-purple-600 border-purple-300 bg-purple-50'
+      case 'not_required':
+        return 'text-orange-600 border-orange-300 bg-orange-50'
       default:
         return 'text-gray-600 border-gray-300 bg-gray-50'
     }
@@ -189,23 +191,25 @@ export default function OrderDetailModal({
                 <span className="font-medium text-gray-900">調査状況:</span>
                 <select
                   value={order.surveyStatus || 'pending'}
-                  onChange={(e) => onStatusChange(order.orderNumber, 'surveyStatus', e.target.value as 'pending' | 'in_progress' | 'completed')}
+                  onChange={(e) => onStatusChange(order.orderNumber, 'surveyStatus', e.target.value as 'pending' | 'in_progress' | 'completed' | 'not_required')}
                   className={`w-36 rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 ${getSelectColor(order.surveyStatus || 'pending')}`}
                 >
                   <option value="pending" className="text-gray-600">未着手</option>
                   <option value="in_progress" className="text-blue-600">調査日決定</option>
                   <option value="completed" className="text-green-600">完了</option>
+                  <option value="not_required" className="text-orange-600">不要</option>
                 </select>
 
                 <span className="font-medium text-gray-900">共架OR添架許可申請:</span>
                 <select
                   value={order.permissionStatus || 'pending'}
-                  onChange={(e) => onStatusChange(order.orderNumber, 'permissionStatus', e.target.value as 'pending' | 'in_progress' | 'completed')}
+                  onChange={(e) => onStatusChange(order.orderNumber, 'permissionStatus', e.target.value as 'pending' | 'in_progress' | 'completed' | 'not_required')}
                   className={`w-36 rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 ${getSelectColor(order.permissionStatus || 'pending')}`}
                 >
                   <option value="pending" className="text-gray-600">未申請</option>
                   <option value="in_progress" className="text-blue-600">申請中</option>
                   <option value="completed" className="text-green-600">許可済</option>
+                  <option value="not_required" className="text-orange-600">不要</option>
                 </select>
 
                 <span className="font-medium text-gray-900">工事状況:</span>

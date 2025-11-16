@@ -169,8 +169,8 @@ export interface OrderData {
   closureNumber?: string
   address?: string
   phoneNumber?: string
-  surveyStatus?: 'pending' | 'in_progress' | 'completed'
-  permissionStatus?: 'pending' | 'in_progress' | 'completed'
+  surveyStatus?: 'pending' | 'in_progress' | 'completed' | 'not_required'
+  permissionStatus?: 'pending' | 'in_progress' | 'completed' | 'not_required'
   constructionStatus?: 'pending' | 'in_progress' | 'completed' | 'canceled'
   mapPdfPath?: string
   appointmentHistory?: AppointmentHistory[]

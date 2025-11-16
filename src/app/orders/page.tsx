@@ -42,7 +42,7 @@ export default function OrdersPage() {
   const handleStatusChange = (
     orderNumber: string,
     statusType: 'surveyStatus' | 'permissionStatus' | 'constructionStatus',
-    newStatus: 'pending' | 'in_progress' | 'completed' | 'canceled'
+    newStatus: 'pending' | 'in_progress' | 'completed' | 'canceled' | 'not_required'
   ) => {
     setOrders(orders.map(o =>
       o.orderNumber === orderNumber
