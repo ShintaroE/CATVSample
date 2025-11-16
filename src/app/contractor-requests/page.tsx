@@ -313,30 +313,30 @@ export default function ContractorRequestsPage() {
                 <option value="">全て</option>
                 {activeTab === 'survey' && (
                   <>
-                    <option value="未着手">未着手</option>
-                    <option value="調査中">調査中</option>
+                    <option value="依頼済み">依頼済み</option>
+                    <option value="調査日決定">調査日決定</option>
                     <option value="完了">完了</option>
                     <option value="キャンセル">キャンセル</option>
                   </>
                 )}
                 {activeTab === 'attachment' && (
                   <>
-                    <option value="受付">受付</option>
-                    <option value="提出済">提出済</option>
-                    <option value="許可">許可</option>
-                    <option value="不許可">不許可</option>
-                    <option value="取下げ">取下げ</option>
+                    <option value="依頼済み">依頼済み</option>
+                    <option value="調査済み">調査済み</option>
+                    <option value="申請中">申請中</option>
+                    <option value="申請許可">申請許可</option>
+                    <option value="申請不許可">申請不許可</option>
+                    <option value="キャンセル">キャンセル</option>
                   </>
                 )}
                 {activeTab === 'construction' && (
                   <>
                     <option value="未着手">未着手</option>
-                    <option value="施工中">施工中</option>
+                    <option value="依頼済み">依頼済み</option>
+                    <option value="工事日決定">工事日決定</option>
                     <option value="完了">完了</option>
-                    <option value="一部完了">一部完了</option>
-                    <option value="中止">中止</option>
-                    <option value="延期">延期</option>
-                    <option value="保留">保留</option>
+                    <option value="工事返却">工事返却</option>
+                    <option value="工事キャンセル">工事キャンセル</option>
                   </>
                 )}
               </select>
