@@ -20,6 +20,24 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Troubleshooting
+
+### ステータス型定義の更新後にlocalStorageをクリアする
+
+型定義の更新（例: ステータスの変更）後、ブラウザのlocalStorageに古いデータが残っている場合、エラーが発生する可能性があります。
+
+**localStorageをクリアする手順**:
+
+1. ブラウザの開発者ツールを開く（F12キーまたは右クリック → 検証）
+2. コンソールタブを開く
+3. 以下のコマンドを実行:
+   ```javascript
+   localStorage.clear()
+   location.reload()
+   ```
+
+これにより、最新のサンプルデータで初期化されます。
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
