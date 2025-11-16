@@ -118,7 +118,7 @@ export default function NewOrderModal({ onClose, onCreate }: NewOrderModalProps)
       phoneNumber: formData.phoneNumber,
       surveyStatus: '未依頼',
       permissionStatus: '未依頼',
-      constructionStatus: 'pending',
+      constructionStatus: '未着手',
       appointmentHistory: [],
     }
 

@@ -165,7 +165,7 @@ export const sampleOrders: OrderData[] = [
     phoneNumber: '086-123-4567',
     surveyStatus: '完了',
     permissionStatus: '申請中',
-    constructionStatus: 'pending',
+    constructionStatus: '未着手',
     appointmentHistory: [
       {
         id: '1',
@@ -207,7 +207,7 @@ export const sampleOrders: OrderData[] = [
     phoneNumber: '086-234-5678',
     surveyStatus: '完了',
     permissionStatus: '申請許可',
-    constructionStatus: 'in_progress',
+    constructionStatus: '工事日決定',
     appointmentHistory: [
       {
         id: '3',
@@ -240,7 +240,7 @@ export const sampleOrders: OrderData[] = [
     phoneNumber: '086-345-6789',
     surveyStatus: '調査日決定',
     permissionStatus: '未依頼',
-    constructionStatus: 'pending',
+    constructionStatus: '未着手',
     appointmentHistory: [
       {
         id: '4',

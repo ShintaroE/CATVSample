@@ -1,3 +1,5 @@
+import { ConstructionStatus } from '@/features/applications/types'
+
 export interface AppointmentHistory {
   id: string
   date: string
@@ -174,7 +176,7 @@ export interface OrderData {
   phoneNumber?: string
   surveyStatus?: OrderSurveyStatus
   permissionStatus?: OrderPermissionStatus
-  constructionStatus?: 'pending' | 'in_progress' | 'completed' | 'canceled'
+  constructionStatus?: ConstructionStatus
   mapPdfPath?: string
   appointmentHistory?: AppointmentHistory[]
   additionalCosts?: AdditionalCosts

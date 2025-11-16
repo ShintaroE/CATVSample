@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import Layout from '@/shared/components/layout/Layout'
 import { OrderData, AdditionalCosts, AdditionalNotes, CollectiveConstructionInfo } from './types'
+import { ConstructionStatus } from '@/features/applications/types'
 import { sampleOrders } from './data/sampleData'
 import { useOrders } from './hooks/useOrders'
 import { Button } from '@/shared/components/ui'
@@ -42,7 +43,7 @@ export default function OrdersPage() {
   const handleStatusChange = (
     orderNumber: string,
     statusType: 'surveyStatus' | 'permissionStatus' | 'constructionStatus',
-    newStatus: 'pending' | 'in_progress' | 'completed' | 'canceled' | 'not_required'
+    newStatus: ConstructionStatus
   ) => {
     setOrders(orders.map(o =>
       o.orderNumber === orderNumber

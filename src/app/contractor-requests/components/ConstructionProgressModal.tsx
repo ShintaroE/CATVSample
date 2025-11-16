@@ -21,7 +21,8 @@ export default function ConstructionProgressModal({
   onClose,
   onSave,
 }: ConstructionProgressModalProps) {
-  const [status, setStatus] = useState(request.status)
+  // 協力会社用のステータス: 完了なら「完了」、それ以外は「未完了」
+  const [displayStatus, setDisplayStatus] = useState(request.status === '完了' ? '完了' : '未完了')
   const [comment, setComment] = useState('')
   const [uploadingFiles, setUploadingFiles] = useState(false)
   const [formData, setFormData] = useState<ConstructionRequest>(request)
@@ -94,7 +95,12 @@ export default function ConstructionProgressModal({
       return
     }
 
-    onSave('construction', request.id, status, comment)
+    // displayStatusが「完了」なら「完了」、「未完了」なら元のステータスか「依頼済み」
+    const actualStatus = displayStatus === '完了'
+      ? '完了'
+      : (request.status === '未着手' ? '依頼済み' : request.status)
+
+    onSave('construction', request.id, actualStatus, comment)
   }
 
   return (
@@ -139,14 +145,12 @@ export default function ConstructionProgressModal({
                 ステータス
               </label>
               <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as ConstructionRequest['status'])}
+                value={displayStatus}
+                onChange={(e) => setDisplayStatus(e.target.value as '未完了' | '完了')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
               >
-                <option value="未着手">未着手</option>
-                <option value="施工中">施工中</option>
+                <option value="未完了">未完了</option>
                 <option value="完了">完了</option>
-                <option value="保留">保留</option>
               </select>
             </div>
 

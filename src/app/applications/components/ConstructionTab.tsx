@@ -47,24 +47,15 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
 
   // Badge variant functions
   const getStatusBadge = (status: ConstructionStatus): BadgeVariant => {
-    switch (status) {
-      case '未着手':
-        return 'default'
-      case '施工中':
-        return 'warning'
-      case '完了':
-        return 'success'
-      case '一部完了':
-        return 'info'
-      case '中止':
-        return 'danger'
-      case '延期':
-        return 'warning'
-      case '保留':
-        return 'default'
-      default:
-        return 'default'
+    const variantMap: Record<ConstructionStatus, BadgeVariant> = {
+      未着手: 'default',
+      依頼済み: 'info',
+      工事日決定: 'warning',
+      完了: 'success',
+      工事返却: 'danger',
+      工事キャンセル: 'danger',
     }
+    return variantMap[status]
   }
 
   const getPostConstructionReportBadge = (report: PostConstructionReport | undefined): { variant: BadgeVariant; text: string } => {
@@ -286,13 +277,11 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
               onChange={(e) => setStatusFilter(e.target.value as '' | ConstructionStatus)}
             >
               <option value="">全て</option>
-              <option value="未着手">未着手</option>
-              <option value="施工中">施工中</option>
+              <option value="依頼済み">依頼済み</option>
+              <option value="工事日決定">工事日決定</option>
               <option value="完了">完了</option>
-              <option value="一部完了">一部完了</option>
-              <option value="中止">中止</option>
-              <option value="延期">延期</option>
-              <option value="保留">保留</option>
+              <option value="工事返却">工事返却</option>
+              <option value="工事キャンセル">工事キャンセル</option>
             </select>
           </div>
 

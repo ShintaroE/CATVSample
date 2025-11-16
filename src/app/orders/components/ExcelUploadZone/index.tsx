@@ -49,7 +49,7 @@ export default function ExcelUploadZone({ currentOrderCount, onUpload }: ExcelUp
         address: '倉敷市新規住所',
         surveyStatus: '未依頼',
         permissionStatus: '未依頼',
-        constructionStatus: 'pending'
+        constructionStatus: '未着手'
       }
 
       onUpload([newOrder])

@@ -3,6 +3,7 @@
 import React, { useRef } from 'react'
 import { DocumentArrowUpIcon, MapIcon } from '@heroicons/react/24/outline'
 import { OrderData, AdditionalCosts, AdditionalNotes, CollectiveConstructionInfo, OrderSurveyStatus, OrderPermissionStatus } from '../../types'
+import { ConstructionStatus } from '@/features/applications/types'
 import { Button, Badge, BadgeVariant } from '@/shared/components/ui'
 import AdditionalCostsSection from './AdditionalCostsSection'
 import AdditionalNotesSection from './AdditionalNotesSection'
@@ -14,7 +15,7 @@ interface OrderDetailModalProps {
   onStatusChange: (
     orderNumber: string,
     statusType: 'surveyStatus' | 'permissionStatus' | 'constructionStatus',
-    newStatus: 'pending' | 'in_progress' | 'completed' | 'canceled' | 'not_required'
+    newStatus: ConstructionStatus
   ) => void
   onMapUpload: (order: OrderData, file: File) => void
   onViewMap: (order: OrderData) => void
@@ -61,6 +62,20 @@ export default function OrderDetailModal({
       申請許可: { variant: 'success', label: '申請許可' },
       申請不許可: { variant: 'danger', label: '申請不許可' },
       キャンセル: { variant: 'danger', label: 'キャンセル' },
+    }
+    return config[currentStatus]
+  }
+
+  // 工事状況のステータスバッジを取得
+  const getConstructionStatusBadge = (status?: ConstructionStatus) => {
+    const currentStatus = status || '未着手'
+    const config: Record<ConstructionStatus, { variant: BadgeVariant; label: string}> = {
+      未着手: { variant: 'default', label: '未着手' },
+      依頼済み: { variant: 'info', label: '依頼済み' },
+      工事日決定: { variant: 'warning', label: '工事日決定' },
+      完了: { variant: 'success', label: '完了' },
+      工事返却: { variant: 'danger', label: '工事返却' },
+      工事キャンセル: { variant: 'danger', label: '工事キャンセル' },
     }
     return config[currentStatus]
   }
@@ -122,23 +137,6 @@ export default function OrderDetailModal({
       boosterType: undefined,
       distributorReplacement: undefined,
       dropAdvance: undefined,
-    }
-  }
-
-  const getSelectColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'text-gray-600 border-gray-300 bg-gray-50'
-      case 'in_progress':
-        return 'text-blue-600 border-blue-300 bg-blue-50'
-      case 'completed':
-        return 'text-green-600 border-green-300 bg-green-50'
-      case 'canceled':
-        return 'text-purple-600 border-purple-300 bg-purple-50'
-      case 'not_required':
-        return 'text-orange-600 border-orange-300 bg-orange-50'
-      default:
-        return 'text-gray-600 border-gray-300 bg-gray-50'
     }
   }
 
@@ -264,17 +262,27 @@ export default function OrderDetailModal({
                   {getPermissionStatusBadge(order.permissionStatus).label}
                 </Badge>
 
-                <span className="font-medium text-gray-900">工事状況:</span>
-                <select
-                  value={order.constructionStatus || 'pending'}
-                  onChange={(e) => onStatusChange(order.orderNumber, 'constructionStatus', e.target.value as 'pending' | 'in_progress' | 'completed')}
-                  className={`w-36 rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 ${getSelectColor(order.constructionStatus || 'pending')}`}
+                <div className="relative group">
+                  <span className="font-medium text-gray-900">
+                    工事状況:
+                    <span className="ml-1 text-gray-400 cursor-help">ℹ️</span>
+                  </span>
+                  {/* ツールチップ */}
+                  <div className="absolute invisible group-hover:visible z-50 bg-gray-800 text-white text-xs rounded p-3 w-72 left-0 top-full mt-1 shadow-lg">
+                    <p className="mb-1"><strong>未着手:</strong> 工事依頼がまだ開始されていません</p>
+                    <p className="mb-1"><strong>依頼済み:</strong> 協力会社へ工事を依頼しました</p>
+                    <p className="mb-1"><strong>工事日決定:</strong> 工事実施日が決定しました</p>
+                    <p className="mb-1"><strong>完了:</strong> 工事が完了しました</p>
+                    <p className="mb-1"><strong>工事返却:</strong> 工事が返却されました</p>
+                    <p><strong>工事キャンセル:</strong> 工事がキャンセルされました</p>
+                  </div>
+                </div>
+                <Badge
+                  variant={getConstructionStatusBadge(order.constructionStatus).variant}
+                  size="md"
                 >
-                  <option value="pending" className="text-gray-600">未着手</option>
-                  <option value="in_progress" className="text-blue-600">工事日決定</option>
-                  <option value="completed" className="text-green-600">完了</option>
-                  <option value="canceled" className="text-purple-600">工事返却</option>
-                </select>
+                  {getConstructionStatusBadge(order.constructionStatus).label}
+                </Badge>
               </div>
             </div>
           </div>
