@@ -12,11 +12,6 @@ import CollectiveConstructionSection from './CollectiveConstructionSection'
 interface OrderDetailModalProps {
   order: OrderData
   onClose: () => void
-  onStatusChange: (
-    orderNumber: string,
-    statusType: 'surveyStatus' | 'permissionStatus' | 'constructionStatus',
-    newStatus: ConstructionStatus
-  ) => void
   onMapUpload: (order: OrderData, file: File) => void
   onViewMap: (order: OrderData) => void
   onAdditionalCostsChange: (orderNumber: string, additionalCosts: AdditionalCosts) => void
@@ -27,7 +22,6 @@ interface OrderDetailModalProps {
 export default function OrderDetailModal({
   order,
   onClose,
-  onStatusChange,
   onMapUpload,
   onViewMap,
   onAdditionalCostsChange,

@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import Layout from '@/shared/components/layout/Layout'
 import { OrderData, AdditionalCosts, AdditionalNotes, CollectiveConstructionInfo } from './types'
-import { ConstructionStatus } from '@/features/applications/types'
 import { sampleOrders } from './data/sampleData'
 import { useOrders } from './hooks/useOrders'
 import { Button } from '@/shared/components/ui'
@@ -38,22 +37,6 @@ export default function OrdersPage() {
   const handleCloseDetails = () => {
     setShowDetailModal(false)
     setSelectedOrder(null)
-  }
-
-  const handleStatusChange = (
-    orderNumber: string,
-    statusType: 'surveyStatus' | 'permissionStatus' | 'constructionStatus',
-    newStatus: ConstructionStatus
-  ) => {
-    setOrders(orders.map(o =>
-      o.orderNumber === orderNumber
-        ? { ...o, [statusType]: newStatus }
-        : o
-    ))
-    // selectedOrderも更新
-    if (selectedOrder && selectedOrder.orderNumber === orderNumber) {
-      setSelectedOrder(prev => prev ? { ...prev, [statusType]: newStatus } : null)
-    }
   }
 
   const handleMapUpload = (order: OrderData, _file: File) => {
@@ -188,7 +171,6 @@ export default function OrdersPage() {
           <OrderDetailModal
             order={selectedOrder}
             onClose={handleCloseDetails}
-            onStatusChange={handleStatusChange}
             onMapUpload={handleMapUpload}
             onViewMap={handleViewMap}
             onAdditionalCostsChange={handleAdditionalCostsChange}

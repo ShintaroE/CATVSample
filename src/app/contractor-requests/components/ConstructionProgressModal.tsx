@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { ConstructionRequest, RequestType, AttachedFile } from '@/features/applications/types'
+import { ConstructionRequest, RequestType, AttachedFile, ConstructionStatus } from '@/features/applications/types'
 import { Textarea } from '@/shared/components/ui'
 import FileAttachments from '@/app/applications/components/FileAttachments'
 import { useAuth } from '@/features/auth/hooks/useAuth'
@@ -95,12 +95,30 @@ export default function ConstructionProgressModal({
       return
     }
 
-    // displayStatusが「完了」なら「完了」、「未完了」なら元のステータスか「依頼済み」
-    const actualStatus = displayStatus === '完了'
-      ? '完了'
-      : (request.status === '未着手' ? '依頼済み' : request.status)
+    let newStatus: ConstructionStatus
 
-    onSave('construction', request.id, actualStatus, comment)
+    if (displayStatus === '完了') {
+      // 「完了」を選択した場合
+      newStatus = '完了'
+    } else {
+      // 「未完了」を選択した場合の処理
+      // 終了状態（工事返却、工事キャンセル）は協力会社の進捗更新で変更できない
+      // これらの状態の場合は「依頼済み」にマッピングする
+      const terminalStates: ConstructionStatus[] = ['工事返却', '工事キャンセル']
+      
+      if (terminalStates.includes(request.status)) {
+        // 終了状態からは「依頼済み」に戻す
+        newStatus = '依頼済み'
+      } else if (request.status === '未着手') {
+        // 「未着手」の場合は「依頼済み」に進める
+        newStatus = '依頼済み'
+      } else {
+        // それ以外（「依頼済み」「工事日決定」）の場合は現在のステータスを保持
+        newStatus = request.status
+      }
+    }
+
+    onSave('construction', request.id, newStatus, comment)
   }
 
   return (

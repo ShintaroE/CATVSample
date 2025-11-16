@@ -277,6 +277,7 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
               onChange={(e) => setStatusFilter(e.target.value as '' | ConstructionStatus)}
             >
               <option value="">全て</option>
+              <option value="未着手">未着手</option>
               <option value="依頼済み">依頼済み</option>
               <option value="工事日決定">工事日決定</option>
               <option value="完了">完了</option>
