@@ -149,16 +149,16 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
   }, [data, orderNumberFilter, propertyTypeFilter, customerCodeFilter, collectiveCodeFilter, contractorIdFilter, teamIdFilter, statusFilter, postConstructionReportFilter])
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full max-w-full overflow-x-hidden">
       {/* Filtering Panel */}
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-        <div className="flex items-center justify-between mb-3">
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 w-full max-w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 w-full">
           <h3 className="text-sm font-semibold text-gray-700 flex items-center">
             <FunnelIcon className="w-4 h-4 mr-1.5" />
             絞り込み条件
           </h3>
           {/* 表示件数 */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <div className="flex items-center gap-1.5">
               <ChartBarIcon className="w-4 h-4 text-gray-500" />
               <Badge
@@ -175,7 +175,7 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
           {/* 受注番号 */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
@@ -315,10 +315,10 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         </div>
 
         {/* クリアボタン */}
-        <div className="flex justify-end mt-4">
+        <div className="flex justify-end mt-4 w-full">
           <button
             onClick={handleClearFilters}
-            className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex-shrink-0"
           >
             クリア
           </button>
@@ -326,53 +326,53 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto bg-white rounded-lg shadow">
-        <table className="min-w-full divide-y divide-gray-200">
+      <div className="w-full overflow-x-auto bg-white rounded-lg shadow">
+        <table className="min-w-max divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 整理番号
               </th>
-              <th className="hidden md:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 受注番号
               </th>
-              <th className="hidden md:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 個別/集合
               </th>
-              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 顧客コード
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 顧客名
               </th>
-              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 集合コード
               </th>
-              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 集合住宅名
               </th>
-              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 住所
               </th>
-              <th className="hidden md:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 依頼先
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 状態
               </th>
-              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 工事依頼日
               </th>
-              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 工事予定日
               </th>
-              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 工事完了日
               </th>
-              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 工事後報告
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 操作
               </th>
             </tr>
@@ -392,10 +392,10 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
                     <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap tabular-nums">
                       {item.serialNumber}
                     </td>
-                    <td className="hidden md:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap font-medium">
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap font-medium">
                       {item.orderNumber || '-'}
                     </td>
-                    <td className="hidden md:table-cell px-4 py-3 text-sm whitespace-nowrap">
+                    <td className="px-4 py-3 text-sm whitespace-nowrap">
                       <Badge
                         variant={item.propertyType === '個別' ? 'info' : item.propertyType === '集合' ? 'warning' : 'default'}
                         size="sm"
@@ -403,22 +403,24 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
                         {item.propertyType || '-'}
                       </Badge>
                     </td>
-                    <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       {item.propertyType === '個別' ? (item.customerCode || '-') : '-'}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       {item.propertyType === '個別' ? (item.customerName || '-') : (item.collectiveHousingName || '-')}
                     </td>
-                    <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       {item.propertyType === '集合' ? (item.collectiveCode || '-') : '-'}
                     </td>
-                    <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       {item.propertyType === '集合' ? (item.collectiveHousingName || '-') : '-'}
                     </td>
-                    <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900" title={item.address}>
-                      {item.address || '-'}
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                      <div className="max-w-[200px] truncate" title={item.address}>
+                        {item.address ? (item.address.length > 8 ? `${item.address.substring(0, 8)}...` : item.address) : '-'}
+                      </div>
                     </td>
-                    <td className="hidden md:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       {item.assigneeType === 'internal' ? (
                         <span className="text-blue-600 font-medium">自社 - {item.teamName}</span>
                       ) : (
@@ -430,16 +432,16 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
                         {item.status}
                       </Badge>
                     </td>
-                    <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       {item.constructionRequestedDate || '-'}
                     </td>
-                    <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       {item.constructionDate || '-'}
                     </td>
-                    <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       {item.constructionCompletedDate || '-'}
                     </td>
-                    <td className="hidden lg:table-cell px-4 py-3 text-sm whitespace-nowrap">
+                    <td className="px-4 py-3 text-sm whitespace-nowrap">
                       <Badge variant={reportBadge.variant} size="sm">
                         {reportBadge.text}
                       </Badge>

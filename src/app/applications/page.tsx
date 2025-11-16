@@ -123,10 +123,10 @@ export default function ApplicationsPage() {
 
   return (
     <Layout>
-      <div className="px-6 py-6">
+      <div className="px-6 py-6 w-full max-w-full overflow-x-hidden">
         {/* ヘッダー */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-          <div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 w-full">
+          <div className="min-w-0 flex-shrink">
             <h1 className="text-2xl font-semibold text-gray-900">申請番号管理</h1>
             <p className="text-sm text-gray-500 mt-1">
               現地調査、共架・添架申請、工事依頼を一元管理します。
@@ -134,14 +134,14 @@ export default function ApplicationsPage() {
           </div>
           <button
             onClick={() => setIsNewModalOpen(true)}
-            className="inline-flex items-center px-3 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700"
+            className="inline-flex items-center px-3 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700 flex-shrink-0"
           >
             <PlusIcon className="w-5 h-5 mr-1" /> 新規依頼
           </button>
         </div>
 
         {/* タブ */}
-        <div className="border-b border-gray-200">
+        <div className="border-b border-gray-200 w-full">
           <nav className="-mb-px flex space-x-8">
             {(Object.keys(TAB_LABELS) as TabType[]).map((tab) => (
               <button
@@ -163,7 +163,7 @@ export default function ApplicationsPage() {
         </div>
 
         {/* タブコンテンツ */}
-        <div className="mt-4">
+        <div className="mt-4 w-full overflow-x-hidden">
           {activeTab === 'survey' && (
             <SurveyTab data={surveyData} contractors={contractors} onEdit={handleEdit} />
           )}

@@ -24,9 +24,9 @@ export default function Layout({ children }: LayoutProps) {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 overflow-x-hidden">
       <Sidebar />
-      <main className="flex-1 ml-16 transition-all duration-300">
+      <main className="flex-1 ml-16 transition-all duration-300 min-w-0 overflow-x-hidden">
         {children}
       </main>
     </div>
