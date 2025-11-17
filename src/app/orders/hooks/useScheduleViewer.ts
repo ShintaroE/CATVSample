@@ -1,17 +1,26 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
-import { TeamFilter, CalendarViewMode, WeekViewColumn, TeamGroup, DayColumn, TeamColumnInDay } from '../types'
-import { sampleExclusions, sampleSchedules } from '../data/sampleData'
+import { TeamFilter, CalendarViewMode, WeekViewColumn, TeamGroup, DayColumn, TeamColumnInDay, ScheduleTypeFilter } from '../types'
+import { sampleExclusions } from '../data/sampleData'
 import { getContractorColorName } from '@/shared/utils/contractorColors'
+import { scheduleStorage } from '@/app/schedule/lib/scheduleStorage'
+import { ScheduleItem, ExclusionEntry, ScheduleType } from '@/app/schedule/types'
 
 export function useScheduleViewer() {
   const [calendarViewMode, setCalendarViewMode] = useState<CalendarViewMode>('month')
   const [teamFilters, setTeamFilters] = useState<TeamFilter[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [schedules, setSchedules] = useState<ScheduleItem[]>([])
+  const [exclusions, setExclusions] = useState<ExclusionEntry[]>([])
+  const [scheduleTypeFilter, setScheduleTypeFilter] = useState<ScheduleTypeFilter>({
+    construction: true,
+    survey: true,
+  })
   const [showFilterPanel, setShowFilterPanel] = useState(false)
   const [scheduleCalendarDate, setScheduleCalendarDate] = useState<Date>(new Date())
   const [selectedScheduleDate, setSelectedScheduleDate] = useState<string | null>(null)
 
-  // フィルター初期化
+  // フィルター初期化とデータ読み込み
   useEffect(() => {
     const contractors = getContractors()
     const teams = getTeams()
@@ -29,7 +38,15 @@ export function useScheduleViewer() {
       }
     })
 
+    // localStorageからスケジュールを読み込み
+    const storedSchedules = scheduleStorage.getAll()
+    setSchedules(storedSchedules)
+
+    // 除外日は既存のサンプルデータを維持
+    setExclusions(sampleExclusions)
+
     setTeamFilters(filters)
+    setIsLoading(false)
   }, [])
 
   // 日付フォーマット関数
@@ -131,20 +148,26 @@ export function useScheduleViewer() {
 
   // フィルタリング済みデータ
   const filteredSchedules = useMemo(() => {
-    return sampleSchedules.filter(schedule => {
+    return schedules.filter(schedule => {
+      // 種別フィルタ
+      if (!scheduleTypeFilter[schedule.scheduleType]) {
+        return false
+      }
+
+      // 班フィルタ
       if (teamFilters.length === 0) return true
       return schedule.assignedTeams?.some(assignedTeam =>
         teamFilters.some(f => f.teamId === assignedTeam.teamId && f.isVisible)
       )
     })
-  }, [teamFilters])
+  }, [schedules, teamFilters, scheduleTypeFilter])
 
   const filteredExclusions = useMemo(() => {
-    return sampleExclusions.filter(exclusion => {
+    return exclusions.filter(exclusion => {
       if (teamFilters.length === 0) return true
       return teamFilters.some(f => f.teamId === exclusion.teamId && f.isVisible)
     })
-  }, [teamFilters])
+  }, [exclusions, teamFilters])
 
   const visibleFilterCount = teamFilters.filter(f => f.isVisible).length
   const totalFilterCount = teamFilters.length
@@ -173,6 +196,14 @@ export function useScheduleViewer() {
     setTeamFilters(prev =>
       prev.map(f => f.teamId === teamId ? { ...f, isVisible: checked } : f)
     )
+  }, [])
+
+  // 種別フィルタートグル
+  const handleToggleScheduleType = useCallback((type: ScheduleType) => {
+    setScheduleTypeFilter(prev => ({
+      ...prev,
+      [type]: !prev[type]
+    }))
   }, [])
 
   // カレンダーナビゲーション
@@ -241,6 +272,8 @@ export function useScheduleViewer() {
     calendarViewMode,
     setCalendarViewMode,
     teamFilters,
+    isLoading,
+    scheduleTypeFilter,
     showFilterPanel,
     setShowFilterPanel,
     scheduleCalendarDate,
@@ -261,6 +294,7 @@ export function useScheduleViewer() {
     handleToggleAll,
     handleToggleContractor,
     handleToggleTeam,
+    handleToggleScheduleType,
     navigateScheduleMonth,
     navigateScheduleWeek,
     handleScheduleDateClick,
