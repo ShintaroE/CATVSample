@@ -10,6 +10,7 @@ import { useScheduleData } from './hooks/useScheduleData'
 import { useExclusionData } from './hooks/useExclusionData'
 import ExclusionCalendar from './components/ExclusionCalendar'
 import TeamFilter from './components/TeamFilter'
+import ScheduleTypeFilter from './components/ScheduleTypeFilter'
 import DayDetailModal from './components/DayDetailModal'
 
 /**
@@ -25,6 +26,13 @@ export default function MyExclusionsPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([])
   const [teams, setTeams] = useState<ReturnType<typeof getTeamsByContractorId>>([])
+  const [scheduleTypeFilter, setScheduleTypeFilter] = useState<{
+    construction: boolean
+    survey: boolean
+  }>({
+    construction: true,
+    survey: true
+  })
 
   // データ取得
   const { filterByTeams: filterSchedulesByTeams } = useScheduleData(user?.contractorId || '')
@@ -59,8 +67,15 @@ export default function MyExclusionsPage() {
 
   // フィルタリング
   const filteredSchedules = useMemo(() => {
-    return filterSchedulesByTeams(selectedTeamIds)
-  }, [filterSchedulesByTeams, selectedTeamIds])
+    const teamFiltered = filterSchedulesByTeams(selectedTeamIds)
+
+    // スケジュール種別でフィルタリング
+    return teamFiltered.filter(schedule => {
+      if (schedule.scheduleType === 'construction') return scheduleTypeFilter.construction
+      if (schedule.scheduleType === 'survey') return scheduleTypeFilter.survey
+      return true
+    })
+  }, [filterSchedulesByTeams, selectedTeamIds, scheduleTypeFilter])
 
   const filteredExclusions = useMemo(() => {
     return filterExclusionsByTeams(selectedTeamIds)
@@ -108,11 +123,15 @@ export default function MyExclusionsPage() {
         </div>
 
         {/* フィルター */}
-        <div className="mb-4">
+        <div className="mb-4 flex gap-4">
           <TeamFilter
             teams={teams}
             selectedTeamIds={selectedTeamIds}
             onSelectionChange={setSelectedTeamIds}
+          />
+          <ScheduleTypeFilter
+            scheduleTypeFilter={scheduleTypeFilter}
+            onFilterChange={setScheduleTypeFilter}
           />
         </div>
 
