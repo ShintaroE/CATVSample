@@ -3,6 +3,7 @@
 import React from 'react'
 import { ScheduleItem, ExclusionEntry, ScheduleItemWithTeam } from '../../../types'
 import { getContractorColorClasses } from '@/shared/utils/contractorColors'
+import { getScheduleIcon } from '../../../lib/scheduleUtils'
 import { useFilters } from '../../../hooks/useFilters'
 import { useScheduleLayout } from '../../../hooks/useScheduleLayout'
 import { useCalendar } from '../../../hooks/useCalendar'
@@ -156,9 +157,11 @@ export default function MonthView({
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-medium">{schedule.timeSlot}</span>
-                      <span className={`w-2 h-2 rounded-full ${getStatusColor(schedule.status).split(' ')[0]}`} />
                     </div>
-                    <div className="truncate">{schedule.customerName}</div>
+                    <div className="flex items-center gap-1">
+                      <span>{getScheduleIcon(schedule.scheduleType)}</span>
+                      <span className="truncate">{schedule.customerName}</span>
+                    </div>
                   </div>
                 ))}
                 {daySchedules.length > (dayExclusions.length > 0 ? 2 : 3) && (

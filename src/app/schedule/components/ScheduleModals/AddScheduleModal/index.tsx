@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { ScheduleItem, AssignedTeam, STATUSES } from '../../../types'
+import { ScheduleItem, AssignedTeam, ScheduleType } from '../../../types'
 import { Button, Input, Textarea } from '@/shared/components/ui'
 import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
 
@@ -16,18 +16,16 @@ export default function AddScheduleModal({
   onSave,
   onClose,
 }: AddScheduleModalProps) {
-  const [newSchedule, setNewSchedule] = useState<Partial<ScheduleItem>>({
-    orderNumber: '',
-    customerName: '',
-    address: '',
-    workType: '',
-    contractor: '直営班',
-    assignedDate: selectedDate,
-    timeSlot: '09:00-12:00',
-    status: '予定',
-    memo: '',
-    assignedTeams: []
-  })
+  const [scheduleType, setScheduleType] = useState<ScheduleType>('construction')
+  const [orderNumber, setOrderNumber] = useState('')
+  const [customerName, setCustomerName] = useState('')
+  const [collectiveHousingName, setCollectiveHousingName] = useState('')
+  const [address, setAddress] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [assignedDate, setAssignedDate] = useState(selectedDate)
+  const [startTime, setStartTime] = useState('09:00')
+  const [endTime, setEndTime] = useState('12:00')
+  const [memo, setMemo] = useState('')
   const [selectedTeams, setSelectedTeams] = useState<AssignedTeam[]>([])
 
   const handleAddTeam = (teamId: string) => {
@@ -48,13 +46,27 @@ export default function AddScheduleModal({
   }
 
   const handleSave = () => {
+    const timeSlot = `${startTime}-${endTime}`
+
     onSave({
-      ...newSchedule,
       id: String(Date.now()),
+      scheduleType,
+      orderNumber,
+      customerName,
+      collectiveHousingName: collectiveHousingName || undefined,
+      address,
+      phoneNumber: phoneNumber || undefined,
+      assignedDate,
+      timeSlot,
+      memo: memo || undefined,
       assignedTeams: selectedTeams,
       contractorId: selectedTeams[0]?.contractorId || '',
-      contractor: selectedTeams[0]?.contractorName || '直営班',
-    } as ScheduleItem)
+      contractor: selectedTeams[0]?.contractorName as '直営班' | '栄光電気' | 'スライヴ' || '直営班',
+      teamId: selectedTeams[0]?.teamId,
+      teamName: selectedTeams[0]?.teamName,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    })
   }
 
   return (
@@ -66,40 +78,108 @@ export default function AddScheduleModal({
         </div>
 
         <div className="space-y-4">
+          {/* 種別選択 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">種別</label>
+            <div className="flex gap-6">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="scheduleType"
+                  value="construction"
+                  checked={scheduleType === 'construction'}
+                  onChange={(e) => setScheduleType(e.target.value as ScheduleType)}
+                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm text-gray-700 flex items-center gap-1">
+                  🔧 工事
+                </span>
+              </label>
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="scheduleType"
+                  value="survey"
+                  checked={scheduleType === 'survey'}
+                  onChange={(e) => setScheduleType(e.target.value as ScheduleType)}
+                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm text-gray-700 flex items-center gap-1">
+                  📋 現地調査
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {/* 受注番号 */}
+          <Input
+            label="受注番号"
+            type="text"
+            value={orderNumber}
+            onChange={(e) => setOrderNumber(e.target.value)}
+            required
+          />
+
+          {/* 顧客名・集合住宅名 */}
           <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="受注番号"
-              type="text"
-              value={newSchedule.orderNumber || ''}
-              onChange={(e) => setNewSchedule({ ...newSchedule, orderNumber: e.target.value })}
-            />
             <Input
               label="顧客名"
               type="text"
-              value={newSchedule.customerName || ''}
-              onChange={(e) => setNewSchedule({ ...newSchedule, customerName: e.target.value })}
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              required
+            />
+            <Input
+              label="集合住宅名"
+              type="text"
+              value={collectiveHousingName}
+              onChange={(e) => setCollectiveHousingName(e.target.value)}
             />
           </div>
+
+          {/* 住所・電話番号 */}
           <Input
             label="住所"
             type="text"
-            value={newSchedule.address || ''}
-            onChange={(e) => setNewSchedule({ ...newSchedule, address: e.target.value })}
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            required
           />
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="工事日"
-              type="date"
-              value={newSchedule.assignedDate || selectedDate}
-              onChange={(e) => setNewSchedule({ ...newSchedule, assignedDate: e.target.value })}
-            />
-            <Input
-              label="時間帯"
-              type="text"
-              value={newSchedule.timeSlot || ''}
-              onChange={(e) => setNewSchedule({ ...newSchedule, timeSlot: e.target.value })}
-              placeholder="09:00-12:00"
-            />
+          <Input
+            label="電話番号"
+            type="tel"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+          />
+
+          {/* 日付 */}
+          <Input
+            label="日付"
+            type="date"
+            value={assignedDate}
+            onChange={(e) => setAssignedDate(e.target.value)}
+            required
+          />
+
+          {/* 時間帯（時刻ピッカー） */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">時間帯</label>
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="開始時刻"
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                required
+              />
+              <Input
+                label="終了時刻"
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                required
+              />
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">担当班</label>
@@ -148,22 +228,12 @@ export default function AddScheduleModal({
               })}
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">ステータス</label>
-            <select
-              value={newSchedule.status || '予定'}
-              onChange={(e) => setNewSchedule({ ...newSchedule, status: e.target.value as typeof STATUSES[number] })}
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
-            >
-              {STATUSES.map(status => (
-                <option key={status} value={status}>{status}</option>
-              ))}
-            </select>
-          </div>
+
+          {/* 備考 */}
           <Textarea
             label="備考"
-            value={newSchedule.memo || ''}
-            onChange={(e) => setNewSchedule({ ...newSchedule, memo: e.target.value })}
+            value={memo}
+            onChange={(e) => setMemo(e.target.value)}
             rows={3}
           />
         </div>

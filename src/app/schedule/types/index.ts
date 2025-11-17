@@ -5,21 +5,27 @@ export interface AssignedTeam {
   teamName: string
 }
 
+// スケジュール種別
+export type ScheduleType = 'construction' | 'survey'
+
 export interface ScheduleItem {
   id: string
+  scheduleType: ScheduleType // 'construction' (工事) | 'survey' (現地調査)
   orderNumber: string
   customerName: string
+  collectiveHousingName?: string // 集合住宅名
   address: string
-  workType: string
+  phoneNumber?: string // 電話番号
   contractor: '直営班' | '栄光電気' | 'スライヴ'
   contractorId: string
   teamId?: string
   teamName?: string
   assignedTeams: AssignedTeam[]
-  assignedDate: string
-  timeSlot: string
-  status: '予定' | '作業中' | '完了' | '延期'
+  assignedDate: string // 工事日 or 調査日
+  timeSlot: string // "09:00-12:00" 形式
   memo?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface ScheduleItemWithTeam extends ScheduleItem {
@@ -90,9 +96,6 @@ export interface TeamFilter {
 }
 
 export type ViewMode = 'month' | 'week' | 'day'
-export type ScheduleStatus = '予定' | '作業中' | '完了' | '延期'
-
-export const STATUSES: readonly ScheduleStatus[] = ['予定', '作業中', '完了', '延期'] as const
 
 export const HOUR_HEIGHT = 4
 export const BUSINESS_START_HOUR = 9

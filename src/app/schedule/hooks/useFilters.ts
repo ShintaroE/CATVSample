@@ -1,11 +1,22 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
-import { TeamFilter, ScheduleItem, ExclusionEntry, ScheduleItemWithTeam } from '../types'
+import { TeamFilter, ScheduleItem, ExclusionEntry, ScheduleItemWithTeam, ScheduleType } from '../types'
 import { getContractorColorName } from '@/shared/utils/contractorColors'
+
+// 種別フィルタの型定義
+export interface ScheduleTypeFilter {
+  construction: boolean
+  survey: boolean
+}
 
 export function useFilters(schedules: ScheduleItem[], exclusions: ExclusionEntry[]) {
   const [teamFilters, setTeamFilters] = useState<TeamFilter[]>([])
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false)
+  const [scheduleTypeFilter, setScheduleTypeFilter] = useState<ScheduleTypeFilter>({
+    construction: true,
+    survey: true,
+  })
+  const [isScheduleTypeFilterOpen, setIsScheduleTypeFilterOpen] = useState(false)
 
   // フィルター初期化
   useEffect(() => {
@@ -89,15 +100,29 @@ export function useFilters(schedules: ScheduleItem[], exclusions: ExclusionEntry
     )
   }, [])
 
+  // 種別フィルタのトグル
+  const handleToggleScheduleType = useCallback((type: ScheduleType) => {
+    setScheduleTypeFilter(prev => ({
+      ...prev,
+      [type]: !prev[type]
+    }))
+  }, [])
+
   // フィルタリング済みデータ
   const filteredSchedules = useMemo(() => {
     return schedules.filter(schedule => {
+      // 種別フィルタ
+      if (!scheduleTypeFilter[schedule.scheduleType]) {
+        return false
+      }
+
+      // 担当班フィルタ
       if (teamFilters.length === 0) return true
       return schedule.assignedTeams.some(assignedTeam =>
         teamFilters.some(f => f.teamId === assignedTeam.teamId && f.isVisible)
       )
     })
-  }, [schedules, teamFilters])
+  }, [schedules, teamFilters, scheduleTypeFilter])
 
   const filteredExclusions = useMemo(() => {
     return exclusions.filter(exclusion => {
@@ -147,6 +172,10 @@ export function useFilters(schedules: ScheduleItem[], exclusions: ExclusionEntry
     handleToggleAll,
     handleToggleContractor,
     handleToggleTeam,
+    scheduleTypeFilter,
+    isScheduleTypeFilterOpen,
+    setIsScheduleTypeFilterOpen,
+    handleToggleScheduleType,
     filteredSchedules,
     filteredExclusions,
     expandSchedulesByTeams,
