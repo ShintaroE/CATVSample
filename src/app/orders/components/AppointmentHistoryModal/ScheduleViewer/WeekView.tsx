@@ -3,7 +3,9 @@
 import React from 'react'
 import { useScheduleViewer } from '../../../hooks/useScheduleViewer'
 import { getContractorSolidColorClass } from '@/shared/utils/contractorColors'
-import { ExclusionEntry, ScheduleData, TeamColumnInDay } from '../../../types'
+import { ExclusionEntry, TeamColumnInDay } from '../../../types'
+import { ScheduleItem } from '@/app/schedule/types'
+import { getScheduleIcon } from '@/app/schedule/lib/scheduleUtils'
 
 interface WeekViewProps {
   scheduleHooks: ReturnType<typeof useScheduleViewer>
@@ -81,12 +83,12 @@ export default function WeekView({ scheduleHooks }: WeekViewProps) {
   }
 
   interface LayoutItem {
-    data: ExclusionEntry | ScheduleData
+    data: ExclusionEntry | ScheduleItem
     width: string
     left: string
   }
 
-  const calculateSeparatedLayout = (schedules: ScheduleData[], exclusions: ExclusionEntry[], teamId: string, dateStr: string): { exclusions: LayoutItem[]; schedules: LayoutItem[] } => {
+  const calculateSeparatedLayout = (schedules: ScheduleItem[], exclusions: ExclusionEntry[], teamId: string, dateStr: string): { exclusions: LayoutItem[]; schedules: LayoutItem[] } => {
     const daySchedules = schedules.filter(s =>
       s.assignedDate === dateStr &&
       s.assignedTeams?.some(t => t.teamId === teamId)
@@ -102,7 +104,7 @@ export default function WeekView({ scheduleHooks }: WeekViewProps) {
           width: '50%',
           left: '0%'
         })),
-        schedules: daySchedules.map((s: ScheduleData) => ({
+        schedules: daySchedules.map((s: ScheduleItem) => ({
           data: s,
           width: '50%',
           left: '50%'
@@ -116,7 +118,7 @@ export default function WeekView({ scheduleHooks }: WeekViewProps) {
         width: '100%',
         left: '0%'
       })),
-      schedules: daySchedules.map((s: ScheduleData) => ({
+      schedules: daySchedules.map((s: ScheduleItem) => ({
         data: s,
         width: '100%',
         left: '0%'
@@ -275,13 +277,13 @@ export default function WeekView({ scheduleHooks }: WeekViewProps) {
 
                       {/* スケジュール */}
                       {layout.schedules.map((item: LayoutItem, idx: number) => {
-                        const scheduleData = item.data as ScheduleData
+                        const scheduleData = item.data as ScheduleItem
                         const contractorName = scheduleData.contractor || ''
                         const bgColorClass = getContractorSolidColorClass(contractorName)
 
                         return (
                           <div
-                            key={`schedule-${scheduleData.customerCode}-${idx}`}
+                            key={`schedule-${scheduleData.orderNumber}-${idx}`}
                             className={`absolute ${bgColorClass} text-white rounded p-1 overflow-hidden pointer-events-auto cursor-pointer hover:opacity-90`}
                             style={{
                               top: calculateTopPosition(scheduleData.timeSlot),
@@ -299,14 +301,10 @@ export default function WeekView({ scheduleHooks }: WeekViewProps) {
                             <div className="text-[10px] font-semibold truncate">
                               {scheduleData.timeSlot}
                             </div>
-                            <div className="text-[9px] truncate">
-                              {scheduleData.customerName}
+                            <div className="text-[9px] truncate flex items-center gap-0.5">
+                              <span>{getScheduleIcon(scheduleData.scheduleType)}</span>
+                              <span>{scheduleData.customerName}</span>
                             </div>
-                            {scheduleData.workType && (
-                              <div className="text-[8px] truncate opacity-90">
-                                {scheduleData.workType}
-                              </div>
-                            )}
                           </div>
                         )
                       })}
@@ -351,11 +349,6 @@ export default function WeekView({ scheduleHooks }: WeekViewProps) {
                       </span>
                     </div>
                     <div className="space-y-1">
-                      {schedule.customerCode && (
-                        <div className="text-[10px] text-gray-700">
-                          <span className="font-medium">顧客コード:</span> {schedule.customerCode}
-                        </div>
-                      )}
                       {schedule.customerName && (
                         <div className="text-[10px] text-gray-700">
                           <span className="font-medium">名前:</span> {schedule.customerName}
@@ -366,9 +359,9 @@ export default function WeekView({ scheduleHooks }: WeekViewProps) {
                           <span className="font-medium">場所:</span> {schedule.address}
                         </div>
                       )}
-                      {schedule.workType && (
+                      {schedule.orderNumber && (
                         <div className="text-[10px] text-gray-600">
-                          <span className="font-medium">工事内容:</span> {schedule.workType}
+                          <span className="font-medium">オーダー:</span> {schedule.orderNumber}
                         </div>
                       )}
                     </div>

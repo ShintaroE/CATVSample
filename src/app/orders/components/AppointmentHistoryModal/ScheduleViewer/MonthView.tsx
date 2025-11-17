@@ -3,6 +3,7 @@
 import React from 'react'
 import { useScheduleViewer } from '../../../hooks/useScheduleViewer'
 import { getContractorBadgeColorClasses, getContractorBackgroundColorClass, getContractorColorName } from '@/shared/utils/contractorColors'
+import { getScheduleIcon } from '@/app/schedule/lib/scheduleUtils'
 
 interface MonthViewProps {
   scheduleHooks: ReturnType<typeof useScheduleViewer>
@@ -93,8 +94,9 @@ export default function MonthView({ scheduleHooks }: MonthViewProps) {
                       key={idx}
                       className={`text-[10px] p-0.5 rounded truncate ${getContractorBadgeColorClasses(schedule.contractor)}`}
                     >
-                      <div className="truncate">
-                        {schedule.contractor}{schedule.teamName ? ` - ${schedule.teamName}` : ''}
+                      <div className="truncate flex items-center gap-0.5">
+                        <span>{getScheduleIcon(schedule.scheduleType)}</span>
+                        <span>{schedule.contractor}{schedule.teamName ? ` - ${schedule.teamName}` : ''}</span>
                       </div>
                     </div>
                   ))}
@@ -156,11 +158,6 @@ export default function MonthView({ scheduleHooks }: MonthViewProps) {
                     </span>
                   </div>
                   <div className="space-y-1">
-                    {schedule.customerCode && (
-                      <div className="text-[10px] text-gray-700">
-                        <span className="font-medium">顧客コード:</span> {schedule.customerCode}
-                      </div>
-                    )}
                     {schedule.customerName && (
                       <div className="text-[10px] text-gray-700">
                         <span className="font-medium">名前:</span> {schedule.customerName}
@@ -171,9 +168,9 @@ export default function MonthView({ scheduleHooks }: MonthViewProps) {
                         <span className="font-medium">場所:</span> {schedule.address}
                       </div>
                     )}
-                    {schedule.workType && (
+                    {schedule.orderNumber && (
                       <div className="text-[10px] text-gray-600">
-                        <span className="font-medium">工事内容:</span> {schedule.workType}
+                        <span className="font-medium">オーダー:</span> {schedule.orderNumber}
                       </div>
                     )}
                   </div>

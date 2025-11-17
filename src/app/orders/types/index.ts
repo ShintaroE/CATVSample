@@ -79,6 +79,11 @@ export interface TeamFilter {
   color: string
 }
 
+export interface ScheduleTypeFilter {
+  construction: boolean
+  survey: boolean
+}
+
 export type CalendarViewMode = 'month' | 'week'
 
 export interface ScheduleData {

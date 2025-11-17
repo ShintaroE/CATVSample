@@ -16,8 +16,15 @@ export default function ScheduleViewer() {
         スケジュール確認
       </h4>
 
-      {/* カレンダーナビゲーション */}
-      <div className="flex items-center justify-between mb-3">
+      {/* ローディング表示 */}
+      {scheduleHooks.isLoading ? (
+        <div className="text-center py-8 text-gray-500">
+          読み込み中...
+        </div>
+      ) : (
+        <>
+          {/* カレンダーナビゲーション */}
+          <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">
           <button
             onClick={() => scheduleHooks.calendarViewMode === 'month' 
@@ -103,6 +110,35 @@ export default function ScheduleViewer() {
                     </label>
                   </div>
 
+                  {/* 種別フィルター */}
+                  <div className="pb-2 border-b border-gray-200">
+                    <div className="text-xs font-medium text-gray-700 mb-2">種別</div>
+                    <div className="space-y-1 ml-2">
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={scheduleHooks.scheduleTypeFilter.construction}
+                          onChange={() => scheduleHooks.handleToggleScheduleType('construction')}
+                          className="h-3 w-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                        <label className="ml-2 text-sm text-gray-700">
+                          🔧 工事
+                        </label>
+                      </div>
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={scheduleHooks.scheduleTypeFilter.survey}
+                          onChange={() => scheduleHooks.handleToggleScheduleType('survey')}
+                          className="h-3 w-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                        <label className="ml-2 text-sm text-gray-700">
+                          📋 現地調査
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* 協力会社ごとのフィルター */}
                   {Array.from(new Set(scheduleHooks.teamFilters.map(f => f.contractorId))).map(contractorId => {
                     const contractorTeams = scheduleHooks.teamFilters.filter(f => f.contractorId === contractorId)
@@ -158,14 +194,16 @@ export default function ScheduleViewer() {
         </div>
       </div>
 
-      {/* 月表示 */}
-      {scheduleHooks.calendarViewMode === 'month' && (
-        <MonthView scheduleHooks={scheduleHooks} />
-      )}
+          {/* 月表示 */}
+          {scheduleHooks.calendarViewMode === 'month' && (
+            <MonthView scheduleHooks={scheduleHooks} />
+          )}
 
-      {/* 週表示 */}
-      {scheduleHooks.calendarViewMode === 'week' && (
-        <WeekView scheduleHooks={scheduleHooks} />
+          {/* 週表示 */}
+          {scheduleHooks.calendarViewMode === 'week' && (
+            <WeekView scheduleHooks={scheduleHooks} />
+          )}
+        </>
       )}
     </div>
   )
