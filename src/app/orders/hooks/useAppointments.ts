@@ -1,6 +1,9 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { AppointmentHistory, OrderData } from '../types'
 import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
+import { AssignedTeam } from '@/app/schedule/types'
+import { scheduleStorage } from '@/app/schedule/lib/scheduleStorage'
+import { ScheduleItem } from '@/app/schedule/types'
 
 export function useAppointments() {
   const [editingAppointment, setEditingAppointment] = useState<AppointmentHistory | null>(null)
@@ -8,11 +11,33 @@ export function useAppointments() {
   const [appointmentDate, setAppointmentDate] = useState<string>('')
   const [appointmentTime, setAppointmentTime] = useState<string>('')
   const [appointmentEndTime, setAppointmentEndTime] = useState<string>('')
-  const [selectedContractorId, setSelectedContractorId] = useState<string>('')
-  const [selectedTeamId, setSelectedTeamId] = useState<string>('')
-  const [availableTeams, setAvailableTeams] = useState<Array<{ id: string, name: string }>>([])
+  const [selectedTeams, setSelectedTeams] = useState<AssignedTeam[]>([])
+  const [allTeams, setAllTeams] = useState<Array<{
+    id: string
+    teamName: string
+    contractorId: string
+    contractorName: string
+  }>>([])
   const [workStartTime, setWorkStartTime] = useState<string>('09:00')
   const [workEndTime, setWorkEndTime] = useState<string>('12:00')
+
+  // 全協力会社の全班を取得
+  useEffect(() => {
+    const contractors = getContractors().filter(c => c.isActive)
+    const teams = getTeams().filter(t => t.isActive)
+
+    const teamList = teams.map(team => {
+      const contractor = contractors.find(c => c.id === team.contractorId)
+      return {
+        id: team.id,
+        teamName: team.teamName,
+        contractorId: team.contractorId,
+        contractorName: contractor?.name || ''
+      }
+    })
+
+    setAllTeams(teamList)
+  }, [])
 
   const handleAddAppointment = useCallback(() => {
     setIsAddingAppointment(true)
@@ -22,6 +47,7 @@ export function useAppointments() {
     setAppointmentEndTime('11:00')
     setWorkStartTime('09:00')
     setWorkEndTime('12:00')
+    setSelectedTeams([])
     setEditingAppointment({
       id: '',
       date: `${today.toISOString().slice(0, 10)}T10:00`,
@@ -39,41 +65,86 @@ export function useAppointments() {
     setAppointmentTime(appointmentDateTime.toISOString().slice(11, 16))
     setAppointmentEndTime(appointment.endTime || '11:00')
 
+    // scheduleInfo から assignedTeams を復元
     if (appointment.scheduleInfo) {
-      const { contractorId, teamId, workStartTime, workEndTime } = appointment.scheduleInfo
-      setSelectedContractorId(contractorId)
-      const teams = getTeams().filter(t => t.contractorId === contractorId && t.isActive)
-      setAvailableTeams(teams.map(t => ({ id: t.id, name: t.teamName })))
-      setSelectedTeamId(teamId)
+      const { assignedTeams, workStartTime, workEndTime } = appointment.scheduleInfo
+      setSelectedTeams(assignedTeams)
       setWorkStartTime(workStartTime)
       setWorkEndTime(workEndTime)
     } else {
+      setSelectedTeams([])
       setWorkStartTime('09:00')
       setWorkEndTime('12:00')
     }
   }, [])
 
-  const handleContractorChange = useCallback((contractorId: string) => {
-    setSelectedContractorId(contractorId)
-    setSelectedTeamId('')
+  // 班を追加
+  const handleAddTeam = useCallback((teamId: string) => {
+    if (!teamId) return
 
-    if (contractorId) {
-      const teams = getTeams().filter(t => t.contractorId === contractorId && t.isActive)
-      setAvailableTeams(teams.map(t => ({ id: t.id, name: t.teamName })))
-    } else {
-      setAvailableTeams([])
-    }
+    const team = allTeams.find(t => t.id === teamId)
+    if (!team) return
+
+    // 重複チェック
+    if (selectedTeams.some(t => t.teamId === teamId)) return
+
+    setSelectedTeams(prev => [...prev, {
+      contractorId: team.contractorId,
+      contractorName: team.contractorName,
+      teamId: team.id,
+      teamName: team.teamName
+    }])
+  }, [allTeams, selectedTeams])
+
+  // 班を削除
+  const handleRemoveTeam = useCallback((teamId: string) => {
+    setSelectedTeams(prev => prev.filter(t => t.teamId !== teamId))
   }, [])
 
   const resetAppointmentForm = useCallback(() => {
     setEditingAppointment(null)
     setIsAddingAppointment(false)
-    setSelectedContractorId('')
-    setSelectedTeamId('')
-    setAvailableTeams([])
+    setSelectedTeams([])
     setWorkStartTime('09:00')
     setWorkEndTime('12:00')
   }, [])
+
+  // スケジュール登録処理
+  const registerToSchedule = useCallback((
+    order: OrderData,
+    status: '工事決定' | '調査日決定',
+    scheduleInfo: {
+      assignedTeams: AssignedTeam[]
+      workStartTime: string
+      workEndTime: string
+    }
+  ) => {
+    const scheduleType = status === '工事決定' ? 'construction' : 'survey'
+    const timeSlot = `${scheduleInfo.workStartTime}-${scheduleInfo.workEndTime}`
+
+    const newSchedule: ScheduleItem = {
+      id: `appointment-${Date.now()}`,
+      scheduleType,
+      orderNumber: order.orderNumber,
+      customerName: order.customerName,
+      collectiveHousingName: order.apartmentName,
+      address: order.address || '',
+      phoneNumber: order.phoneNumber,
+      assignedDate: appointmentDate,
+      timeSlot,
+      assignedTeams: scheduleInfo.assignedTeams,
+      // 後方互換性のため、最初の班を代表として設定
+      contractorId: scheduleInfo.assignedTeams[0].contractorId,
+      contractor: scheduleInfo.assignedTeams[0].contractorName as '直営班' | '栄光電気' | 'スライヴ',
+      teamId: scheduleInfo.assignedTeams[0].teamId,
+      teamName: scheduleInfo.assignedTeams[0].teamName,
+      memo: `アポイント履歴から登録（${status}）`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    scheduleStorage.add(newSchedule)
+  }, [appointmentDate])
 
   const saveAppointment = useCallback((
     order: OrderData,
@@ -82,28 +153,24 @@ export function useAppointments() {
   ) => {
     if (!editingAppointment) return
 
-    if (editingAppointment.status === '工事決定') {
-      if (!selectedContractorId || !selectedTeamId) {
-        alert('工事決定の場合、工事会社と班を選択してください')
+    // バリデーション: 工事決定・調査日決定の場合、班選択必須
+    if (editingAppointment.status === '工事決定' || editingAppointment.status === '調査日決定') {
+      if (selectedTeams.length === 0) {
+        alert('担当班を最低1つ選択してください')
         return
       }
     }
 
     const combinedDateTime = `${appointmentDate}T${appointmentTime}`
 
+    // scheduleInfo 生成
     let scheduleInfo = undefined
-    if (editingAppointment.status === '工事決定' && selectedContractorId && selectedTeamId) {
-      const contractor = getContractors().find(c => c.id === selectedContractorId)
-      const team = getTeams().find(t => t.id === selectedTeamId)
-      if (contractor && team) {
-        scheduleInfo = {
-          contractorId: contractor.id,
-          contractorName: contractor.name,
-          teamId: team.id,
-          teamName: team.teamName,
-          workStartTime,
-          workEndTime
-        }
+    if ((editingAppointment.status === '工事決定' || editingAppointment.status === '調査日決定')
+        && selectedTeams.length > 0) {
+      scheduleInfo = {
+        assignedTeams: selectedTeams,
+        workStartTime,
+        workEndTime
       }
     }
 
@@ -114,6 +181,7 @@ export function useAppointments() {
       scheduleInfo
     }
 
+    // アポイント履歴を更新
     const updatedOrders = orders.map(o => {
       if (o.orderNumber === order.orderNumber) {
         const history = o.appointmentHistory || []
@@ -135,8 +203,9 @@ export function useAppointments() {
 
     setOrders(updatedOrders)
 
-    if (editingAppointment.status === '工事決定' && scheduleInfo) {
-      alert(`アポイントを保存し、スケジュールを登録しました\n担当: ${scheduleInfo.contractorName} - ${scheduleInfo.teamName}\n工事時間: ${scheduleInfo.workStartTime} - ${scheduleInfo.workEndTime}`)
+    // スケジュール画面にも登録
+    if (scheduleInfo && (editingAppointment.status === '工事決定' || editingAppointment.status === '調査日決定')) {
+      registerToSchedule(order, editingAppointment.status, scheduleInfo)
     }
 
     resetAppointmentForm()
@@ -145,12 +214,12 @@ export function useAppointments() {
     appointmentDate,
     appointmentTime,
     appointmentEndTime,
-    selectedContractorId,
-    selectedTeamId,
+    selectedTeams,
     workStartTime,
     workEndTime,
     isAddingAppointment,
-    resetAppointmentForm
+    resetAppointmentForm,
+    registerToSchedule
   ])
 
   const deleteAppointment = useCallback((
@@ -177,21 +246,21 @@ export function useAppointments() {
     appointmentDate,
     appointmentTime,
     appointmentEndTime,
-    selectedContractorId,
-    selectedTeamId,
-    availableTeams,
+    selectedTeams,
+    allTeams,
     workStartTime,
     workEndTime,
     setAppointmentDate,
     setAppointmentTime,
     setAppointmentEndTime,
-    setSelectedTeamId,
     setWorkStartTime,
     setWorkEndTime,
     setEditingAppointment,
+    setSelectedTeams,
+    handleAddTeam,
+    handleRemoveTeam,
     handleAddAppointment,
     handleEditAppointment,
-    handleContractorChange,
     resetAppointmentForm,
     saveAppointment,
     deleteAppointment,

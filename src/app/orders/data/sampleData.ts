@@ -181,10 +181,14 @@ export const sampleOrders: OrderData[] = [
         status: '工事決定',
         content: '工事内容に合意、9月29日で調整',
         scheduleInfo: {
-          contractorId: 'contractor-1',
-          contractorName: '直営班',
-          teamId: 'team-1',
-          teamName: 'A班',
+          assignedTeams: [
+            {
+              contractorId: 'contractor-1',
+              contractorName: '直営班',
+              teamId: 'team-1',
+              teamName: 'A班'
+            }
+          ],
           workStartTime: '09:00',
           workEndTime: '12:00'
         }
@@ -216,10 +220,14 @@ export const sampleOrders: OrderData[] = [
         status: '工事決定',
         content: '工事日程確定、立会い可能',
         scheduleInfo: {
-          contractorId: 'contractor-3',
-          contractorName: 'スライヴ',
-          teamId: 'team-4',
-          teamName: '第1班',
+          assignedTeams: [
+            {
+              contractorId: 'contractor-3',
+              contractorName: 'スライヴ',
+              teamId: 'team-4',
+              teamName: '第1班'
+            }
+          ],
           workStartTime: '09:00',
           workEndTime: '12:00'
         }
