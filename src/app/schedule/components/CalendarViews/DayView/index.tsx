@@ -61,10 +61,21 @@ export default function DayView({
   const minColumnWidth = 200
   const timeColumnWidth = 60
 
+  // ローディング状態のチェック
+  if (filterHooks.isLoading) {
+    return (
+      <div className="bg-white shadow rounded-lg p-8 text-center text-gray-500">
+        読み込み中...
+      </div>
+    )
+  }
+
   if (visibleColumns.length === 0) {
     return (
       <div className="bg-white shadow rounded-lg p-8 text-center text-gray-500">
-        フィルターで班を選択してください
+        フィルターで全ての班が非表示になっています。
+        <br />
+        表示フィルターから班を選択してください。
       </div>
     )
   }

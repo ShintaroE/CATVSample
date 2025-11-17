@@ -59,6 +59,15 @@ export default function WeekView({
     })
   }, [teamColumns, filterHooks.filteredExclusions])
 
+  // ローディング状態のチェック
+  if (filterHooks.isLoading) {
+    return (
+      <div className="bg-white shadow rounded-lg p-8 text-center text-gray-500">
+        読み込み中...
+      </div>
+    )
+  }
+
   if (visibleTeamsCount === 0) {
     return (
       <div className="bg-white shadow rounded-lg p-8 text-center text-gray-500">

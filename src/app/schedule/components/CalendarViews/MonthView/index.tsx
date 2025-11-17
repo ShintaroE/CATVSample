@@ -28,6 +28,15 @@ export default function MonthView({
   filterHooks,
   calendarHooks,
 }: MonthViewProps) {
+  // ローディング状態のチェック
+  if (filterHooks.isLoading) {
+    return (
+      <div className="bg-white shadow rounded-lg p-8 text-center text-gray-500">
+        読み込み中...
+      </div>
+    )
+  }
+
   const getMonthDays = () => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()

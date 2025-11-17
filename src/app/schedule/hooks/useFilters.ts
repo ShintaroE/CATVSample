@@ -11,6 +11,7 @@ export interface ScheduleTypeFilter {
 
 export function useFilters(schedules: ScheduleItem[], exclusions: ExclusionEntry[]) {
   const [teamFilters, setTeamFilters] = useState<TeamFilter[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false)
   const [scheduleTypeFilter, setScheduleTypeFilter] = useState<ScheduleTypeFilter>({
     construction: true,
@@ -41,6 +42,7 @@ export function useFilters(schedules: ScheduleItem[], exclusions: ExclusionEntry
     })
 
     setTeamFilters(filters)
+    setIsLoading(false)
   }, [])
 
   const getContractorCheckState = useCallback((contractorId: string): 'all' | 'some' | 'none' => {
@@ -165,6 +167,7 @@ export function useFilters(schedules: ScheduleItem[], exclusions: ExclusionEntry
 
   return {
     teamFilters,
+    isLoading,
     isFilterPanelOpen,
     setIsFilterPanelOpen,
     getContractorCheckState,

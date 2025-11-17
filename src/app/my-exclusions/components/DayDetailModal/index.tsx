@@ -187,7 +187,6 @@ export default function DayDetailModal({
                                 </div>
                                 <div className="text-gray-900">{schedule.customerName}様</div>
                                 <div className="text-gray-600">{schedule.address}</div>
-                                <div className="text-gray-600">{schedule.workType}</div>
                               </div>
                             </div>
                           ))
