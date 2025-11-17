@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import Layout from '@/shared/components/layout/Layout'
 import { ScheduleItem, ExclusionEntry } from './types'
-import { sampleSchedules, sampleExclusions } from './data/sampleData'
+import { sampleExclusions } from './data/sampleData'
 import { useSchedules } from './hooks/useSchedules'
 import { useCalendar } from './hooks/useCalendar'
 import { useFilters } from './hooks/useFilters'

@@ -58,21 +58,6 @@ export default function MonthView({
     return filterHooks.filteredSchedules.filter((s: ScheduleItem) => s.assignedDate === dateStr)
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case '予定':
-        return 'bg-blue-100 text-blue-800'
-      case '作業中':
-        return 'bg-yellow-100 text-yellow-800'
-      case '完了':
-        return 'bg-green-100 text-green-800'
-      case '延期':
-        return 'bg-red-100 text-red-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
-
   const getTimeLabel = (exclusion: ExclusionEntry): string => {
     switch (exclusion.timeType) {
       case 'all_day':
