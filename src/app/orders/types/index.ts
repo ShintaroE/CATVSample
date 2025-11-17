@@ -1,19 +1,17 @@
 import { ConstructionStatus } from '@/features/applications/types'
+import { AssignedTeam } from '@/app/schedule/types'
 
 export interface AppointmentHistory {
   id: string
   date: string
   endTime?: string
-  status: '工事決定' | '保留' | '不通' | '留守電'
+  status: '工事決定' | '調査日決定' | '保留' | '不通' | '留守電'
   content: string
-  // 工事決定時の追加情報
+  // 工事決定・調査日決定時の追加情報
   scheduleInfo?: {
-    contractorId: string
-    contractorName: string
-    teamId: string
-    teamName: string
-    workStartTime: string  // 工事開始時刻 (HH:MM)
-    workEndTime: string    // 工事終了時刻 (HH:MM)
+    assignedTeams: AssignedTeam[]  // 複数班対応
+    workStartTime: string  // 工事/調査開始時刻 (HH:MM)
+    workEndTime: string    // 工事/調査終了時刻 (HH:MM)
   }
 }
 

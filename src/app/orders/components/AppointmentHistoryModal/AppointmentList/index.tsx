@@ -75,11 +75,13 @@ export default function AppointmentList({
                   </button>
                 </div>
               </div>
-              {appointment.scheduleInfo && (
-                <div className="mb-2 flex items-center space-x-2 text-xs">
-                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-green-100 text-green-800 font-medium">
-                    📅 {appointment.scheduleInfo.contractorName} - {appointment.scheduleInfo.teamName}
-                  </span>
+              {appointment.scheduleInfo && appointment.scheduleInfo.assignedTeams.length > 0 && (
+                <div className="mb-2 flex flex-wrap gap-2 text-xs">
+                  {appointment.scheduleInfo.assignedTeams.map((team, idx) => (
+                    <span key={idx} className="inline-flex items-center px-2 py-1 rounded-md bg-green-100 text-green-800 font-medium">
+                      📅 {team.contractorName} - {team.teamName}
+                    </span>
+                  ))}
                 </div>
               )}
               <p className="text-sm text-gray-700">{appointment.content}</p>
