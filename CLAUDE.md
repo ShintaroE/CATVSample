@@ -2,6 +2,43 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Quick Start
+
+### Essential Commands
+- `npm run dev` - Start development server (http://localhost:3000)
+- `npm run build` - Build for production
+- `npm run lint` - Check code quality
+
+### Demo Accounts
+**Admin Account:**
+- Username: `admin`
+- Password: `admin`
+- Access: All management pages
+
+**Contractor Accounts:**
+- 直営班: username `chokueihan`, password `password`
+- 栄光電気通信: username `eiko`, password `password`
+- スライヴ: username `thrive`, password `password`
+- Access: 依頼一覧 (Contractor Requests), 除外日管理 (My Exclusions)
+
+### Critical Development Notes
+- **localStorage dependency**: All data stored in browser localStorage (no backend)
+- **localStorage clear**: If errors occur after type updates, clear localStorage:
+  ```javascript
+  localStorage.clear()
+  location.reload()
+  ```
+- **Path aliases**: Always use `@/*` imports instead of relative paths (e.g., `@/shared/components/layout/Layout`)
+- **React routing rule**: NEVER call `router.push()` during render phase - always use `useEffect`
+- **Form styling**: All input/select elements MUST include `bg-white text-gray-900` classes for proper visibility
+- **Date formatting**: Always use `formatDateString(date)` from `@/shared/utils/formatters` to avoid timezone issues
+
+### Architecture Overview
+This is a Next.js 15 application following a **3-layer architecture**:
+1. **Layer 1 - `shared/`**: App-wide utilities and components (domain-agnostic)
+2. **Layer 2 - `features/`**: Domain-specific business logic (auth, contractor, applications, calendar)
+3. **Layer 3 - `app/`**: Page-specific code with components, hooks, and lib folders
+
 ## Commands
 
 ### Development
