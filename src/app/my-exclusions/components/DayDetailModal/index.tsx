@@ -172,24 +172,27 @@ export default function DayDetailModal({
                             この日の工事予定はありません
                           </div>
                         ) : (
-                          schedules.map(schedule => (
-                            <div
-                              key={schedule.id}
-                              className="bg-blue-50 border border-blue-200 rounded-lg p-3"
-                            >
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="text-lg">🔧</span>
-                                <span className="font-medium text-blue-700">{schedule.timeSlot}</span>
-                              </div>
-                              <div className="text-sm space-y-1">
-                                <div className="text-gray-700">
-                                  <span className="font-medium">{schedule.contractor} - {schedule.teamName}</span>
+                          schedules.map(schedule => {
+                            const scheduleIcon = schedule.scheduleType === 'construction' ? '🔧' : '📋'
+                            return (
+                              <div
+                                key={schedule.id}
+                                className="bg-blue-50 border border-blue-200 rounded-lg p-3"
+                              >
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="text-lg">{scheduleIcon}</span>
+                                  <span className="font-medium text-blue-700">{schedule.timeSlot}</span>
                                 </div>
-                                <div className="text-gray-900">{schedule.customerName}様</div>
-                                <div className="text-gray-600">{schedule.address}</div>
+                                <div className="text-sm space-y-1">
+                                  <div className="text-gray-700">
+                                    <span className="font-medium">{schedule.contractor} - {schedule.teamName}</span>
+                                  </div>
+                                  <div className="text-gray-900">{schedule.customerName}様</div>
+                                  <div className="text-gray-600">{schedule.address}</div>
+                                </div>
                               </div>
-                            </div>
-                          ))
+                            )
+                          })
                         )}
                       </div>
                     )}

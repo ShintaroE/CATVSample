@@ -36,10 +36,11 @@ function getTimeLabel(exclusion: ExclusionEntry): string {
 export default function CalendarItem({ type, item }: CalendarItemProps) {
   if (type === 'schedule') {
     const schedule = item as ScheduleItem
+    const scheduleIcon = schedule.scheduleType === 'construction' ? '🔧' : '📋'
     return (
       <div className="bg-blue-50 border-l-4 border-blue-500 px-2 py-1 mb-1 rounded-r text-xs hover:bg-blue-100 transition-colors">
         <div className="flex items-center gap-1">
-          <span>🔧</span>
+          <span>{scheduleIcon}</span>
           <span className="font-medium text-blue-700">{schedule.timeSlot}</span>
         </div>
         <div className="text-gray-700 truncate">

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { ScheduleItem } from '@/app/schedule/types'
-import { sampleSchedules } from '../data/sampleSchedules'
+import { scheduleStorage } from '@/app/schedule/lib/scheduleStorage'
 
 /**
  * スケジュールデータ管理フック
@@ -16,7 +16,11 @@ export function useScheduleData(contractorId: string) {
       return
     }
 
-    const filtered = sampleSchedules.filter(
+    // localStorageから全スケジュールを取得
+    const allSchedules = scheduleStorage.getAll()
+
+    // 自分の協力会社のスケジュールのみフィルタリング
+    const filtered = allSchedules.filter(
       s => s.contractorId === contractorId
     )
     setSchedules(filtered)
