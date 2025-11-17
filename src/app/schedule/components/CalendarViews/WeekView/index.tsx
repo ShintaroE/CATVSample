@@ -3,6 +3,7 @@
 import React, { useMemo } from 'react'
 import { ScheduleItem, ExclusionEntry, HOUR_HEIGHT, BUSINESS_START_HOUR, BUSINESS_END_HOUR, TeamColumnInDay, AssignedTeam } from '../../../types'
 import { getContractorColorClasses } from '@/shared/utils/contractorColors'
+import { getScheduleIcon } from '../../../lib/scheduleUtils'
 import { useFilters } from '../../../hooks/useFilters'
 import { useScheduleLayout } from '../../../hooks/useScheduleLayout'
 import { useCalendar } from '../../../hooks/useCalendar'
@@ -57,6 +58,15 @@ export default function WeekView({
       )
     })
   }, [teamColumns, filterHooks.filteredExclusions])
+
+  // ローディング状態のチェック
+  if (filterHooks.isLoading) {
+    return (
+      <div className="bg-white shadow rounded-lg p-8 text-center text-gray-500">
+        読み込み中...
+      </div>
+    )
+  }
 
   if (visibleTeamsCount === 0) {
     return (
@@ -260,9 +270,12 @@ export default function WeekView({
                           onClick={() => onEditSchedule(schedule)}
                         >
                           <div className="p-1 h-full overflow-hidden">
-                            <div className="text-xs font-bold truncate">{schedule.customerName}</div>
+                            <div className="text-xs font-bold truncate flex items-center gap-1">
+                              <span>{getScheduleIcon(schedule.scheduleType)}</span>
+                              <span>{schedule.customerName}</span>
+                            </div>
                             {heightValue > 2 && (
-                              <div className="text-xs opacity-90 truncate">{schedule.workType}</div>
+                              <div className="text-xs opacity-90 truncate">{schedule.timeSlot}</div>
                             )}
                             {heightValue > 4 && (
                               <>

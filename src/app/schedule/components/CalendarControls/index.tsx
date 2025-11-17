@@ -7,6 +7,7 @@ import { ViewMode } from '../../types'
 import NavigationButtons from './NavigationButtons'
 import ViewModeSwitcher from './ViewModeSwitcher'
 import FilterPanel from './FilterPanel'
+import ScheduleTypeFilter from './ScheduleTypeFilter'
 import { useFilters } from '../../hooks/useFilters'
 
 interface CalendarControlsProps {
@@ -52,6 +53,12 @@ export default function CalendarControls({
           />
           <FilterPanel
             filterHooks={filterHooks}
+          />
+          <ScheduleTypeFilter
+            scheduleTypeFilter={filterHooks.scheduleTypeFilter}
+            isOpen={filterHooks.isScheduleTypeFilterOpen}
+            onToggle={() => filterHooks.setIsScheduleTypeFilterOpen(!filterHooks.isScheduleTypeFilterOpen)}
+            onToggleType={filterHooks.handleToggleScheduleType}
           />
         </div>
 

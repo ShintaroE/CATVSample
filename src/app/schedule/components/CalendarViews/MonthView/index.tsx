@@ -3,6 +3,7 @@
 import React from 'react'
 import { ScheduleItem, ExclusionEntry, ScheduleItemWithTeam } from '../../../types'
 import { getContractorColorClasses } from '@/shared/utils/contractorColors'
+import { getScheduleIcon } from '../../../lib/scheduleUtils'
 import { useFilters } from '../../../hooks/useFilters'
 import { useScheduleLayout } from '../../../hooks/useScheduleLayout'
 import { useCalendar } from '../../../hooks/useCalendar'
@@ -27,6 +28,15 @@ export default function MonthView({
   filterHooks,
   calendarHooks,
 }: MonthViewProps) {
+  // ローディング状態のチェック
+  if (filterHooks.isLoading) {
+    return (
+      <div className="bg-white shadow rounded-lg p-8 text-center text-gray-500">
+        読み込み中...
+      </div>
+    )
+  }
+
   const getMonthDays = () => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
@@ -46,21 +56,6 @@ export default function MonthView({
   const getSchedulesForDate = (date: Date) => {
     const dateStr = calendarHooks.formatDateString(date)
     return filterHooks.filteredSchedules.filter((s: ScheduleItem) => s.assignedDate === dateStr)
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case '予定':
-        return 'bg-blue-100 text-blue-800'
-      case '作業中':
-        return 'bg-yellow-100 text-yellow-800'
-      case '完了':
-        return 'bg-green-100 text-green-800'
-      case '延期':
-        return 'bg-red-100 text-red-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
   }
 
   const getTimeLabel = (exclusion: ExclusionEntry): string => {
@@ -156,9 +151,11 @@ export default function MonthView({
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-medium">{schedule.timeSlot}</span>
-                      <span className={`w-2 h-2 rounded-full ${getStatusColor(schedule.status).split(' ')[0]}`} />
                     </div>
-                    <div className="truncate">{schedule.customerName}</div>
+                    <div className="flex items-center gap-1">
+                      <span>{getScheduleIcon(schedule.scheduleType)}</span>
+                      <span className="truncate">{schedule.customerName}</span>
+                    </div>
                   </div>
                 ))}
                 {daySchedules.length > (dayExclusions.length > 0 ? 2 : 3) && (

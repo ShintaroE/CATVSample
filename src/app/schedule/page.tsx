@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import Layout from '@/shared/components/layout/Layout'
 import { ScheduleItem, ExclusionEntry } from './types'
-import { sampleSchedules, sampleExclusions } from './data/sampleData'
+import { sampleExclusions } from './data/sampleData'
 import { useSchedules } from './hooks/useSchedules'
 import { useCalendar } from './hooks/useCalendar'
 import { useFilters } from './hooks/useFilters'
@@ -16,7 +16,7 @@ import EditScheduleModal from './components/ScheduleModals/EditScheduleModal'
 import AddScheduleModal from './components/ScheduleModals/AddScheduleModal'
 
 export default function SchedulePage() {
-  const { schedules, addSchedule, updateSchedule, deleteSchedule } = useSchedules(sampleSchedules)
+  const { schedules, addSchedule, updateSchedule, deleteSchedule } = useSchedules()
   const [exclusions] = useState<ExclusionEntry[]>(sampleExclusions)
   const calendarHooks = useCalendar()
   const filterHooks = useFilters(schedules, exclusions)
