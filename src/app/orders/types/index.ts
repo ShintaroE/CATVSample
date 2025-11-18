@@ -1,5 +1,5 @@
 import { ConstructionStatus } from '@/features/applications/types'
-import { AssignedTeam, ExclusionEntry } from '@/app/schedule/types'
+import { AssignedTeam } from '@/app/schedule/types'
 
 /**
  * 注文に紐づくファイル情報

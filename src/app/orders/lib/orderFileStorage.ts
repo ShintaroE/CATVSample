@@ -138,6 +138,7 @@ export const orderFileStorage = {
           this.add(orderFile)
           resolve(fileId)
         } catch (error) {
+          console.error('File upload error:', error)
           reject(new Error('ファイルの保存に失敗しました'))
         }
       }
