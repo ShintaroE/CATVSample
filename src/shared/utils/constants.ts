@@ -50,6 +50,8 @@ export const STORAGE_KEYS = {
   APPLICATIONS_SURVEY: 'applications_survey',
   APPLICATIONS_ATTACHMENT: 'applications_attachment',
   APPLICATIONS_CONSTRUCTION: 'applications_construction',
+  ORDERS: 'orders',
+  ORDER_FILES: 'order_files',
 } as const
 
 /**

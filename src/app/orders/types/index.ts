@@ -1,5 +1,27 @@
 import { ConstructionStatus } from '@/features/applications/types'
-import { AssignedTeam } from '@/app/schedule/types'
+import { AssignedTeam, ExclusionEntry } from '@/app/schedule/types'
+
+/**
+ * 注文に紐づくファイル情報
+ */
+export interface OrderFile {
+  id: string                    // ファイルID（UUID）
+  orderNumber: string           // 注文番号（外部キー）
+  fileName: string              // ファイル名
+  fileSize: number              // ファイルサイズ（bytes）
+  fileType: string              // MIMEタイプ（例: "application/pdf"）
+  fileData: string              // Base64エンコードされたファイルデータ
+  uploadedAt: string            // アップロード日時（ISO 8601）
+  uploadedBy?: string           // アップロードユーザーID
+}
+
+/**
+ * ファイルサイズ制限
+ */
+export const FILE_SIZE_LIMITS = {
+  MAX_SIZE: 2 * 1024 * 1024,           // 2MB
+  WARNING_SIZE: 1.5 * 1024 * 1024,     // 1.5MB（警告表示）
+} as const
 
 export interface AppointmentHistory {
   id: string
@@ -13,19 +35,6 @@ export interface AppointmentHistory {
     workStartTime: string  // 工事/調査開始時刻 (HH:MM)
     workEndTime: string    // 工事/調査終了時刻 (HH:MM)
   }
-}
-
-export interface ExclusionEntry {
-  id: string
-  date: string
-  reason: string
-  contractor: string
-  contractorId: string
-  teamId: string
-  teamName: string
-  timeType: 'all_day' | 'am' | 'pm' | 'custom'
-  startTime?: string
-  endTime?: string
 }
 
 export interface WeekViewColumn {
@@ -180,7 +189,7 @@ export interface OrderData {
   surveyStatus?: OrderSurveyStatus
   permissionStatus?: OrderPermissionStatus
   constructionStatus?: ConstructionStatus
-  mapPdfPath?: string
+  mapPdfId?: string
   appointmentHistory?: AppointmentHistory[]
   additionalCosts?: AdditionalCosts
   additionalNotes?: AdditionalNotes

@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Layout from '@/shared/components/layout/Layout'
 import { ScheduleItem, ExclusionEntry } from './types'
-import { sampleExclusions } from './data/sampleData'
+import { exclusionStorage } from '@/app/my-exclusions/lib/exclusionStorage'
 import { useSchedules } from './hooks/useSchedules'
 import { useCalendar } from './hooks/useCalendar'
 import { useFilters } from './hooks/useFilters'
@@ -17,7 +17,12 @@ import AddScheduleModal from './components/ScheduleModals/AddScheduleModal'
 
 export default function SchedulePage() {
   const { schedules, addSchedule, updateSchedule, deleteSchedule } = useSchedules()
-  const [exclusions] = useState<ExclusionEntry[]>(sampleExclusions)
+  const [exclusions, setExclusions] = useState<ExclusionEntry[]>([])
+
+  // 初回読み込み時にlocalStorageから除外日を取得
+  useEffect(() => {
+    setExclusions(exclusionStorage.getAll())
+  }, [])
   const calendarHooks = useCalendar()
   const filterHooks = useFilters(schedules, exclusions)
   const layoutHooks = useScheduleLayout(

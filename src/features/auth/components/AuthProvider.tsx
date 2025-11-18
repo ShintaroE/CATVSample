@@ -5,6 +5,8 @@ import { User, AuthContextType } from '../types'
 import { authStorage } from '../lib/authStorage'
 import { getContractorByUsername, getAdminByUsername, initializeDefaultData } from '@/features/contractor/lib/contractorStorage'
 import { initializeApplicationData } from '@/features/applications/lib/applicationStorage'
+import { initializeExclusionData } from '@/app/my-exclusions/lib/exclusionStorage'
+import { initializeOrderData } from '@/app/orders/lib/orderStorage'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -16,6 +18,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // 初期データのセットアップ
     initializeDefaultData()
     initializeApplicationData()
+    initializeExclusionData()
+    initializeOrderData()
 
     // ローカルストレージからユーザー情報を復元
     const savedUser = authStorage.getUser()
