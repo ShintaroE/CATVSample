@@ -4,8 +4,8 @@ import React, { useState } from 'react'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import Layout from '@/shared/components/layout/Layout'
 import { OrderData, AdditionalCosts, AdditionalNotes, CollectiveConstructionInfo } from './types'
-import { sampleOrders } from './data/sampleData'
 import { useOrders } from './hooks/useOrders'
+import { orderStorage } from './lib/orderStorage'
 import { Button } from '@/shared/components/ui'
 import ExcelUploadZone from './components/ExcelUploadZone'
 import OrdersTable from './components/OrdersTable'
@@ -15,7 +15,7 @@ import NewOrderModal from './components/NewOrderModal'
 import EditOrderModal from './components/EditOrderModal'
 
 export default function OrdersPage() {
-  const { orders, setOrders } = useOrders(sampleOrders)
+  const { orders, setOrders, addOrders, uploadMapPdf, downloadMapPdf } = useOrders()
   const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
@@ -26,7 +26,7 @@ export default function OrdersPage() {
 
   const handleUpload = (newOrders: OrderData[]) => {
     // ExcelUploadZoneから渡される新しい注文を追加
-    setOrders([...orders, ...newOrders])
+    addOrders(newOrders)
   }
 
   const handleViewDetails = (order: OrderData) => {
@@ -39,25 +39,27 @@ export default function OrdersPage() {
     setSelectedOrder(null)
   }
 
-  const handleMapUpload = (order: OrderData, _file: File) => {
-    // ファイルをサーバーにアップロード（実装は将来）
-    // ここではサンプルとしてダミーパスを設定
-    const mapPath = `/maps/${order.orderNumber}.pdf`
-    setOrders(orders.map(o =>
-      o.orderNumber === order.orderNumber
-        ? { ...o, mapPdfPath: mapPath }
-        : o
-    ))
-    // selectedOrderも更新
-    if (selectedOrder && selectedOrder.orderNumber === order.orderNumber) {
-      setSelectedOrder(prev => prev ? { ...prev, mapPdfPath: mapPath } : null)
+  const handleMapUpload = async (order: OrderData, file: File) => {
+    try {
+      await uploadMapPdf(order.orderNumber, file)
+
+      // selectedOrderも更新
+      if (selectedOrder && selectedOrder.orderNumber === order.orderNumber) {
+        const updated = orderStorage.getByOrderNumber(order.orderNumber)
+        if (updated) {
+          setSelectedOrder(updated)
+        }
+      }
+      alert('地図PDFがアップロードされました')
+    } catch (error) {
+      console.error('PDF upload failed:', error)
+      alert('地図PDFのアップロードに失敗しました')
     }
-    alert('地図PDFがアップロードされました')
   }
 
   const handleViewMap = (order: OrderData) => {
-    if (order.mapPdfPath) {
-      window.open(order.mapPdfPath, '_blank')
+    if (order.mapPdfId) {
+      downloadMapPdf(order.orderNumber)
     }
   }
 

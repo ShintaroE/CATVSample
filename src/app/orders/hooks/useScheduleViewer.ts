@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
 import { TeamFilter, CalendarViewMode, WeekViewColumn, TeamGroup, DayColumn, TeamColumnInDay, ScheduleTypeFilter } from '../types'
-import { sampleExclusions } from '../data/sampleData'
+import { exclusionStorage } from '@/app/my-exclusions/lib/exclusionStorage'
 import { getContractorColorName } from '@/shared/utils/contractorColors'
 import { scheduleStorage } from '@/app/schedule/lib/scheduleStorage'
 import { ScheduleItem, ExclusionEntry, ScheduleType } from '@/app/schedule/types'
@@ -42,8 +42,9 @@ export function useScheduleViewer() {
     const storedSchedules = scheduleStorage.getAll()
     setSchedules(storedSchedules)
 
-    // 除外日は既存のサンプルデータを維持
-    setExclusions(sampleExclusions)
+    // localStorageから除外日を読み込み
+    const storedExclusions = exclusionStorage.getAll()
+    setExclusions(storedExclusions)
 
     setTeamFilters(filters)
     setIsLoading(false)

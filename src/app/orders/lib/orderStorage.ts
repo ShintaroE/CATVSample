@@ -1,0 +1,285 @@
+import { OrderData, AppointmentHistory, AdditionalCosts, AdditionalNotes, CollectiveConstructionInfo, ConstructionCategory } from '../types'
+import { STORAGE_KEYS } from '@/shared/utils/constants'
+import { orderFileStorage } from './orderFileStorage'
+
+const STORAGE_KEY = STORAGE_KEYS.ORDERS
+
+/**
+ * 工事依頼データのlocalStorage操作
+ */
+export const orderStorage = {
+  /**
+   * すべての工事依頼を取得
+   */
+  getAll(): OrderData[] {
+    if (typeof window === 'undefined') return []
+    try {
+      const data = localStorage.getItem(STORAGE_KEY)
+      return data ? JSON.parse(data) : []
+    } catch (error) {
+      console.error('Failed to load orders:', error)
+      return []
+    }
+  },
+
+  /**
+   * 工事依頼を保存
+   */
+  saveAll(orders: OrderData[]): void {
+    if (typeof window === 'undefined') return
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(orders))
+    } catch (error) {
+      console.error('Failed to save orders:', error)
+      throw new Error('工事依頼の保存に失敗しました')
+    }
+  },
+
+  /**
+   * 工事依頼を追加
+   */
+  add(order: OrderData): void {
+    const orders = this.getAll()
+    orders.push(order)
+    this.saveAll(orders)
+  },
+
+  /**
+   * 工事依頼を更新
+   */
+  update(orderNumber: string, updates: Partial<OrderData>): void {
+    const orders = this.getAll()
+    const index = orders.findIndex(o => o.orderNumber === orderNumber)
+    if (index !== -1) {
+      orders[index] = { ...orders[index], ...updates }
+      this.saveAll(orders)
+    }
+  },
+
+  /**
+   * 工事依頼を削除（関連ファイルも削除）
+   */
+  delete(orderNumber: string): void {
+    // 関連ファイルを削除
+    orderFileStorage.deleteByOrderNumber(orderNumber)
+
+    // 工事依頼を削除
+    const orders = this.getAll().filter(o => o.orderNumber !== orderNumber)
+    this.saveAll(orders)
+  },
+
+  /**
+   * 注文番号で工事依頼を取得
+   */
+  getByOrderNumber(orderNumber: string): OrderData | undefined {
+    return this.getAll().find(o => o.orderNumber === orderNumber)
+  },
+
+  /**
+   * 顧客コードで工事依頼を取得
+   */
+  getByCustomerCode(customerCode: string): OrderData[] {
+    return this.getAll().filter(o => o.customerCode === customerCode)
+  },
+
+  /**
+   * 工事区分で工事依頼を取得
+   */
+  getByConstructionCategory(category: ConstructionCategory): OrderData[] {
+    return this.getAll().filter(o => o.constructionCategory === category)
+  },
+
+  /**
+   * ステータスで工事依頼を取得
+   */
+  getByStatus(statusType: 'surveyStatus' | 'permissionStatus' | 'constructionStatus', status: string): OrderData[] {
+    return this.getAll().filter(o => o[statusType] === status)
+  },
+
+  /**
+   * アポイント履歴を追加
+   */
+  addAppointmentHistory(orderNumber: string, appointment: AppointmentHistory): void {
+    const orders = this.getAll()
+    const index = orders.findIndex(o => o.orderNumber === orderNumber)
+    if (index !== -1) {
+      if (!orders[index].appointmentHistory) {
+        orders[index].appointmentHistory = []
+      }
+      orders[index].appointmentHistory!.push(appointment)
+      this.saveAll(orders)
+    }
+  },
+
+  /**
+   * アポイント履歴を更新
+   */
+  updateAppointmentHistory(
+    orderNumber: string,
+    appointmentId: string,
+    updates: Partial<AppointmentHistory>
+  ): void {
+    const orders = this.getAll()
+    const orderIndex = orders.findIndex(o => o.orderNumber === orderNumber)
+    if (orderIndex !== -1 && orders[orderIndex].appointmentHistory) {
+      const appointmentIndex = orders[orderIndex].appointmentHistory!.findIndex(
+        a => a.id === appointmentId
+      )
+      if (appointmentIndex !== -1) {
+        orders[orderIndex].appointmentHistory![appointmentIndex] = {
+          ...orders[orderIndex].appointmentHistory![appointmentIndex],
+          ...updates,
+        }
+        this.saveAll(orders)
+      }
+    }
+  },
+
+  /**
+   * アポイント履歴を削除
+   */
+  deleteAppointmentHistory(orderNumber: string, appointmentId: string): void {
+    const orders = this.getAll()
+    const orderIndex = orders.findIndex(o => o.orderNumber === orderNumber)
+    if (orderIndex !== -1 && orders[orderIndex].appointmentHistory) {
+      orders[orderIndex].appointmentHistory = orders[orderIndex].appointmentHistory!.filter(
+        a => a.id !== appointmentId
+      )
+      this.saveAll(orders)
+    }
+  },
+
+  /**
+   * 追加費用を更新
+   */
+  updateAdditionalCosts(orderNumber: string, costs: Partial<AdditionalCosts>): void {
+    const orders = this.getAll()
+    const index = orders.findIndex(o => o.orderNumber === orderNumber)
+    if (index !== -1) {
+      orders[index].additionalCosts = {
+        ...orders[index].additionalCosts,
+        ...costs,
+      } as AdditionalCosts
+      this.saveAll(orders)
+    }
+  },
+
+  /**
+   * 追加メモを更新
+   */
+  updateAdditionalNotes(orderNumber: string, notes: Partial<AdditionalNotes>): void {
+    const orders = this.getAll()
+    const index = orders.findIndex(o => o.orderNumber === orderNumber)
+    if (index !== -1) {
+      orders[index].additionalNotes = {
+        ...orders[index].additionalNotes,
+        ...notes,
+      }
+      this.saveAll(orders)
+    }
+  },
+
+  /**
+   * 集合工事情報を更新
+   */
+  updateCollectiveConstructionInfo(
+    orderNumber: string,
+    info: Partial<CollectiveConstructionInfo>
+  ): void {
+    const orders = this.getAll()
+    const index = orders.findIndex(o => o.orderNumber === orderNumber)
+    if (index !== -1) {
+      orders[index].collectiveConstructionInfo = {
+        ...orders[index].collectiveConstructionInfo,
+        ...info,
+      }as CollectiveConstructionInfo
+      this.saveAll(orders)
+    }
+  },
+
+  /**
+   * 初期データ設定（開発用）
+   */
+  initializeSampleData(sampleData: OrderData[]): void {
+    if (this.getAll().length === 0) {
+      this.saveAll(sampleData)
+    }
+  },
+
+  /**
+   * データをクリア（開発用）
+   */
+  clear(): void {
+    if (typeof window === 'undefined') return
+    localStorage.removeItem(STORAGE_KEY)
+  }
+}
+
+/**
+ * デフォルトの工事依頼データ
+ */
+const defaultOrders: OrderData[] = [
+  {
+    orderNumber: 'ORD-2025-001',
+    orderSource: '新規受付',
+    constructionCategory: '個別',
+    workType: '個別',
+    customerCode: 'C001',
+    customerType: '新規',
+    customerName: '山田太郎',
+    address: '岡山県倉敷市○○町1-2-3',
+    phoneNumber: '086-123-4567',
+    surveyStatus: '未依頼',
+    permissionStatus: '不要',
+    constructionStatus: '未着手',
+    appointmentHistory: [],
+  },
+  {
+    orderNumber: 'ORD-2025-002',
+    orderSource: 'Web申込',
+    constructionCategory: '個別',
+    workType: 'マンションタイプ光工事',
+    apartmentCode: 'APT001',
+    apartmentName: 'サンハイツ倉敷',
+    customerCode: 'C002',
+    customerType: '既存',
+    customerName: '佐藤花子',
+    address: '岡山県倉敷市△△町4-5-6',
+    phoneNumber: '086-234-5678',
+    surveyStatus: '依頼済み',
+    permissionStatus: '不要',
+    constructionStatus: '未着手',
+    appointmentHistory: [],
+  },
+  {
+    orderNumber: 'ORD-2025-003',
+    orderSource: '電話受付',
+    constructionCategory: '集合',
+    workType: 'HCNA一括導入工事',
+    apartmentCode: 'APT002',
+    apartmentName: 'グランドメゾン水島',
+    customerCode: 'C003',
+    customerType: '新規',
+    customerName: '鈴木一郎',
+    address: '岡山県倉敷市水島××町7-8-9',
+    phoneNumber: '086-345-6789',
+    surveyStatus: '完了',
+    permissionStatus: '申請中',
+    constructionStatus: '未着手',
+    collectiveConstructionInfo: {
+      floors: 5,
+      units: 20,
+      advanceMaterialPrinting: 'required',
+    },
+    appointmentHistory: [],
+  },
+]
+
+/**
+ * 初期化関数（AuthProviderから呼び出される）
+ */
+export function initializeOrderData(): void {
+  if (orderStorage.getAll().length === 0) {
+    orderStorage.saveAll(defaultOrders)
+  }
+}

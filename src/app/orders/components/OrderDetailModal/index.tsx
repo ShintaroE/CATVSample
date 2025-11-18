@@ -179,7 +179,7 @@ export default function OrderDetailModal({
                     <DocumentArrowUpIcon className="h-4 w-4 mr-2" />
                     地図PDFをアップロード
                   </button>
-                  {order.mapPdfPath && (
+                  {order.mapPdfId && (
                     <Button
                       onClick={() => onViewMap(order)}
                       variant="primary"
@@ -189,7 +189,7 @@ export default function OrderDetailModal({
                     </Button>
                   )}
                 </div>
-                {order.mapPdfPath && (
+                {order.mapPdfId && (
                   <span className="text-sm text-green-600 font-medium">
                     ✓ 地図PDF添付済み
                   </span>

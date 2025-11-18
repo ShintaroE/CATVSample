@@ -1,39 +1,44 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { ExclusionEntry } from '@/app/schedule/types'
-import { sampleExclusions } from '../data/sampleExclusions'
+import { exclusionStorage } from '../lib/exclusionStorage'
 
 /**
  * 除外日データ管理フック
  * 除外日のCRUD操作を提供
  */
 export function useExclusionData(contractorId: string) {
-  // サンプルデータで初期化（contractorIdでフィルタリング）
-  const [exclusions, setExclusions] = useState<ExclusionEntry[]>(() =>
-    sampleExclusions.filter(e => e.contractorId === contractorId)
-  )
+  // localStorageから初期化
+  const [exclusions, setExclusions] = useState<ExclusionEntry[]>([])
+
+  // 初回読み込み時にlocalStorageからデータを取得
+  useEffect(() => {
+    const storedExclusions = exclusionStorage.getByContractorId(contractorId)
+    setExclusions(storedExclusions)
+  }, [contractorId])
 
   /**
    * 除外日を追加
    */
   const addExclusion = useCallback((exclusion: ExclusionEntry) => {
-    setExclusions(prev => [...prev, exclusion])
-  }, [])
+    exclusionStorage.add(exclusion)
+    setExclusions(exclusionStorage.getByContractorId(contractorId))
+  }, [contractorId])
 
   /**
    * 除外日を更新
    */
   const updateExclusion = useCallback((id: string, updates: Partial<ExclusionEntry>) => {
-    setExclusions(prev =>
-      prev.map(e => e.id === id ? { ...e, ...updates } : e)
-    )
-  }, [])
+    exclusionStorage.update(id, updates)
+    setExclusions(exclusionStorage.getByContractorId(contractorId))
+  }, [contractorId])
 
   /**
    * 除外日を削除
    */
   const deleteExclusion = useCallback((id: string) => {
-    setExclusions(prev => prev.filter(e => e.id !== id))
-  }, [])
+    exclusionStorage.delete(id)
+    setExclusions(exclusionStorage.getByContractorId(contractorId))
+  }, [contractorId])
 
   /**
    * 指定された日付の除外日を取得
