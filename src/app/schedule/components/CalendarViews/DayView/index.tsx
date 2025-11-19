@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react'
 import { ScheduleItem, ExclusionEntry, HOUR_HEIGHT, BUSINESS_START_HOUR, BUSINESS_END_HOUR, TeamFilter } from '../../../types'
-import { getContractorColorClasses } from '@/shared/utils/contractorColors'
+import { getContractorColorClasses } from '@/lib/contractorColors'
 import { getScheduleIcon } from '../../../lib/scheduleUtils'
 import { useFilters } from '../../../hooks/useFilters'
 import { useScheduleLayout } from '../../../hooks/useScheduleLayout'

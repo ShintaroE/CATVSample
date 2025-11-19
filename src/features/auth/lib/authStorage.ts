@@ -3,7 +3,7 @@
  */
 
 import { User } from '../types'
-import { STORAGE_KEYS } from '@/shared/utils/constants'
+import { STORAGE_KEYS } from '@/lib/constants'
 
 export const authStorage = {
   /**

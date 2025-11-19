@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useScheduleViewer } from '../../../hooks/useScheduleViewer'
-import { getContractorBadgeColorClasses, getContractorBackgroundColorClass, getContractorColorName } from '@/shared/utils/contractorColors'
+import { getContractorBadgeColorClasses, getContractorBackgroundColorClass, getContractorColorName } from '@/lib/contractorColors'
 import { getScheduleIcon } from '@/app/schedule/lib/scheduleUtils'
 
 interface MonthViewProps {

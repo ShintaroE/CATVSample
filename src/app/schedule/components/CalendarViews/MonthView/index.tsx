@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { ScheduleItem, ExclusionEntry, ScheduleItemWithTeam } from '../../../types'
-import { getContractorColorClasses } from '@/shared/utils/contractorColors'
+import { getContractorColorClasses } from '@/lib/contractorColors'
 import { getScheduleIcon } from '../../../lib/scheduleUtils'
 import { useFilters } from '../../../hooks/useFilters'
 import { useScheduleLayout } from '../../../hooks/useScheduleLayout'

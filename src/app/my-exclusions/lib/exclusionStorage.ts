@@ -1,5 +1,5 @@
 import { ExclusionEntry } from '@/app/schedule/types'
-import { STORAGE_KEYS } from '@/shared/utils/constants'
+import { STORAGE_KEYS } from '@/lib/constants'
 
 const STORAGE_KEY = STORAGE_KEYS.EXCLUSIONS
 

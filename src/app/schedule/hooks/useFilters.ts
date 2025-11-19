@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
 import { TeamFilter, ScheduleItem, ExclusionEntry, ScheduleItemWithTeam, ScheduleType } from '../types'
-import { getContractorColorName } from '@/shared/utils/contractorColors'
+import { getContractorColorName } from '@/lib/contractorColors'
 
 // 種別フィルタの型定義
 export interface ScheduleTypeFilter {

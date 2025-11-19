@@ -8,16 +8,16 @@ export function getContractorColorName(contractorName: string): string {
   if (contractorName in CONTRACTOR_COLORS) {
     return CONTRACTOR_COLORS[contractorName as keyof typeof CONTRACTOR_COLORS]
   }
-  
+
   // 部分一致で検索（「栄光電気通信」→「栄光電気」など）
-  const matchedKey = Object.keys(CONTRACTOR_COLORS).find(key => 
+  const matchedKey = Object.keys(CONTRACTOR_COLORS).find(key =>
     contractorName.includes(key) || key.includes(contractorName)
   )
-  
+
   if (matchedKey) {
     return CONTRACTOR_COLORS[matchedKey as keyof typeof CONTRACTOR_COLORS]
   }
-  
+
   return 'gray'
 }
 
@@ -26,7 +26,7 @@ export function getContractorColorName(contractorName: string): string {
  */
 export function getContractorColorClasses(contractorName: string): string {
   const colorName = getContractorColorName(contractorName)
-  
+
   switch (colorName) {
     case 'blue':
       return 'bg-blue-200 border-blue-300 text-blue-900'
@@ -44,7 +44,7 @@ export function getContractorColorClasses(contractorName: string): string {
  */
 export function getContractorBackgroundColorClass(contractorName: string): string {
   const colorName = getContractorColorName(contractorName)
-  
+
   switch (colorName) {
     case 'blue':
       return 'bg-blue-50'
@@ -62,7 +62,7 @@ export function getContractorBackgroundColorClass(contractorName: string): strin
  */
 export function getContractorBadgeColorClasses(contractorName: string): string {
   const colorName = getContractorColorName(contractorName)
-  
+
   switch (colorName) {
     case 'blue':
       return 'bg-blue-100 text-blue-800'
@@ -80,7 +80,7 @@ export function getContractorBadgeColorClasses(contractorName: string): string {
  */
 export function getContractorHeaderColorClasses(contractorName: string): string {
   const colorName = getContractorColorName(contractorName)
-  
+
   switch (colorName) {
     case 'blue':
       return 'bg-blue-100 text-blue-900'
@@ -98,7 +98,7 @@ export function getContractorHeaderColorClasses(contractorName: string): string 
  */
 export function getContractorSolidColorClass(contractorName: string): string {
   const colorName = getContractorColorName(contractorName)
-  
+
   switch (colorName) {
     case 'blue':
       return 'bg-blue-500'
@@ -142,4 +142,3 @@ export function getColorHeaderClass(colorName: string): string {
       return 'bg-gray-100 text-gray-900'
   }
 }
-

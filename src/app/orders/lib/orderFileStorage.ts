@@ -1,5 +1,5 @@
 import { OrderFile, FILE_SIZE_LIMITS } from '../types'
-import { STORAGE_KEYS } from '@/shared/utils/constants'
+import { STORAGE_KEYS } from '@/lib/constants'
 
 const STORAGE_KEY = STORAGE_KEYS.ORDER_FILES
 

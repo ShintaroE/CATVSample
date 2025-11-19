@@ -2,8 +2,9 @@
 
 import React from 'react'
 import { useScheduleViewer } from '../../../hooks/useScheduleViewer'
-import { getContractorSolidColorClass } from '@/shared/utils/contractorColors'
-import { ExclusionEntry, TeamColumnInDay } from '../../../types'
+import { getContractorSolidColorClass } from '@/lib/contractorColors'
+import { ExclusionEntry } from '@/app/schedule/types'
+import { TeamColumnInDay } from '@/app/orders/types'
 import { ScheduleItem } from '@/app/schedule/types'
 import { getScheduleIcon } from '@/app/schedule/lib/scheduleUtils'
 

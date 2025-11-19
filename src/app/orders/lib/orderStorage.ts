@@ -1,5 +1,5 @@
 import { OrderData, AppointmentHistory, AdditionalCosts, AdditionalNotes, CollectiveConstructionInfo, ConstructionCategory } from '../types'
-import { STORAGE_KEYS } from '@/shared/utils/constants'
+import { STORAGE_KEYS } from '@/lib/constants'
 import { orderFileStorage } from './orderFileStorage'
 
 const STORAGE_KEY = STORAGE_KEYS.ORDERS

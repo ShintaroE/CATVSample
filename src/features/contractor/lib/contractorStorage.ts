@@ -1,5 +1,5 @@
 import { Admin, Contractor, Team } from '../types'
-import { STORAGE_KEYS } from '@/shared/utils/constants'
+import { STORAGE_KEYS } from '@/lib/constants'
 
 // ========== 管理者関連の操作 ==========
 
