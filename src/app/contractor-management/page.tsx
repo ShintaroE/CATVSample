@@ -19,7 +19,7 @@ import {
   deleteTeam,
   initializeDefaultData
 } from '@/features/contractor/lib/contractorStorage'
-import { generateSimplePassword } from '@/lib/password-generator'
+import { generateSimplePassword } from '@/shared/utils/password'
 import { Button, Input } from '@/shared/components/ui'
 
 export default function ContractorManagementPage() {
