@@ -152,8 +152,9 @@ src/
     │   ├── components/              # Component modules
     │   ├── hooks/                   # Custom hooks
     │   ├── lib/                     # Business logic
-    │   ├── types/index.ts
-    │   └── data/sampleData.ts
+    │   │   ├── orderStorage.ts      # Order data CRUD
+    │   │   └── orderFileStorage.ts  # PDF file management
+    │   └── types/index.ts
     │
     ├── contractor-management/       # ⏳ Refactoring planned (1,005 lines)
     │   ├── page.tsx
@@ -169,6 +170,7 @@ src/
     │   ├── components/              # Component modules
     │   ├── hooks/                   # Custom hooks
     │   └── lib/                     # Business logic
+    │       └── exclusionStorage.ts  # Exclusion CRUD operations
     │
     ├── login/page.tsx               # ✅ Simple (114 lines)
     ├── page.tsx                     # ✅ Dashboard
@@ -243,15 +245,25 @@ This system is built for KCT (倉敷ケーブルテレビ) CATV construction man
 - CalendarPicker: Reusable date picker with schedule visualization and exclusion display (`src/features/calendar/components/CalendarPicker/`)
 
 ### Data Management & State
-- All data is stored in component state (useState) - no backend/database yet
-- Sample/mock data initialized in each page component
+- **localStorage-first architecture**: All data persisted to browser localStorage (no backend)
+- **Initialized on first load**: `AuthProvider` calls initialization functions for all features
 - Excel file parsing expected but not yet implemented (orders page has upload UI)
-- PDF uploads stored as data URLs in state
-- Authentication data persisted in localStorage (key: 'user', client-side only)
-- **Contractor & Team data**: Persisted to localStorage (keys: 'contractors', 'teams')
-  - Initialized with default data on first load via `initializeDefaultData()`
-  - Full CRUD operations available through `src/features/contractor/lib/contractorStorage.ts`
-- **Exclusion data**: Currently stored only in component state (not persisted to localStorage yet)
+- **localStorage Keys**:
+  - `user` - Authentication session
+  - `admins`, `contractors`, `teams` - Account management
+  - `applications_survey`, `applications_attachment`, `applications_construction` - Application requests
+  - `schedules` - Construction schedules
+  - `exclusions` - Contractor exclusion dates
+  - `orders` - Order data
+  - `order_files` - Map PDF files (Base64, separate storage)
+- **Storage Modules** (Repository pattern for DBMS migration readiness):
+  - `src/features/auth/lib/authStorage.ts` - Authentication CRUD
+  - `src/features/contractor/lib/contractorStorage.ts` - Contractor/Team CRUD
+  - `src/features/applications/lib/applicationStorage.ts` - Application request CRUD
+  - `src/app/schedule/lib/scheduleStorage.ts` - Schedule CRUD
+  - `src/app/my-exclusions/lib/exclusionStorage.ts` - Exclusion CRUD
+  - `src/app/orders/lib/orderStorage.ts` - Order CRUD
+  - `src/app/orders/lib/orderFileStorage.ts` - PDF file management with 2MB limit
 
 ### Development Notes
 - Development indicators are disabled (devIndicators: false in next.config.ts)
@@ -763,9 +775,10 @@ interface ExclusionEntry {
 - **カスタム (custom)**: User-specified time range with startTime/endTime
 
 ### Storage
-- **Not yet implemented**: Exclusion data is currently stored only in component state (useState)
-- Refreshing the page will lose all exclusion entries
-- Future implementation will use localStorage with pattern: `exclusions_${contractor}`
+- **localStorage key**: `exclusions` (single key for all contractors)
+- **Persistence**: All exclusion data persisted via `src/app/my-exclusions/lib/exclusionStorage.ts`
+- **Initialization**: Default exclusions created on first load by `initializeExclusionData()`
+- **CRUD operations**: `add()`, `update()`, `delete()`, `getByContractorId()`, `getByTeamId()`, `getByDate()`
 
 ### UI Components
 
@@ -787,7 +800,7 @@ interface ExclusionEntry {
 - **Italic text**: Exclusion text displayed in italic style
 - **Team display**: Shows "Contractor - Team" format (e.g., "直営班 - A班")
 - **Hover info**: Shows contractor, team, time, and reason on hover
-- **Data loading**: Loads exclusions from localStorage on mount (future implementation)
+- **Data loading**: Loads exclusions from localStorage via `exclusionStorage.getAll()` on mount
 
 ### Position Calculation
 ```typescript
@@ -920,26 +933,18 @@ Maintain this strict hierarchy to prevent visual layering issues:
 ### Calendar View State Management
 Each view (month/week/day) maintains:
 - `selectedDate`: Date object for current view focus
-- `schedules`: Array of ScheduleItem (mock data)
-- `exclusions`: Array of ExclusionEntry (sample data, not persisted)
+- `schedules`: Array of ScheduleItem (loaded from localStorage)
+- `exclusions`: Array of ExclusionEntry (loaded from localStorage)
 - `isModalOpen`: Boolean for new schedule creation modal
 
 ## Schedule Page: Data Flow & Integration
 
 ### Exclusion Data Loading (src/app/schedule/page.tsx)
-Currently uses sample data (`sampleExclusions`) in component state. Future implementation will load from localStorage:
+Loads all exclusions from localStorage via `exclusionStorage`:
 
 ```typescript
-// Current: Sample data
-const [exclusions] = useState<ExclusionEntry[]>(sampleExclusions)
-
-// Future: Load from all contractors
 useEffect(() => {
-  const allExclusions = contractors.flatMap(contractor => {
-    const data = localStorage.getItem(`exclusions_${contractor}`)
-    return data ? JSON.parse(data) : []
-  })
-  setExclusions(allExclusions)
+  setExclusions(exclusionStorage.getAll())
 }, [])
 ```
 
@@ -1757,3 +1762,41 @@ Visual badges showing filtered and total record counts, positioned consistently 
 - Always top-right corner of filter panel or table header
 - Use absolute positioning within relative parent
 - Ensure badge doesn't overlap with interactive elements
+
+## Order Management: localStorage Persistence
+
+### Overview
+工事依頼データと地図PDFファイルをlocalStorageで管理。ファイルサイズ制限（2MB）とファイル分離パターンを採用。
+
+### Storage Architecture
+
+#### Order Data Storage (`src/app/orders/lib/orderStorage.ts`)
+- **localStorage key**: `orders`
+- **CRUD operations**: `getAll()`, `add()`, `update()`, `delete()`, `getByOrderNumber()`
+- **Appointment history**: `addAppointmentHistory()`, `updateAppointmentHistory()`, `deleteAppointmentHistory()`
+- **Default data**: 3 sample orders initialized on first load via `initializeOrderData()`
+
+#### File Storage (`src/app/orders/lib/orderFileStorage.ts`)
+- **localStorage key**: `order_files` (separate from order data)
+- **File format**: Base64 encoded PDF
+- **Size limits**:
+  - Maximum: 2MB (`FILE_SIZE_LIMITS.MAX_SIZE`)
+  - Warning: 1.5MB (`FILE_SIZE_LIMITS.WARNING_SIZE`)
+- **Validation**: `validateFileSize()` checks before upload
+- **Operations**: `uploadFile()`, `downloadFile()`, `delete()`, `getByOrderNumber()`
+
+#### Data Model Changes
+- `OrderData.mapPdfPath` → `OrderData.mapPdfId` (file reference by ID)
+- `OrderFile` interface for file metadata
+- Files stored separately to prevent order data bloat
+
+### File Separation Pattern
+注文データとPDFファイルを別々のlocalStorageキーで管理する理由：
+- **データサイズの肥大化を防止**: 注文データはテキスト情報のみ、PDFは別管理
+- **ファイル操作の独立性向上**: ファイルCRUDが注文データに影響しない
+- **将来のDBMS移行時の柔軟性確保**: ファイルストレージとデータストレージを分離できる
+
+### DBMS Migration Readiness
+- **Repository pattern採用**: ストレージ層を抽象化
+- **1-3ヶ月後の移行を想定**: PostgreSQL/MySQL移行時にAPI呼び出しに切り替えやすい設計
+- **ファイルストレージ**: 将来はAWS S3やCloudinaryなどに移行可能
