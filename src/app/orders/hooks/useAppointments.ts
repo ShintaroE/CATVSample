@@ -148,8 +148,7 @@ export function useAppointments() {
 
   const saveAppointment = useCallback((
     order: OrderData,
-    orders: OrderData[],
-    setOrders: (orders: OrderData[]) => void
+    onUpdate: (orderNumber: string, appointment: AppointmentHistory) => void
   ) => {
     if (!editingAppointment) return
 
@@ -181,27 +180,13 @@ export function useAppointments() {
       scheduleInfo
     }
 
-    // アポイント履歴を更新
-    const updatedOrders = orders.map(o => {
-      if (o.orderNumber === order.orderNumber) {
-        const history = o.appointmentHistory || []
-        if (isAddingAppointment) {
-          const newId = String(Date.now())
-          const newAppointment = { ...updatedAppointment, id: newId }
-          return { ...o, appointmentHistory: [...history, newAppointment] }
-        } else {
-          return {
-            ...o,
-            appointmentHistory: history.map(h =>
-              h.id === editingAppointment.id ? updatedAppointment : h
-            )
-          }
-        }
-      }
-      return o
-    })
+    // 新規追加の場合はIDを生成
+    if (isAddingAppointment) {
+      updatedAppointment.id = String(Date.now())
+    }
 
-    setOrders(updatedOrders)
+    // コールバック経由でlocalStorageに保存
+    onUpdate(order.orderNumber, updatedAppointment)
 
     // スケジュール画面にも登録
     if (scheduleInfo && (editingAppointment.status === '工事決定' || editingAppointment.status === '調査日決定')) {
@@ -225,19 +210,9 @@ export function useAppointments() {
   const deleteAppointment = useCallback((
     order: OrderData,
     appointmentId: string,
-    orders: OrderData[],
-    setOrders: (orders: OrderData[]) => void
+    onDelete: (orderNumber: string, appointmentId: string) => void
   ) => {
-    const updatedOrders = orders.map(o => {
-      if (o.orderNumber === order.orderNumber) {
-        return {
-          ...o,
-          appointmentHistory: (o.appointmentHistory || []).filter(h => h.id !== appointmentId)
-        }
-      }
-      return o
-    })
-    setOrders(updatedOrders)
+    onDelete(order.orderNumber, appointmentId)
   }, [])
 
   return {

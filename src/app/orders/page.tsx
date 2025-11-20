@@ -15,7 +15,19 @@ import NewOrderModal from './components/NewOrderModal'
 import EditOrderModal from './components/EditOrderModal'
 
 export default function OrdersPage() {
-  const { orders, setOrders, addOrders, uploadMapPdf, downloadMapPdf } = useOrders()
+  const {
+    orders,
+    addOrders,
+    uploadMapPdf,
+    downloadMapPdf,
+    createOrder,
+    replaceOrder,
+    updateAdditionalCosts,
+    updateAdditionalNotes,
+    updateCollectiveConstructionInfo,
+    addAppointment,
+    removeAppointment
+  } = useOrders()
   const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
@@ -67,13 +79,7 @@ export default function OrdersPage() {
     orderNumber: string,
     additionalCosts: AdditionalCosts
   ) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.orderNumber === orderNumber
-          ? { ...order, additionalCosts }
-          : order
-      )
-    )
+    updateAdditionalCosts(orderNumber, additionalCosts)
     // selectedOrderも更新
     if (selectedOrder && selectedOrder.orderNumber === orderNumber) {
       setSelectedOrder(prev => prev ? { ...prev, additionalCosts } : null)
@@ -84,13 +90,7 @@ export default function OrdersPage() {
     orderNumber: string,
     additionalNotes: AdditionalNotes
   ) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.orderNumber === orderNumber
-          ? { ...order, additionalNotes }
-          : order
-      )
-    )
+    updateAdditionalNotes(orderNumber, additionalNotes)
     // selectedOrderも更新
     if (selectedOrder && selectedOrder.orderNumber === orderNumber) {
       setSelectedOrder(prev => prev ? { ...prev, additionalNotes } : null)
@@ -101,13 +101,7 @@ export default function OrdersPage() {
     orderNumber: string,
     collectiveConstructionInfo: CollectiveConstructionInfo
   ) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.orderNumber === orderNumber
-          ? { ...order, collectiveConstructionInfo }
-          : order
-      )
-    )
+    updateCollectiveConstructionInfo(orderNumber, collectiveConstructionInfo)
     // selectedOrderも更新
     if (selectedOrder && selectedOrder.orderNumber === orderNumber) {
       setSelectedOrder(prev => prev ? { ...prev, collectiveConstructionInfo } : null)
@@ -125,7 +119,7 @@ export default function OrdersPage() {
   }
 
   const handleCreateOrder = (newOrder: OrderData) => {
-    setOrders([...orders, newOrder])
+    createOrder(newOrder)
   }
 
   const handleEditOrder = (order: OrderData) => {
@@ -134,7 +128,7 @@ export default function OrdersPage() {
   }
 
   const handleUpdateOrder = (updatedOrder: OrderData) => {
-    setOrders(orders.map(o => o.orderNumber === updatedOrder.orderNumber ? updatedOrder : o))
+    replaceOrder(updatedOrder)
   }
 
 
@@ -184,8 +178,8 @@ export default function OrdersPage() {
         {showAppointmentModal && appointmentOrder && (
           <AppointmentHistoryModal
             order={appointmentOrder}
-            orders={orders}
-            setOrders={setOrders}
+            onUpdateAppointment={addAppointment}
+            onDeleteAppointment={removeAppointment}
             onClose={handleCloseAppointmentModal}
           />
         )}

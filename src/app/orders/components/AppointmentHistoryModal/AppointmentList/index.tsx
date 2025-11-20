@@ -7,17 +7,15 @@ import AppointmentForm from '../AppointmentForm'
 
 interface AppointmentListProps {
   order: OrderData
-  orders: OrderData[]
-  setOrders: (orders: OrderData[]) => void
   appointmentHooks: ReturnType<typeof useAppointments>
+  onDelete: (orderNumber: string, appointmentId: string) => void
   onSave: () => void
 }
 
 export default function AppointmentList({
   order,
-  orders,
-  setOrders,
   appointmentHooks,
+  onDelete,
   onSave,
 }: AppointmentListProps) {
   const getStatusBadgeColor = (status: string) => {
@@ -68,7 +66,7 @@ export default function AppointmentList({
                     編集
                   </button>
                   <button
-                    onClick={() => appointmentHooks.deleteAppointment(order, appointment.id, orders, setOrders)}
+                    onClick={() => appointmentHooks.deleteAppointment(order, appointment.id, onDelete)}
                     className="text-red-600 hover:text-red-900 text-sm"
                   >
                     削除
