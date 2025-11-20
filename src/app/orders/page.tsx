@@ -178,6 +178,7 @@ export default function OrdersPage() {
         {showAppointmentModal && appointmentOrder && (
           <AppointmentHistoryModal
             order={appointmentOrder}
+            orders={orders}
             onUpdateAppointment={addAppointment}
             onDeleteAppointment={removeAppointment}
             onClose={handleCloseAppointmentModal}

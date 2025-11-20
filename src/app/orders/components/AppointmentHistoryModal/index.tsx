@@ -11,6 +11,7 @@ import { useAppointments } from '../../hooks/useAppointments'
 
 interface AppointmentHistoryModalProps {
   order: OrderData
+  orders: OrderData[]
   onUpdateAppointment: (orderNumber: string, appointment: AppointmentHistory) => void
   onDeleteAppointment: (orderNumber: string, appointmentId: string) => void
   onClose: () => void
@@ -18,11 +19,15 @@ interface AppointmentHistoryModalProps {
 
 export default function AppointmentHistoryModal({
   order,
+  orders,
   onUpdateAppointment,
   onDeleteAppointment,
   onClose,
 }: AppointmentHistoryModalProps) {
   const appointmentHooks = useAppointments()
+
+  // 最新のorderを取得（ordersが更新された際に最新データを表示）
+  const currentOrder = orders.find(o => o.orderNumber === order.orderNumber) || order
 
   const handleClose = () => {
     appointmentHooks.resetAppointmentForm()
@@ -30,7 +35,7 @@ export default function AppointmentHistoryModal({
   }
 
   const handleSaveAppointment = () => {
-    appointmentHooks.saveAppointment(order, onUpdateAppointment)
+    appointmentHooks.saveAppointment(currentOrder, onUpdateAppointment)
   }
 
   return (
@@ -38,7 +43,7 @@ export default function AppointmentHistoryModal({
       <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium text-gray-900">
-            アポイント履歴 - {order.customerName}
+            アポイント履歴 - {currentOrder.customerName}
           </h3>
           <button
             onClick={handleClose}
@@ -57,15 +62,15 @@ export default function AppointmentHistoryModal({
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">顧客名</label>
-              <p className="mt-1 text-sm text-gray-900">{order.customerName}</p>
+              <p className="mt-1 text-sm text-gray-900">{currentOrder.customerName}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">住所</label>
-              <p className="mt-1 text-sm text-gray-900">{order.address}</p>
+              <p className="mt-1 text-sm text-gray-900">{currentOrder.address}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">電話番号</label>
-              <p className="mt-1 text-sm text-gray-900">{order.phoneNumber}</p>
+              <p className="mt-1 text-sm text-gray-900">{currentOrder.phoneNumber}</p>
             </div>
           </div>
         </div>
@@ -84,7 +89,7 @@ export default function AppointmentHistoryModal({
           </div>
 
           <AppointmentList
-            order={order}
+            order={currentOrder}
             appointmentHooks={appointmentHooks}
             onDelete={onDeleteAppointment}
             onSave={handleSaveAppointment}
