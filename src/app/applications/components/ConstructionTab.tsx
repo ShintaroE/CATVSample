@@ -317,7 +317,7 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
 
       {/* Table */}
       <div className="w-full overflow-x-auto bg-white rounded-lg shadow">
-        <table className="min-w-max divide-y divide-gray-200">
+        <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
