@@ -91,19 +91,19 @@ export default function ExclusionCalendar({
       <div className="flex items-center justify-between p-4 border-b">
         <button
           onClick={() => onMonthChange('prev')}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
           aria-label="前月"
         >
           <ChevronLeftIcon className="w-5 h-5" />
         </button>
 
-        <h2 className="text-lg font-semibold">
+        <h2 className="text-lg font-semibold text-gray-900">
           {currentMonth.getFullYear()}年{currentMonth.getMonth() + 1}月
         </h2>
 
         <button
           onClick={() => onMonthChange('next')}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
           aria-label="次月"
         >
           <ChevronRightIcon className="w-5 h-5" />
@@ -115,9 +115,8 @@ export default function ExclusionCalendar({
         {weekDays.map((day, idx) => (
           <div
             key={day}
-            className={`p-2 text-center text-sm font-semibold ${
-              idx === 0 ? 'text-red-600' : idx === 6 ? 'text-blue-600' : 'text-gray-700'
-            }`}
+            className={`p-2 text-center text-sm font-semibold ${idx === 0 ? 'text-red-600' : idx === 6 ? 'text-blue-600' : 'text-gray-700'
+              }`}
           >
             {day}
           </div>

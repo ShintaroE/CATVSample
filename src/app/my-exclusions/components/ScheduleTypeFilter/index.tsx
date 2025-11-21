@@ -44,7 +44,7 @@ export default function ScheduleTypeFilter({
       {/* フィルターボタン */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700"
       >
         <span className="text-sm font-medium">
           種別フィルター ({selectedCount}/2)
@@ -72,7 +72,7 @@ export default function ScheduleTypeFilter({
                   onChange={handleToggleAll}
                   className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="text-sm font-semibold">全て</span>
+                <span className="text-sm font-semibold text-gray-700">全て</span>
               </label>
 
               <div className="border-t border-gray-200 my-1" />
@@ -85,7 +85,7 @@ export default function ScheduleTypeFilter({
                   onChange={() => handleToggleType('construction')}
                   className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="text-sm">🔧 工事</span>
+                <span className="text-sm text-gray-700">🔧 工事</span>
               </label>
 
               {/* 現地調査 */}
@@ -96,7 +96,7 @@ export default function ScheduleTypeFilter({
                   onChange={() => handleToggleType('survey')}
                   className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="text-sm">📋 現地調査</span>
+                <span className="text-sm text-gray-700">📋 現地調査</span>
               </label>
             </div>
           </div>

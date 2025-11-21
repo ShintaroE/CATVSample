@@ -55,7 +55,7 @@ export default function DateCell({
           'text-sm font-semibold mb-2',
           isToday && 'text-green-600',
           isSelected && 'text-blue-600',
-          !isCurrentMonth && 'text-gray-400'
+          !isCurrentMonth ? 'text-gray-400' : 'text-gray-700'
         )}
       >
         {date.getDate()}
