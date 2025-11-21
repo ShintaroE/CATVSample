@@ -177,8 +177,6 @@ src/
     ├── layout.tsx                   # Root layout
     └── globals.css
 
-Note: There is currently a `src/lib/` directory containing:
-- `password-generator.ts` - Should be moved to `src/shared/utils/password.ts` (Phase 0 pending)
 ```
 
 ### Key Features
@@ -426,11 +424,12 @@ This project is undergoing systematic refactoring to improve maintainability:
 | login | ✅ Simple | 114 | Already clean |
 
 **Remaining Work**:
-1. **Phase 0**: Shared library cleanup - ⏳ Pending
-   - Move `src/lib/password-generator.ts` → `src/shared/utils/password.ts`
-   - Required before contractor-management refactoring
-2. **Phase 1**: Contractor management page refactoring
-3. **Phase 2**: Final integration testing and documentation
+1. **Phase 1**: Contractor management page refactoring (1,005 lines to be split)
+2. **Phase 2**: Final integration testing and documentation
+
+**Note**: `src/lib/` directory currently contains:
+- `constants.ts` - App-wide constants (may need reorganization)
+- `contractorColors.ts` - Contractor color mapping (consider moving to `src/shared/utils/`)
 
 ### Custom Hooks Patterns
 
@@ -683,9 +682,7 @@ getTeamById(id: string): Team | undefined
 initializeDefaultData(): void  // Creates default admins/contractors/teams if none exist
 ```
 
-### Password Generation (src/lib/password-generator.ts)
-
-**Note**: This file is currently located at `src/lib/password-generator.ts` and should be moved to `src/shared/utils/password.ts` as part of Phase 0 refactoring to align with the three-layer architecture.
+### Password Generation (src/shared/utils/password.ts)
 
 ```typescript
 generateSimplePassword(length: number = 10): string
@@ -744,7 +741,7 @@ Teams:
 3. **Data Persistence**: All contractor/team data stored in localStorage (keys: 'admins', 'contractors', 'teams')
 4. **Cascade Delete**: Deleting a contractor removes all its teams
 5. **Password Security**: Passwords stored in plain text (suitable for demo, not production)
-6. **Password Generation**: Uses `generateSimplePassword()` from `src/lib/password-generator.ts` (to be moved to `src/shared/utils/password.ts`)
+6. **Password Generation**: Uses `generateSimplePassword()` from `src/shared/utils/password.ts`
 7. **Form Styling**: All input/select elements MUST include `bg-white text-gray-900` classes
 
 ## Exclusion Date Management
