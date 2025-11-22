@@ -100,17 +100,15 @@ export const AdminList: React.FC<AdminListProps> = ({
                                         {new Date(admin.createdAt).toLocaleDateString('ja-JP')}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <Button
+                                        <button
                                             onClick={() => onToggleActive(admin)}
-                                            variant="ghost"
-                                            size="sm"
-                                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${admin.isActive
-                                                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                                                    : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${admin.isActive
+                                                ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                                : 'bg-red-100 text-red-800 hover:bg-red-200'
                                                 }`}
                                         >
                                             {admin.isActive ? '● アクティブ' : '● 無効'}
-                                        </Button>
+                                        </button>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                         <Button onClick={() => onEditClick(admin)} variant="ghost" size="sm">

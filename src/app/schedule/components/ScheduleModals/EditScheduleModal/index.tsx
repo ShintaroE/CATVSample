@@ -188,7 +188,7 @@ export default function EditScheduleModal({
               <div className="space-y-2 mb-2">
                 {selectedTeams.map(team => (
                   <div key={team.teamId} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                    <span className="text-sm">{team.contractorName} - {team.teamName}</span>
+                    <span className="text-sm text-gray-900">{team.contractorName} - {team.teamName}</span>
                     <button
                       onClick={() => handleRemoveTeam(team.teamId)}
                       className="text-red-600 hover:text-red-800 text-sm"

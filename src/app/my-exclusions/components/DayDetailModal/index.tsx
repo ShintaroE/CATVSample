@@ -139,7 +139,7 @@ export default function DayDetailModal({
                   </Dialog.Title>
                   <button
                     onClick={onClose}
-                    className="p-1 hover:bg-gray-200 rounded transition-colors"
+                    className="p-1 hover:bg-gray-200 rounded transition-colors text-gray-700"
                     aria-label="閉じる"
                   >
                     <XMarkIcon className="w-5 h-5" />

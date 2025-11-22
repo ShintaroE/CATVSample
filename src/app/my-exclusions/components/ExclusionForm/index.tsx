@@ -134,7 +134,7 @@ function ExclusionForm({
               onChange={(e) => setTimeType(e.target.value as 'all_day' | 'am' | 'pm' | 'custom')}
               className="w-4 h-4 text-blue-600"
             />
-            <span className="text-sm">終日 (9:00-18:00)</span>
+            <span className="text-sm text-gray-700">終日 (9:00-18:00)</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -144,7 +144,7 @@ function ExclusionForm({
               onChange={(e) => setTimeType(e.target.value as 'all_day' | 'am' | 'pm' | 'custom')}
               className="w-4 h-4 text-blue-600"
             />
-            <span className="text-sm">午前 (9:00-12:00)</span>
+            <span className="text-sm text-gray-700">午前 (9:00-12:00)</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -154,7 +154,7 @@ function ExclusionForm({
               onChange={(e) => setTimeType(e.target.value as 'all_day' | 'am' | 'pm' | 'custom')}
               className="w-4 h-4 text-blue-600"
             />
-            <span className="text-sm">午後 (12:00-18:00)</span>
+            <span className="text-sm text-gray-700">午後 (12:00-18:00)</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -164,7 +164,7 @@ function ExclusionForm({
               onChange={(e) => setTimeType(e.target.value as 'all_day' | 'am' | 'pm' | 'custom')}
               className="w-4 h-4 text-blue-600"
             />
-            <span className="text-sm">カスタム</span>
+            <span className="text-sm text-gray-700">カスタム</span>
           </label>
         </div>
 
