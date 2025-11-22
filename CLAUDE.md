@@ -45,7 +45,7 @@ This is a Next.js 15 application following a **3-layer architecture**:
 - `npm run dev` - Start development server on http://localhost:3000
 - `npm run build` - Build the application for production
 - `npm start` - Start production server
-- `npm run lint` - Run ESLint for code quality checks
+- `npm run lint` - Run ESLint for code quality checks (note: currently configured without specific targets)
 
 ### Package Management
 - Use `npm` for package management (package-lock.json is present)
