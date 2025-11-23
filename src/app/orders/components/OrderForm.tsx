@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { OrderData, ConstructionCategory, IndividualWorkType, CollectiveWorkType, getWorkTypeOptions, individualWorkTypeOptions, collectiveWorkTypeOptions } from '../types'
+import { OrderData, ConstructionCategory, IndividualWorkType, CollectiveWorkType, getWorkTypeOptions, individualWorkTypeOptions, collectiveWorkTypeOptions, OrderStatus } from '../types'
 import { Button } from '@/shared/components/ui'
 
 interface OrderFormProps {
@@ -24,6 +24,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, isEditing =
         phoneNumber: '',
         apartmentCode: '',
         apartmentName: '',
+        orderStatus: 'アクティブ',
     }
 
     const [formData, setFormData] = useState<Partial<OrderData>>({ ...defaultData, ...initialData })
@@ -131,6 +132,9 @@ export default function OrderForm({ initialData, onSubmit, onCancel, isEditing =
             permissionStatus: formData.permissionStatus || '未依頼',
             constructionStatus: formData.constructionStatus || '未着手',
             appointmentHistory: formData.appointmentHistory || [],
+            orderStatus: formData.orderStatus || 'アクティブ',
+            cancelledAt: formData.orderStatus === 'キャンセル' ? (formData.cancelledAt || new Date().toISOString()) : undefined,
+            cancellationReason: formData.orderStatus === 'キャンセル' ? formData.cancellationReason : undefined,
         } as OrderData
 
         onSubmit(submittedData)
@@ -363,7 +367,60 @@ export default function OrderForm({ initialData, onSubmit, onCancel, isEditing =
                 </div>
             </div>
 
-            {/* セクション4: 連絡先情報（折りたたみ） */}
+            {/* セクション4: 受注ステータス（編集モード時のみ表示） */}
+            {isEditing && (
+                <div className="p-4 bg-yellow-50 rounded-md border border-yellow-200">
+                    <h4 className="text-sm font-semibold text-gray-900 mb-4">受注ステータス</h4>
+
+                    {/* ステータス選択（ラジオボタン） */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            ステータス <span className="text-red-500">*</span>
+                        </label>
+                        <div className="flex space-x-6">
+                            <label className="inline-flex items-center">
+                                <input
+                                    type="radio"
+                                    value="アクティブ"
+                                    checked={formData.orderStatus === 'アクティブ'}
+                                    onChange={(e) => setFormData({ ...formData, orderStatus: e.target.value as OrderStatus })}
+                                    className="mr-2"
+                                    required
+                                />
+                                <span className="text-sm text-gray-900">アクティブ</span>
+                            </label>
+                            <label className="inline-flex items-center">
+                                <input
+                                    type="radio"
+                                    value="キャンセル"
+                                    checked={formData.orderStatus === 'キャンセル'}
+                                    onChange={(e) => setFormData({ ...formData, orderStatus: e.target.value as OrderStatus })}
+                                    className="mr-2"
+                                />
+                                <span className="text-sm text-gray-900">キャンセル</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    {/* キャンセル理由（キャンセル選択時のみ表示） */}
+                    {formData.orderStatus === 'キャンセル' && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                キャンセル理由（任意）
+                            </label>
+                            <textarea
+                                value={formData.cancellationReason || ''}
+                                onChange={(e) => setFormData({ ...formData, cancellationReason: e.target.value })}
+                                placeholder="キャンセル理由を入力してください"
+                                rows={3}
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900"
+                            />
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* セクション5: 連絡先情報（折りたたみ） */}
             <div>
                 <button
                     type="button"
