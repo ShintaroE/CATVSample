@@ -5,6 +5,7 @@ import { PlusIcon } from '@heroicons/react/24/outline'
 import Layout from '@/shared/components/layout/Layout'
 import { OrderData, AdditionalCosts, AdditionalNotes, CollectiveConstructionInfo } from './types'
 import { useOrders } from './hooks/useOrders'
+import { useOrderFilters } from './hooks/useOrderFilters'
 import { orderStorage } from './lib/orderStorage'
 import { Button } from '@/shared/components/ui'
 import ExcelUploadZone from './components/ExcelUploadZone'
@@ -13,6 +14,7 @@ import AppointmentHistoryModal from './components/AppointmentHistoryModal'
 import OrderDetailModal from './components/OrderDetailModal'
 import NewOrderModal from './components/NewOrderModal'
 import EditOrderModal from './components/EditOrderModal'
+import FilterPanel from './components/FilterPanel'
 
 export default function OrdersPage() {
   const {
@@ -28,6 +30,17 @@ export default function OrdersPage() {
     addAppointment,
     removeAppointment
   } = useOrders()
+
+  // フィルター機能
+  const {
+    filters,
+    filteredOrders,
+    updateFilter,
+    resetFilters,
+    filteredCount,
+    totalCount
+  } = useOrderFilters(orders)
+
   const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
@@ -153,9 +166,18 @@ export default function OrdersPage() {
         {/* Excel アップロード */}
         <ExcelUploadZone currentOrderCount={orders.length} onUpload={handleUpload} />
 
+        {/* フィルターパネル */}
+        <FilterPanel
+          filters={filters}
+          onUpdateFilter={updateFilter}
+          onReset={resetFilters}
+          filteredCount={filteredCount}
+          totalCount={totalCount}
+        />
+
         {/* テーブル */}
         <OrdersTable
-          orders={orders}
+          orders={filteredOrders}
           onEditOrder={handleEditOrder}
           onViewDetails={handleViewDetails}
           onViewAppointmentHistory={handleViewAppointmentHistory}
