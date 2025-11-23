@@ -71,6 +71,16 @@ export default function OrderRow({
           {order.customerType}
         </span>
       </td>
+      {/* ステータス */}
+      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+          order.orderStatus === 'キャンセル'
+            ? 'bg-red-100 text-red-800'
+            : 'bg-green-100 text-green-800'
+        }`}>
+          {order.orderStatus || 'アクティブ'}
+        </span>
+      </td>
       {/* 詳細 */}
       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
         <button

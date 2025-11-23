@@ -115,8 +115,10 @@ export interface ScheduleData {
 
 export type ConstructionCategory = '個別' | '集合'
 
-export type IndividualWorkType = '個別' | 'マンションタイプ光工事' | 'Gドット'
+export type IndividualWorkType = '個別' | 'マンションタイプ光工事' | 'Gドット' | '防犯カメラ'
 export type CollectiveWorkType = 'HCNA一括導入工事' | 'G.fast導入工事' | '放送導入工事'
+
+export type OrderStatus = 'アクティブ' | 'キャンセル'
 
 export interface AdditionalCosts {
   // クロージャ増設
@@ -194,12 +196,17 @@ export interface OrderData {
   additionalCosts?: AdditionalCosts
   additionalNotes?: AdditionalNotes
   collectiveConstructionInfo?: CollectiveConstructionInfo
+  // 受注ステータス
+  orderStatus?: OrderStatus
+  cancelledAt?: string              // キャンセル日時（ISO 8601）
+  cancellationReason?: string       // キャンセル理由
 }
 
 export const individualWorkTypeOptions: IndividualWorkType[] = [
   '個別',
   'マンションタイプ光工事',
-  'Gドット'
+  'Gドット',
+  '防犯カメラ'
 ]
 
 export const collectiveWorkTypeOptions: CollectiveWorkType[] = [

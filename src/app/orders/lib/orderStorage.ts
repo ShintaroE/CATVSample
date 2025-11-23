@@ -233,6 +233,7 @@ const defaultOrders: OrderData[] = [
     permissionStatus: '不要',
     constructionStatus: '未着手',
     appointmentHistory: [],
+    orderStatus: 'アクティブ',
   },
   {
     orderNumber: 'ORD-2025-002',
@@ -250,6 +251,7 @@ const defaultOrders: OrderData[] = [
     permissionStatus: '不要',
     constructionStatus: '未着手',
     appointmentHistory: [],
+    orderStatus: 'アクティブ',
   },
   {
     orderNumber: 'ORD-2025-003',
@@ -272,6 +274,7 @@ const defaultOrders: OrderData[] = [
       advanceMaterialPrinting: 'required',
     },
     appointmentHistory: [],
+    orderStatus: 'アクティブ',
   },
 ]
 
