@@ -48,6 +48,19 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
     setStatusFilter('')
   }
 
+  // 適用中のフィルター数をカウント
+  const activeFilterCount = useMemo(() => {
+    let count = 0
+    if (orderNumberFilter) count++
+    if (propertyTypeFilter) count++
+    if (customerCodeFilter) count++
+    if (collectiveCodeFilter) count++
+    if (contractorIdFilter) count++
+    if (teamIdFilter) count++
+    if (statusFilter) count++
+    return count
+  }, [orderNumberFilter, propertyTypeFilter, customerCodeFilter, collectiveCodeFilter, contractorIdFilter, teamIdFilter, statusFilter])
+
   const filtered = useMemo(() => {
     return data.filter((r) => {
       // 受注番号（部分一致）
@@ -224,6 +237,7 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
     <FilterableTableLayout
       totalCount={data.length}
       filteredCount={filtered.length}
+      activeFilterCount={activeFilterCount}
       onClearFilters={handleClearFilters}
       filters={filters}
     >
