@@ -183,12 +183,57 @@ generateSimplePassword(length = 10): string
 - Supported: Images, PDF, Excel (.xlsx, .xls), Word (.doc, .docx)
 - Methods: Drag & drop, click to select, multiple selection
 
-### Record Count Display
-Position badges in top-right corner of filter panels:
+### Filter Panel with Accordion UI Pattern
+All filter panels use a unified accordion UI with active filter count:
 ```typescript
-<div className="absolute top-0 right-0 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
-  {filteredCount}/{totalCount}件
-</div>
+// Pattern 1: Using FilterableTableLayout (for applications pages)
+const activeFilterCount = useMemo(() => {
+  let count = 0
+  if (filter1) count++
+  if (filter2) count++
+  // ... count all active filters
+  return count
+}, [filter1, filter2, ...])
+
+const filters = (
+  <>
+    {/* Filter inputs */}
+  </>
+)
+
+return (
+  <FilterableTableLayout
+    totalCount={data.length}
+    filteredCount={filtered.length}
+    activeFilterCount={activeFilterCount}
+    onClearFilters={handleClearFilters}
+    filters={filters}
+  >
+    {/* Table content */}
+  </FilterableTableLayout>
+)
+
+// Pattern 2: Custom FilterPanel with accordion (for orders page)
+// Implements same accordion UI with ChevronDown/UpIcon toggle
+// Shows "N件のフィルター適用中" badge when filters are active
+```
+
+**Key Features:**
+- Default state: Open
+- Smooth slide animation (300ms)
+- Active filter count badge
+- Display count and total count badges
+- ChevronDownIcon/ChevronUpIcon for open/close state
+
+### Record Count Display
+Position badges in filter panel headers:
+```typescript
+<Badge variant={filteredCount !== totalCount ? 'info' : 'default'} size="sm">
+  表示: {filteredCount}件
+</Badge>
+<Badge variant="default" size="sm">
+  全: {totalCount}件
+</Badge>
 ```
 
 ### Form Modal Pattern
@@ -218,13 +263,24 @@ location.reload()
 ### Component Refactoring Status
 | Page | Status | Lines | Notes |
 |------|--------|-------|-------|
-| applications | ✅ Complete | 222 | 13 components |
+| applications | ✅ Complete | 222 | 13 components, FilterableTableLayout pattern |
 | contractor-requests | ✅ Complete | 518 | FileAttachments integration |
 | schedule | ✅ Complete | 156 | Multiple components/hooks/lib |
-| orders | ✅ Complete | 230 | Multiple components/hooks/lib |
+| orders | ✅ Complete | 230 | FilterPanel with accordion UI |
 | my-exclusions | ✅ Complete | 148 | Multiple components/hooks/lib |
 | contractor-management | ⏳ To refactor | 1,005 | 11+ components needed |
 | login | ✅ Simple | 114 | Already clean |
+
+### Filter Implementation Status
+| Page | Filter UI | Active Count | Accordion | Pattern |
+|------|-----------|--------------|-----------|---------|
+| applications (Survey) | ✅ | ✅ | ✅ | FilterableTableLayout |
+| applications (Attachment) | ✅ | ✅ | ✅ | FilterableTableLayout |
+| applications (Construction) | ✅ | ✅ | ✅ | FilterableTableLayout |
+| orders | ✅ | ✅ | ✅ | Custom FilterPanel |
+| contractor-requests | ✅ | ❌ | ❌ | Legacy filter UI |
+| schedule | N/A | N/A | N/A | Team filter only |
+| my-exclusions | N/A | N/A | N/A | Schedule type filter only |
 
 ### Future Migration Path
 - **DBMS**: PostgreSQL/MySQL (1-3 months)
