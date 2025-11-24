@@ -140,12 +140,28 @@ export function useOrderFilters(orders: OrderData[]) {
     })
   }, [filters])
 
+  // 適用中のフィルター数をカウント
+  const activeFilterCount = useMemo(() => {
+    let count = 0
+    Object.entries(filters).forEach(([key, value]) => {
+      if (key === 'orderNumber' || key === 'customerCode' || key === 'apartmentCode') {
+        if (value !== '') count++
+      } else if (key === 'additionalCosts') {
+        if ((value as AdditionalCostsFilter).enabled) count++
+      } else {
+        if (value !== 'all') count++
+      }
+    })
+    return count
+  }, [filters])
+
   return {
     filters,
     filteredOrders,
     updateFilter,
     clearFilters,
     hasActiveFilters,
+    activeFilterCount,
     totalCount: orders.length,
     filteredCount: filteredOrders.length
   }

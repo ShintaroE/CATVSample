@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from 'react'
-import { FunnelIcon, PencilSquareIcon, ChartBarIcon } from '@heroicons/react/24/outline'
+import { PencilSquareIcon } from '@heroicons/react/24/outline'
 import { ConstructionRequest, ConstructionStatus, PostConstructionReport } from '@/features/applications/types'
 import { Contractor } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { Badge, BadgeVariant } from '@/shared/components/ui'
+import FilterableTableLayout from './FilterableTableLayout'
 
 interface ConstructionTabProps {
   data: ConstructionRequest[]
@@ -44,6 +45,20 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
     setStatusFilter('')
     setPostConstructionReportFilter('')
   }
+
+  // 適用中のフィルター数をカウント
+  const activeFilterCount = useMemo(() => {
+    let count = 0
+    if (orderNumberFilter) count++
+    if (customerCodeFilter) count++
+    if (collectiveCodeFilter) count++
+    if (propertyTypeFilter) count++
+    if (contractorIdFilter) count++
+    if (teamIdFilter) count++
+    if (statusFilter) count++
+    if (postConstructionReportFilter) count++
+    return count
+  }, [orderNumberFilter, customerCodeFilter, collectiveCodeFilter, propertyTypeFilter, contractorIdFilter, teamIdFilter, statusFilter, postConstructionReportFilter])
 
   // Badge variant functions
   const getStatusBadge = (status: ConstructionStatus): BadgeVariant => {
@@ -139,184 +154,156 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
     })
   }, [data, orderNumberFilter, propertyTypeFilter, customerCodeFilter, collectiveCodeFilter, contractorIdFilter, teamIdFilter, statusFilter, postConstructionReportFilter])
 
-  return (
-    <div className="space-y-4 w-full max-w-full overflow-x-hidden">
-      {/* Filtering Panel */}
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 w-full max-w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 w-full">
-          <h3 className="text-sm font-semibold text-gray-700 flex items-center">
-            <FunnelIcon className="w-4 h-4 mr-1.5" />
-            絞り込み条件
-          </h3>
-          {/* 表示件数 */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <div className="flex items-center gap-1.5">
-              <ChartBarIcon className="w-4 h-4 text-gray-500" />
-              <Badge
-                variant={filteredData.length !== data.length ? 'info' : 'default'}
-                size="sm"
-                className="font-semibold"
-              >
-                表示: {filteredData.length}件
-              </Badge>
-              <Badge variant="default" size="sm" className="font-normal">
-                全: {data.length}件
-              </Badge>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-          {/* 受注番号 */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              受注番号
-            </label>
-            <input
-              type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-              value={orderNumberFilter}
-              onChange={(e) => setOrderNumberFilter(e.target.value)}
-              placeholder="受注番号で絞り込み"
-            />
-          </div>
-
-          {/* 個別/集合 */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              個別/集合
-            </label>
-            <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-              value={propertyTypeFilter}
-              onChange={(e) => setPropertyTypeFilter(e.target.value as '' | '個別' | '集合')}
-            >
-              <option value="">全て</option>
-              <option value="個別">個別</option>
-              <option value="集合">集合</option>
-            </select>
-          </div>
-
-          {/* 顧客コード */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              顧客コード
-            </label>
-            <input
-              type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm placeholder:text-gray-400"
-              value={customerCodeFilter}
-              onChange={(e) => setCustomerCodeFilter(e.target.value)}
-              placeholder="C123456"
-            />
-            <p className="text-xs text-gray-500 mt-1">※個別物件のみ</p>
-          </div>
-
-          {/* 集合コード */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              集合コード
-            </label>
-            <input
-              type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm placeholder:text-gray-400"
-              value={collectiveCodeFilter}
-              onChange={(e) => setCollectiveCodeFilter(e.target.value)}
-              placeholder="K001"
-            />
-            <p className="text-xs text-gray-500 mt-1">※集合物件のみ</p>
-          </div>
-
-          {/* 依頼先 */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              依頼先
-            </label>
-            <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-              value={contractorIdFilter}
-              onChange={(e) => handleContractorChange(e.target.value)}
-            >
-              <option value="">全て</option>
-              {contractors.filter(c => c.isActive).map(contractor => (
-                <option key={contractor.id} value={contractor.id}>
-                  {contractor.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* 班 */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              班
-            </label>
-            <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-              value={teamIdFilter}
-              onChange={(e) => setTeamIdFilter(e.target.value)}
-              disabled={!contractorIdFilter}
-            >
-              <option value="">全て</option>
-              {availableTeams.filter(t => t.isActive).map(team => (
-                <option key={team.id} value={team.id}>
-                  {team.teamName}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* 状態 */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              状態
-            </label>
-            <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as '' | ConstructionStatus)}
-            >
-              <option value="">全て</option>
-              <option value="未着手">未着手</option>
-              <option value="依頼済み">依頼済み</option>
-              <option value="工事日決定">工事日決定</option>
-              <option value="完了">完了</option>
-              <option value="工事返却">工事返却</option>
-              <option value="工事キャンセル">工事キャンセル</option>
-            </select>
-          </div>
-
-          {/* 工事後報告 */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              工事後報告
-            </label>
-            <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-              value={postConstructionReportFilter}
-              onChange={(e) => setPostConstructionReportFilter(e.target.value as '' | PostConstructionReport)}
-            >
-              <option value="">全て</option>
-              <option value="完了">完了</option>
-              <option value="未完了">未完了</option>
-              <option value="不要">不要</option>
-            </select>
-          </div>
-        </div>
-
-        {/* クリアボタン */}
-        <div className="flex justify-end mt-4 w-full">
-          <button
-            onClick={handleClearFilters}
-            className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex-shrink-0"
-          >
-            クリア
-          </button>
-        </div>
+  // フィルターJSX
+  const filters = (
+    <>
+      {/* 受注番号 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          受注番号
+        </label>
+        <input
+          type="text"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
+          value={orderNumberFilter}
+          onChange={(e) => setOrderNumberFilter(e.target.value)}
+          placeholder="受注番号で絞り込み"
+        />
       </div>
 
-      {/* Table */}
-      <div className="w-full overflow-x-auto bg-white rounded-lg shadow">
+      {/* 個別/集合 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          個別/集合
+        </label>
+        <select
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
+          value={propertyTypeFilter}
+          onChange={(e) => setPropertyTypeFilter(e.target.value as '' | '個別' | '集合')}
+        >
+          <option value="">全て</option>
+          <option value="個別">個別</option>
+          <option value="集合">集合</option>
+        </select>
+      </div>
+
+      {/* 顧客コード */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          顧客コード
+        </label>
+        <input
+          type="text"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm placeholder:text-gray-400"
+          value={customerCodeFilter}
+          onChange={(e) => setCustomerCodeFilter(e.target.value)}
+          placeholder="C123456"
+        />
+        <p className="text-xs text-gray-500 mt-1">※個別物件のみ</p>
+      </div>
+
+      {/* 集合コード */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          集合コード
+        </label>
+        <input
+          type="text"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm placeholder:text-gray-400"
+          value={collectiveCodeFilter}
+          onChange={(e) => setCollectiveCodeFilter(e.target.value)}
+          placeholder="K001"
+        />
+        <p className="text-xs text-gray-500 mt-1">※集合物件のみ</p>
+      </div>
+
+      {/* 依頼先 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          依頼先
+        </label>
+        <select
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
+          value={contractorIdFilter}
+          onChange={(e) => handleContractorChange(e.target.value)}
+        >
+          <option value="">全て</option>
+          {contractors.filter(c => c.isActive).map(contractor => (
+            <option key={contractor.id} value={contractor.id}>
+              {contractor.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* 班 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          班
+        </label>
+        <select
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+          value={teamIdFilter}
+          onChange={(e) => setTeamIdFilter(e.target.value)}
+          disabled={!contractorIdFilter}
+        >
+          <option value="">全て</option>
+          {availableTeams.filter(t => t.isActive).map(team => (
+            <option key={team.id} value={team.id}>
+              {team.teamName}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* 状態 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          状態
+        </label>
+        <select
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as '' | ConstructionStatus)}
+        >
+          <option value="">全て</option>
+          <option value="未着手">未着手</option>
+          <option value="依頼済み">依頼済み</option>
+          <option value="工事日決定">工事日決定</option>
+          <option value="完了">完了</option>
+          <option value="工事返却">工事返却</option>
+          <option value="工事キャンセル">工事キャンセル</option>
+        </select>
+      </div>
+
+      {/* 工事後報告 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          工事後報告
+        </label>
+        <select
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
+          value={postConstructionReportFilter}
+          onChange={(e) => setPostConstructionReportFilter(e.target.value as '' | PostConstructionReport)}
+        >
+          <option value="">全て</option>
+          <option value="完了">完了</option>
+          <option value="未完了">未完了</option>
+          <option value="不要">不要</option>
+        </select>
+      </div>
+    </>
+  )
+
+  return (
+    <FilterableTableLayout
+      totalCount={data.length}
+      filteredCount={filteredData.length}
+      activeFilterCount={activeFilterCount}
+      onClearFilters={handleClearFilters}
+      filters={filters}
+    >
+      <div className="w-full overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -452,7 +439,7 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
           </tbody>
         </table>
       </div>
-    </div>
+    </FilterableTableLayout>
   )
 }
 

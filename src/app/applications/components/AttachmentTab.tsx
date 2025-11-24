@@ -1,13 +1,12 @@
 import React, { useMemo, useState } from 'react'
 import {
-  FunnelIcon,
   PencilSquareIcon,
-  ChartBarIcon,
 } from '@heroicons/react/24/outline'
 import { AttachmentRequest, AttachmentStatus } from '@/features/applications/types'
 import { Contractor } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { Badge, BadgeVariant } from '@/shared/components/ui'
+import FilterableTableLayout from './FilterableTableLayout'
 
 interface AttachmentTabProps {
   data: AttachmentRequest[]
@@ -49,6 +48,20 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
     setStatusFilter('')
     setPostConstructionReportFilter('')
   }
+
+  // 適用中のフィルター数をカウント
+  const activeFilterCount = useMemo(() => {
+    let count = 0
+    if (orderNumberFilter) count++
+    if (applicationTypeFilter) count++
+    if (customerCodeFilter) count++
+    if (apartmentCodeFilter) count++
+    if (contractorIdFilter) count++
+    if (teamIdFilter) count++
+    if (statusFilter) count++
+    if (postConstructionReportFilter) count++
+    return count
+  }, [orderNumberFilter, applicationTypeFilter, customerCodeFilter, apartmentCodeFilter, contractorIdFilter, teamIdFilter, statusFilter, postConstructionReportFilter])
 
   // データフィルタリング
   const filtered = useMemo(() => {
@@ -152,180 +165,152 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
     return `${year}/${month}/${day}`
   }
 
-  return (
-    <div className="w-full max-w-full overflow-x-hidden">
-      {/* 絞り込みパネル */}
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 w-full max-w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 w-full">
-          <h3 className="text-sm font-semibold text-gray-700 flex items-center">
-            <FunnelIcon className="w-4 h-4 mr-1.5" />
-            絞り込み条件
-          </h3>
-          {/* 表示件数 */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <div className="flex items-center gap-1.5">
-              <ChartBarIcon className="w-4 h-4 text-gray-500" />
-              <Badge
-                variant={filtered.length !== data.length ? 'info' : 'default'}
-                size="sm"
-                className="font-semibold"
-              >
-                表示: {filtered.length}件
-              </Badge>
-              <Badge variant="default" size="sm" className="font-normal">
-                全: {data.length}件
-              </Badge>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-          {/* 受注番号 */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              受注番号
-            </label>
-            <input
-              type="text"
-              value={orderNumberFilter}
-              onChange={(e) => setOrderNumberFilter(e.target.value)}
-              placeholder="2024031500001"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
-            />
-          </div>
-
-          {/* 個別/集合 */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              個別/集合
-            </label>
-            <select
-              value={applicationTypeFilter}
-              onChange={(e) => setApplicationTypeFilter(e.target.value as '' | '個別' | '集合')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
-            >
-              <option value="">全て</option>
-              <option value="個別">個別</option>
-              <option value="集合">集合</option>
-            </select>
-          </div>
-
-          {/* 顧客コード */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              顧客コード
-            </label>
-            <input
-              type="text"
-              value={customerCodeFilter}
-              onChange={(e) => setCustomerCodeFilter(e.target.value)}
-              placeholder="123456789"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
-            />
-            <p className="text-xs text-gray-500 mt-1">※個別物件のみ</p>
-          </div>
-
-          {/* 集合コード */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              集合コード
-            </label>
-            <input
-              type="text"
-              value={apartmentCodeFilter}
-              onChange={(e) => setApartmentCodeFilter(e.target.value)}
-              placeholder="K001"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
-            />
-            <p className="text-xs text-gray-500 mt-1">※集合物件のみ</p>
-          </div>
-
-          {/* 依頼先 */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              依頼先
-            </label>
-            <select
-              value={contractorIdFilter}
-              onChange={(e) => handleContractorChange(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
-            >
-              <option value="">全て</option>
-              {contractors.filter(c => c.isActive).map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* 班 */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              班
-            </label>
-            <select
-              value={teamIdFilter}
-              onChange={(e) => setTeamIdFilter(e.target.value)}
-              disabled={!contractorIdFilter}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-            >
-              <option value="">全て</option>
-              {availableTeams.filter(t => t.isActive).map(t => (
-                <option key={t.id} value={t.id}>{t.teamName}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* 状態 */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              状態
-            </label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as '' | AttachmentStatus)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
-            >
-              <option value="">全て</option>
-              <option value="依頼済み">依頼済み</option>
-              <option value="調査済み">調査済み</option>
-              <option value="申請中">申請中</option>
-              <option value="申請許可">申請許可</option>
-              <option value="申請不許可">申請不許可</option>
-              <option value="キャンセル">キャンセル</option>
-            </select>
-          </div>
-
-          {/* 工事後報告 */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              工事後報告
-            </label>
-            <select
-              value={postConstructionReportFilter}
-              onChange={(e) => setPostConstructionReportFilter(e.target.value as '' | 'completed' | 'notCompleted' | 'notRequired')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
-            >
-              <option value="">全て</option>
-              <option value="completed">完了</option>
-              <option value="notCompleted">未完了</option>
-              <option value="notRequired">不要</option>
-            </select>
-          </div>
-        </div>
-
-        {/* クリアボタン */}
-        <div className="flex justify-end mt-4 w-full">
-          <button
-            onClick={handleClearFilters}
-            className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex-shrink-0"
-          >
-            クリア
-          </button>
-        </div>
+  // フィルターJSX
+  const filters = (
+    <>
+      {/* 受注番号 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          受注番号
+        </label>
+        <input
+          type="text"
+          value={orderNumberFilter}
+          onChange={(e) => setOrderNumberFilter(e.target.value)}
+          placeholder="2024031500001"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
+        />
       </div>
 
-      {/* テーブル */}
-      <div className="w-full overflow-x-auto bg-white rounded-lg shadow">
+      {/* 個別/集合 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          個別/集合
+        </label>
+        <select
+          value={applicationTypeFilter}
+          onChange={(e) => setApplicationTypeFilter(e.target.value as '' | '個別' | '集合')}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
+        >
+          <option value="">全て</option>
+          <option value="個別">個別</option>
+          <option value="集合">集合</option>
+        </select>
+      </div>
+
+      {/* 顧客コード */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          顧客コード
+        </label>
+        <input
+          type="text"
+          value={customerCodeFilter}
+          onChange={(e) => setCustomerCodeFilter(e.target.value)}
+          placeholder="123456789"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
+        />
+        <p className="text-xs text-gray-500 mt-1">※個別物件のみ</p>
+      </div>
+
+      {/* 集合コード */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          集合コード
+        </label>
+        <input
+          type="text"
+          value={apartmentCodeFilter}
+          onChange={(e) => setApartmentCodeFilter(e.target.value)}
+          placeholder="K001"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
+        />
+        <p className="text-xs text-gray-500 mt-1">※集合物件のみ</p>
+      </div>
+
+      {/* 依頼先 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          依頼先
+        </label>
+        <select
+          value={contractorIdFilter}
+          onChange={(e) => handleContractorChange(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
+        >
+          <option value="">全て</option>
+          {contractors.filter(c => c.isActive).map(c => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* 班 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          班
+        </label>
+        <select
+          value={teamIdFilter}
+          onChange={(e) => setTeamIdFilter(e.target.value)}
+          disabled={!contractorIdFilter}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+        >
+          <option value="">全て</option>
+          {availableTeams.filter(t => t.isActive).map(t => (
+            <option key={t.id} value={t.id}>{t.teamName}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* 状態 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          状態
+        </label>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as '' | AttachmentStatus)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
+        >
+          <option value="">全て</option>
+          <option value="依頼済み">依頼済み</option>
+          <option value="調査済み">調査済み</option>
+          <option value="申請中">申請中</option>
+          <option value="申請許可">申請許可</option>
+          <option value="申請不許可">申請不許可</option>
+          <option value="キャンセル">キャンセル</option>
+        </select>
+      </div>
+
+      {/* 工事後報告 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          工事後報告
+        </label>
+        <select
+          value={postConstructionReportFilter}
+          onChange={(e) => setPostConstructionReportFilter(e.target.value as '' | 'completed' | 'notCompleted' | 'notRequired')}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
+        >
+          <option value="">全て</option>
+          <option value="completed">完了</option>
+          <option value="notCompleted">未完了</option>
+          <option value="notRequired">不要</option>
+        </select>
+      </div>
+    </>
+  )
+
+  return (
+    <FilterableTableLayout
+      totalCount={data.length}
+      filteredCount={filtered.length}
+      activeFilterCount={activeFilterCount}
+      onClearFilters={handleClearFilters}
+      filters={filters}
+    >
+      <div className="w-full overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -515,6 +500,6 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
           </tbody>
         </table>
       </div>
-    </div>
+    </FilterableTableLayout>
   )
 }

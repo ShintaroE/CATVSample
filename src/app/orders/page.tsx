@@ -37,6 +37,7 @@ export default function OrdersPage() {
     filteredOrders,
     updateFilter,
     clearFilters,
+    activeFilterCount,
     filteredCount,
     totalCount
   } = useOrderFilters(orders)
@@ -171,6 +172,7 @@ export default function OrdersPage() {
           filters={filters}
           onUpdateFilter={updateFilter}
           onClear={clearFilters}
+          activeFilterCount={activeFilterCount}
           filteredCount={filteredCount}
           totalCount={totalCount}
         />
