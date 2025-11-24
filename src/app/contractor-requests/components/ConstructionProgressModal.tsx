@@ -5,10 +5,10 @@ import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { ConstructionRequest, RequestType, AttachedFile, ConstructionStatus, FileAttachments as FileAttachmentsType } from '@/features/applications/types'
 import { Textarea } from '@/shared/components/ui'
-import FileAttachments from '@/app/applications/components/FileAttachments'
+import FileAttachments from '@/app/applications/components/common/FileAttachments'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { deleteFileFromRequest, downloadFile } from '@/features/applications/lib/applicationStorage'
-import RequestNotes from '@/app/applications/components/RequestNotes'
+import RequestNotes from '@/app/applications/components/common/RequestNotes'
 
 interface ConstructionProgressModalProps {
   request: ConstructionRequest
@@ -105,7 +105,7 @@ export default function ConstructionProgressModal({
       // 終了状態（工事返却、工事キャンセル）は協力会社の進捗更新で変更できない
       // これらの状態の場合は「依頼済み」にマッピングする
       const terminalStates: ConstructionStatus[] = ['工事返却', '工事キャンセル']
-      
+
       if (terminalStates.includes(request.status)) {
         // 終了状態からは「依頼済み」に戻す
         newStatus = '依頼済み'

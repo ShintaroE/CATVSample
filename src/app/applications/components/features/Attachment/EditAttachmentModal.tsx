@@ -7,8 +7,8 @@ import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStor
 import { downloadFile } from '@/features/applications/lib/applicationStorage'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Input } from '@/shared/components/ui'
-import FileAttachmentsComponent from './FileAttachments'
-import RequestNotesComponent from './RequestNotes'
+import FileAttachmentsComponent from '../../common/FileAttachments'
+import RequestNotesComponent from '../../common/RequestNotes'
 
 interface EditAttachmentModalProps {
   item: AttachmentRequest
@@ -330,15 +330,15 @@ export default function EditAttachmentModal({
                         formData.postConstructionReport === true
                           ? 'required'
                           : formData.postConstructionReport === false
-                          ? 'notRequired'
-                          : ''
+                            ? 'notRequired'
+                            : ''
                       }
                       onChange={(e) => {
                         const value = e.target.value === 'required'
                           ? true
                           : e.target.value === 'notRequired'
-                          ? false
-                          : undefined
+                            ? false
+                            : undefined
                         handleChange('postConstructionReport', value)
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"

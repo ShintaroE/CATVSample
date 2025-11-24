@@ -7,8 +7,8 @@ import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStor
 import { downloadFile } from '@/features/applications/lib/applicationStorage'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Input, Button } from '@/shared/components/ui'
-import FileAttachmentsComponent from './FileAttachments'
-import RequestNotesComponent from './RequestNotes'
+import FileAttachmentsComponent from '../../common/FileAttachments'
+import RequestNotesComponent from '../../common/RequestNotes'
 
 interface EditConstructionModalProps {
   item: ConstructionRequest

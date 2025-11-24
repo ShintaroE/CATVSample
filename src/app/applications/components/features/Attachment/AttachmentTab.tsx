@@ -6,7 +6,7 @@ import { AttachmentRequest, AttachmentStatus } from '@/features/applications/typ
 import { Contractor } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { Badge, BadgeVariant } from '@/shared/components/ui'
-import FilterableTableLayout from './FilterableTableLayout'
+import FilterableTableLayout from '../../common/FilterableTableLayout'
 
 interface AttachmentTabProps {
   data: AttachmentRequest[]

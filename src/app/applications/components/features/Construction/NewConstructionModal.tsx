@@ -16,8 +16,8 @@ import { Contractor, Team } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Input, Button } from '@/shared/components/ui'
-import FileAttachmentsComponent from './FileAttachments'
-import RequestNotesComponent from './RequestNotes'
+import FileAttachmentsComponent from '../../common/FileAttachments'
+import RequestNotesComponent from '../../common/RequestNotes'
 
 interface NewConstructionModalProps {
   contractors: Contractor[]

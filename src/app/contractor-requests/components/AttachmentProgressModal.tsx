@@ -5,10 +5,10 @@ import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { AttachmentRequest, RequestType, AttachedFile, FileAttachments as FileAttachmentsType } from '@/features/applications/types'
 import { Textarea } from '@/shared/components/ui'
-import FileAttachments from '@/app/applications/components/FileAttachments'
+import FileAttachments from '@/app/applications/components/common/FileAttachments'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { deleteFileFromRequest, downloadFile } from '@/features/applications/lib/applicationStorage'
-import RequestNotes from '@/app/applications/components/RequestNotes'
+import RequestNotes from '@/app/applications/components/common/RequestNotes'
 
 interface AttachmentProgressModalProps {
   request: AttachmentRequest

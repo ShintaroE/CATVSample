@@ -10,9 +10,9 @@ import { Contractor } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Input } from '@/shared/components/ui'
-import FileAttachmentsComponent from './FileAttachments'
-import RequestNotesComponent from './RequestNotes'
-import ProgressHistory from './ProgressHistory'
+import FileAttachmentsComponent from '../../common/FileAttachments'
+import RequestNotesComponent from '../../common/RequestNotes'
+import ProgressHistory from '../../common/ProgressHistory'
 
 interface SurveyFormProps {
     initialData?: Partial<SurveyRequest>
