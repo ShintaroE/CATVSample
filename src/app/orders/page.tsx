@@ -36,7 +36,7 @@ export default function OrdersPage() {
     filters,
     filteredOrders,
     updateFilter,
-    resetFilters,
+    clearFilters,
     filteredCount,
     totalCount
   } = useOrderFilters(orders)
@@ -170,7 +170,7 @@ export default function OrdersPage() {
         <FilterPanel
           filters={filters}
           onUpdateFilter={updateFilter}
-          onReset={resetFilters}
+          onClear={clearFilters}
           filteredCount={filteredCount}
           totalCount={totalCount}
         />

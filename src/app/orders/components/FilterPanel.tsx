@@ -1,11 +1,13 @@
 import React from 'react'
 import { OrderFilters } from '../hooks/useOrderFilters'
 import { ConstructionCategory, individualWorkTypeOptions, collectiveWorkTypeOptions, IndividualWorkType, CollectiveWorkType, OrderStatus } from '../types'
+import { ChartBarIcon } from '@heroicons/react/24/outline'
+import { Badge } from '@/shared/components/ui'
 
 interface FilterPanelProps {
   filters: OrderFilters
   onUpdateFilter: <K extends keyof OrderFilters>(key: K, value: OrderFilters[K]) => void
-  onReset: () => void
+  onClear: () => void
   filteredCount: number
   totalCount: number
 }
@@ -13,40 +15,57 @@ interface FilterPanelProps {
 export default function FilterPanel({
   filters,
   onUpdateFilter,
-  onReset,
+  onClear,
   filteredCount,
   totalCount
 }: FilterPanelProps) {
-  // 工事カテゴリに応じた工事種別オプション
+  // 個別/集合に応じた工事種別オプション
   const workTypeOptions = filters.constructionCategory === '個別'
     ? individualWorkTypeOptions
     : filters.constructionCategory === '集合'
-    ? collectiveWorkTypeOptions
-    : []
+      ? collectiveWorkTypeOptions
+      : []
 
   return (
     <div className="mb-4 bg-white rounded-lg border border-gray-200 p-4">
       {/* ヘッダー */}
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-medium text-gray-700">フィルター</h3>
-        <div className="flex items-center gap-2">
-          <div className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
-            {filteredCount}/{totalCount}件
+        {/* 表示件数 */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1.5">
+            <ChartBarIcon className="w-4 h-4 text-gray-500" />
+            <Badge
+              variant={filteredCount !== totalCount ? 'info' : 'default'}
+              size="sm"
+              className="font-semibold"
+            >
+              表示: {filteredCount}件
+            </Badge>
+            <Badge variant="default" size="sm" className="font-normal">
+              全: {totalCount}件
+            </Badge>
           </div>
-          <button
-            onClick={onReset}
-            className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-          >
-            リセット
-          </button>
         </div>
       </div>
 
-      {/* 基本フィルター（常時表示） */}
+      {/* 第1行：受注番号、個別/集合、工事種別 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {/* 工事カテゴリ */}
+        {/* 受注番号 */}
         <div>
-          <label className="block text-xs text-gray-600 mb-1">工事カテゴリ</label>
+          <label className="block text-xs text-gray-600 mb-1">受注番号</label>
+          <input
+            type="text"
+            placeholder="受注番号"
+            value={filters.orderNumber}
+            onChange={(e) => onUpdateFilter('orderNumber', e.target.value)}
+            className="w-full text-sm bg-white text-gray-900 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* 個別/集合 */}
+        <div>
+          <label className="block text-xs text-gray-600 mb-1">個別/集合</label>
           <select
             value={filters.constructionCategory}
             onChange={(e) => onUpdateFilter('constructionCategory', e.target.value as ConstructionCategory | 'all')}
@@ -73,6 +92,33 @@ export default function FilterPanel({
             ))}
           </select>
         </div>
+      </div>
+
+      {/* 第2行：顧客コード、集合コード、受注ステータス */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+        {/* 顧客コード */}
+        <div>
+          <label className="block text-xs text-gray-600 mb-1">顧客コード</label>
+          <input
+            type="text"
+            placeholder="顧客コード"
+            value={filters.customerCode}
+            onChange={(e) => onUpdateFilter('customerCode', e.target.value)}
+            className="w-full text-sm bg-white text-gray-900 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* 集合コード */}
+        <div>
+          <label className="block text-xs text-gray-600 mb-1">集合コード</label>
+          <input
+            type="text"
+            placeholder="集合コード"
+            value={filters.apartmentCode}
+            onChange={(e) => onUpdateFilter('apartmentCode', e.target.value)}
+            className="w-full text-sm bg-white text-gray-900 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
 
         {/* 受注ステータス */}
         <div>
@@ -89,8 +135,9 @@ export default function FilterPanel({
         </div>
       </div>
 
-      {/* 第2行：顧客タイプ */}
+      {/* 第3行：顧客タイプとクリアボタン */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+        {/* 顧客タイプ */}
         <div>
           <label className="block text-xs text-gray-600 mb-1">顧客タイプ</label>
           <select
@@ -103,6 +150,19 @@ export default function FilterPanel({
             <option value="既存">既存</option>
           </select>
         </div>
+
+        {/* 空のスペース（2カラム分） */}
+        <div className="md:col-span-2"></div>
+      </div>
+
+      {/* クリアボタン */}
+      <div className="flex justify-end mt-4 w-full">
+        <button
+          onClick={onClear}
+          className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex-shrink-0"
+        >
+          クリア
+        </button>
       </div>
     </div>
   )
