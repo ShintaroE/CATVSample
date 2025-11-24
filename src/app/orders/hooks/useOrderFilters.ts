@@ -1,6 +1,15 @@
 import { useState, useMemo } from 'react'
 import { OrderData, ConstructionCategory, IndividualWorkType, CollectiveWorkType, OrderStatus } from '../types'
 
+export interface AdditionalCostsFilter {
+  enabled: boolean
+  closureExpansion: boolean
+  roadApplication: boolean
+  otherCompanyRepair: boolean
+  nwEquipment: boolean
+  serviceLineApplication: boolean
+}
+
 export interface OrderFilters {
   orderNumber: string
   constructionCategory: ConstructionCategory | 'all'
@@ -9,6 +18,7 @@ export interface OrderFilters {
   apartmentCode: string
   orderStatus: OrderStatus | 'all'
   customerType: '新規' | '既存' | 'all'
+  additionalCosts: AdditionalCostsFilter
 }
 
 const defaultFilters: OrderFilters = {
@@ -18,7 +28,15 @@ const defaultFilters: OrderFilters = {
   customerCode: '',
   apartmentCode: '',
   orderStatus: 'all',
-  customerType: 'all'
+  customerType: 'all',
+  additionalCosts: {
+    enabled: false,
+    closureExpansion: false,
+    roadApplication: false,
+    otherCompanyRepair: false,
+    nwEquipment: false,
+    serviceLineApplication: false
+  }
 }
 
 export function useOrderFilters(orders: OrderData[]) {
@@ -66,6 +84,26 @@ export function useOrderFilters(orders: OrderData[]) {
         return false
       }
 
+      // 追加費用フィルター（OR条件：いずれかにチェックが入っている項目が必須の注文を表示）
+      if (filters.additionalCosts.enabled) {
+        const additionalCosts = order.additionalCosts
+        if (!additionalCosts) {
+          return false
+        }
+
+        const matchesAny = (
+          (filters.additionalCosts.closureExpansion && additionalCosts.closureExpansion.required === 'required') ||
+          (filters.additionalCosts.roadApplication && additionalCosts.roadApplication.required === 'required') ||
+          (filters.additionalCosts.otherCompanyRepair && additionalCosts.otherCompanyRepair.required === 'required') ||
+          (filters.additionalCosts.nwEquipment && additionalCosts.nwEquipment.required === 'required') ||
+          (filters.additionalCosts.serviceLineApplication && additionalCosts.serviceLineApplication.required === 'required')
+        )
+
+        if (!matchesAny) {
+          return false
+        }
+      }
+
       return true
     })
   }, [orders, filters])
@@ -94,6 +132,9 @@ export function useOrderFilters(orders: OrderData[]) {
     return Object.entries(filters).some(([key, value]) => {
       if (key === 'orderNumber' || key === 'customerCode' || key === 'apartmentCode') {
         return value !== ''
+      }
+      if (key === 'additionalCosts') {
+        return (value as AdditionalCostsFilter).enabled
       }
       return value !== 'all'
     })

@@ -3,6 +3,7 @@ import { OrderFilters } from '../hooks/useOrderFilters'
 import { ConstructionCategory, individualWorkTypeOptions, collectiveWorkTypeOptions, IndividualWorkType, CollectiveWorkType, OrderStatus } from '../types'
 import { ChartBarIcon } from '@heroicons/react/24/outline'
 import { Badge } from '@/shared/components/ui'
+import AdditionalCostsFilter from './AdditionalCostsFilter'
 
 interface FilterPanelProps {
   filters: OrderFilters
@@ -153,6 +154,14 @@ export default function FilterPanel({
 
         {/* 空のスペース（2カラム分） */}
         <div className="md:col-span-2"></div>
+      </div>
+
+      {/* 第4行：各種追加費用フィルター */}
+      <div className="mt-3">
+        <AdditionalCostsFilter
+          filter={filters.additionalCosts}
+          onUpdate={(newFilter) => onUpdateFilter('additionalCosts', newFilter)}
+        />
       </div>
 
       {/* クリアボタン */}
