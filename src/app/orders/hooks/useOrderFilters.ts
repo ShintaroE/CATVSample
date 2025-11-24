@@ -2,15 +2,21 @@ import { useState, useMemo } from 'react'
 import { OrderData, ConstructionCategory, IndividualWorkType, CollectiveWorkType, OrderStatus } from '../types'
 
 export interface OrderFilters {
+  orderNumber: string
   constructionCategory: ConstructionCategory | 'all'
   workType: IndividualWorkType | CollectiveWorkType | 'all'
+  customerCode: string
+  apartmentCode: string
   orderStatus: OrderStatus | 'all'
   customerType: '新規' | '既存' | 'all'
 }
 
 const defaultFilters: OrderFilters = {
+  orderNumber: '',
   constructionCategory: 'all',
   workType: 'all',
+  customerCode: '',
+  apartmentCode: '',
   orderStatus: 'all',
   customerType: 'all'
 }
@@ -21,13 +27,31 @@ export function useOrderFilters(orders: OrderData[]) {
   // フィルター適用後の注文リスト
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
-      // 工事カテゴリフィルター
+      // 受注番号フィルター（部分一致、大文字小文字区別なし）
+      if (filters.orderNumber &&
+        !order.orderNumber.toLowerCase().includes(filters.orderNumber.toLowerCase())) {
+        return false
+      }
+
+      // 個別/集合フィルター
       if (filters.constructionCategory !== 'all' && order.constructionCategory !== filters.constructionCategory) {
         return false
       }
 
       // 工事種別フィルター
       if (filters.workType !== 'all' && order.workType !== filters.workType) {
+        return false
+      }
+
+      // 顧客コードフィルター（部分一致）
+      if (filters.customerCode &&
+        !order.customerCode.includes(filters.customerCode)) {
+        return false
+      }
+
+      // 集合コードフィルター（部分一致、apartmentCodeが存在する場合のみ）
+      if (filters.apartmentCode && order.apartmentCode &&
+        !order.apartmentCode.includes(filters.apartmentCode)) {
         return false
       }
 
@@ -51,7 +75,7 @@ export function useOrderFilters(orders: OrderData[]) {
     setFilters(prev => {
       const newFilters = { ...prev, [key]: value }
 
-      // 工事カテゴリが変更された場合、工事種別をリセット
+      // 個別/集合が変更された場合、工事種別をリセット
       if (key === 'constructionCategory') {
         newFilters.workType = 'all'
       }
@@ -60,21 +84,26 @@ export function useOrderFilters(orders: OrderData[]) {
     })
   }
 
-  // フィルターリセット
-  const resetFilters = () => {
+  // フィルタークリア
+  const clearFilters = () => {
     setFilters(defaultFilters)
   }
 
   // フィルター適用状態の判定
   const hasActiveFilters = useMemo(() => {
-    return Object.entries(filters).some(([, value]) => value !== 'all')
+    return Object.entries(filters).some(([key, value]) => {
+      if (key === 'orderNumber' || key === 'customerCode' || key === 'apartmentCode') {
+        return value !== ''
+      }
+      return value !== 'all'
+    })
   }, [filters])
 
   return {
     filters,
     filteredOrders,
     updateFilter,
-    resetFilters,
+    clearFilters,
     hasActiveFilters,
     totalCount: orders.length,
     filteredCount: filteredOrders.length
