@@ -9,6 +9,7 @@ import { Contractor } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { Badge, BadgeVariant } from '@/shared/components/ui'
 import FilterableTableLayout from '../../common/FilterableTableLayout'
+import { useApplicationFilters } from '../../../hooks/useApplicationFilters'
 
 interface SurveyTabProps {
   data: SurveyRequest[]
@@ -17,86 +18,45 @@ interface SurveyTabProps {
 }
 
 export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps) {
-  const [orderNumberFilter, setOrderNumberFilter] = useState('')
-  const [propertyTypeFilter, setPropertyTypeFilter] = useState<'' | '個別' | '集合'>('')
-  const [customerCodeFilter, setCustomerCodeFilter] = useState('')
-  const [collectiveCodeFilter, setCollectiveCodeFilter] = useState('')
-  const [contractorIdFilter, setContractorIdFilter] = useState('')
-  const [teamIdFilter, setTeamIdFilter] = useState('')
+  // 共通フィルターフックを使用
+  const {
+    filters,
+    baseFilteredData,
+    updateFilter,
+    clearFilters: clearBaseFilters,
+    activeFilterCount: baseActiveFilterCount,
+  } = useApplicationFilters(data)
+
+  // Survey固有のフィルター
   const [statusFilter, setStatusFilter] = useState<'' | SurveyStatus>('')
 
   // 依頼先選択時に利用可能な班を取得
   const availableTeams = useMemo(() => {
-    if (!contractorIdFilter) return []
-    return getTeamsByContractorId(contractorIdFilter)
-  }, [contractorIdFilter])
+    if (!filters.contractorId) return []
+    return getTeamsByContractorId(filters.contractorId)
+  }, [filters.contractorId])
 
-  // 依頼先変更時に班フィルタをリセット
+  // 依頼先変更時に班をリセット（共通フックが自動的に行う）
   const handleContractorChange = (contractorId: string) => {
-    setContractorIdFilter(contractorId)
-    setTeamIdFilter('') // 班選択をリセット
+    updateFilter('contractorId', contractorId)
   }
 
   // フィルタクリア
   const handleClearFilters = () => {
-    setOrderNumberFilter('')
-    setPropertyTypeFilter('')
-    setCustomerCodeFilter('')
-    setCollectiveCodeFilter('')
-    setContractorIdFilter('')
-    setTeamIdFilter('')
+    clearBaseFilters()
     setStatusFilter('')
   }
 
   // 適用中のフィルター数をカウント
   const activeFilterCount = useMemo(() => {
-    let count = 0
-    if (orderNumberFilter) count++
-    if (propertyTypeFilter) count++
-    if (customerCodeFilter) count++
-    if (collectiveCodeFilter) count++
-    if (contractorIdFilter) count++
-    if (teamIdFilter) count++
+    let count = baseActiveFilterCount
     if (statusFilter) count++
     return count
-  }, [orderNumberFilter, propertyTypeFilter, customerCodeFilter, collectiveCodeFilter, contractorIdFilter, teamIdFilter, statusFilter])
+  }, [baseActiveFilterCount, statusFilter])
 
+  // Survey固有のフィルターを適用
   const filtered = useMemo(() => {
-    return data.filter((r) => {
-      // 受注番号（部分一致）
-      if (orderNumberFilter && !(r.orderNumber || '').toLowerCase().includes(orderNumberFilter.toLowerCase())) {
-        return false
-      }
-
-      // 物件種別
-      if (propertyTypeFilter && r.propertyType !== propertyTypeFilter) {
-        return false
-      }
-
-      // 顧客コード（個別のみ、部分一致）
-      if (customerCodeFilter && r.propertyType === '個別') {
-        if (!(r.customerCode || '').includes(customerCodeFilter)) {
-          return false
-        }
-      }
-
-      // 集合コード（集合のみ、部分一致）
-      if (collectiveCodeFilter && r.propertyType === '集合') {
-        if (!(r.collectiveCode || '').includes(collectiveCodeFilter)) {
-          return false
-        }
-      }
-
-      // 依頼先
-      if (contractorIdFilter && r.contractorId !== contractorIdFilter) {
-        return false
-      }
-
-      // 班（依頼先が選択されている場合のみ）
-      if (contractorIdFilter && teamIdFilter && r.teamId !== teamIdFilter) {
-        return false
-      }
-
+    return baseFilteredData.filter((r) => {
       // 状態
       if (statusFilter && r.status !== statusFilter) {
         return false
@@ -104,7 +64,7 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
 
       return true
     })
-  }, [data, orderNumberFilter, propertyTypeFilter, customerCodeFilter, collectiveCodeFilter, contractorIdFilter, teamIdFilter, statusFilter])
+  }, [baseFilteredData, statusFilter])
 
   const getStatusBadge = (status: SurveyStatus): BadgeVariant => {
     const variantMap: Record<SurveyStatus, BadgeVariant> = {
@@ -116,7 +76,7 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
     return variantMap[status]
   }
 
-  const filters = (
+  const filterElements = (
     <>
       {/* 受注番号 */}
       <div>
@@ -125,8 +85,8 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
         </label>
         <input
           type="text"
-          value={orderNumberFilter}
-          onChange={(e) => setOrderNumberFilter(e.target.value)}
+          value={filters.orderNumber}
+          onChange={(e) => updateFilter('orderNumber', e.target.value)}
           placeholder="2024031500001"
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
         />
@@ -138,8 +98,8 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
           個別/集合
         </label>
         <select
-          value={propertyTypeFilter}
-          onChange={(e) => setPropertyTypeFilter(e.target.value as '' | '個別' | '集合')}
+          value={filters.propertyType}
+          onChange={(e) => updateFilter('propertyType', e.target.value as '' | '個別' | '集合')}
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
         >
           <option value="">全て</option>
@@ -155,8 +115,8 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
         </label>
         <input
           type="text"
-          value={customerCodeFilter}
-          onChange={(e) => setCustomerCodeFilter(e.target.value)}
+          value={filters.customerCode}
+          onChange={(e) => updateFilter('customerCode', e.target.value)}
           placeholder="C123456"
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
         />
@@ -170,8 +130,8 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
         </label>
         <input
           type="text"
-          value={collectiveCodeFilter}
-          onChange={(e) => setCollectiveCodeFilter(e.target.value)}
+          value={filters.collectiveCode}
+          onChange={(e) => updateFilter('collectiveCode', e.target.value)}
           placeholder="K001"
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
         />
@@ -184,7 +144,7 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
           依頼先
         </label>
         <select
-          value={contractorIdFilter}
+          value={filters.contractorId}
           onChange={(e) => handleContractorChange(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
         >
@@ -201,9 +161,9 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
           班
         </label>
         <select
-          value={teamIdFilter}
-          onChange={(e) => setTeamIdFilter(e.target.value)}
-          disabled={!contractorIdFilter}
+          value={filters.teamId}
+          onChange={(e) => updateFilter('teamId', e.target.value)}
+          disabled={!filters.contractorId}
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
         >
           <option value="">全て</option>
@@ -239,7 +199,7 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
       filteredCount={filtered.length}
       activeFilterCount={activeFilterCount}
       onClearFilters={handleClearFilters}
-      filters={filters}
+      filters={filterElements}
     >
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
