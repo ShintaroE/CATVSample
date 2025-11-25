@@ -5,6 +5,7 @@ import { Contractor } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { Badge, BadgeVariant } from '@/shared/components/ui'
 import FilterableTableLayout from '../../common/FilterableTableLayout'
+import { useApplicationFilters } from '../../../hooks/useApplicationFilters'
 
 interface ConstructionTabProps {
   data: ConstructionRequest[]
@@ -13,52 +14,44 @@ interface ConstructionTabProps {
 }
 
 const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, onEdit }) => {
-  const [orderNumberFilter, setOrderNumberFilter] = useState('')
-  const [customerCodeFilter, setCustomerCodeFilter] = useState('')
-  const [collectiveCodeFilter, setCollectiveCodeFilter] = useState('')
-  const [propertyTypeFilter, setPropertyTypeFilter] = useState<'' | '個別' | '集合'>('')
-  const [contractorIdFilter, setContractorIdFilter] = useState('')
-  const [teamIdFilter, setTeamIdFilter] = useState('')
+  // 共通フィルターフックを使用
+  const {
+    filters,
+    baseFilteredData,
+    updateFilter,
+    clearFilters: clearBaseFilters,
+    activeFilterCount: baseActiveFilterCount,
+  } = useApplicationFilters(data)
+
+  // Construction固有のフィルター
   const [statusFilter, setStatusFilter] = useState<'' | ConstructionStatus>('')
   const [postConstructionReportFilter, setPostConstructionReportFilter] = useState<'' | PostConstructionReport>('')
 
   // Get teams for selected contractor
   const availableTeams = useMemo(() => {
-    if (!contractorIdFilter) return []
-    return getTeamsByContractorId(contractorIdFilter)
-  }, [contractorIdFilter])
+    if (!filters.contractorId) return []
+    return getTeamsByContractorId(filters.contractorId)
+  }, [filters.contractorId])
 
-  // Reset team filter when contractor changes
+  // Reset team filter when contractor changes（共通フックが自動的に行う）
   const handleContractorChange = (contractorId: string) => {
-    setContractorIdFilter(contractorId)
-    setTeamIdFilter('')
+    updateFilter('contractorId', contractorId)
   }
 
   // フィルタクリア
   const handleClearFilters = () => {
-    setOrderNumberFilter('')
-    setCustomerCodeFilter('')
-    setCollectiveCodeFilter('')
-    setPropertyTypeFilter('')
-    setContractorIdFilter('')
-    setTeamIdFilter('')
+    clearBaseFilters()
     setStatusFilter('')
     setPostConstructionReportFilter('')
   }
 
   // 適用中のフィルター数をカウント
   const activeFilterCount = useMemo(() => {
-    let count = 0
-    if (orderNumberFilter) count++
-    if (customerCodeFilter) count++
-    if (collectiveCodeFilter) count++
-    if (propertyTypeFilter) count++
-    if (contractorIdFilter) count++
-    if (teamIdFilter) count++
+    let count = baseActiveFilterCount
     if (statusFilter) count++
     if (postConstructionReportFilter) count++
     return count
-  }, [orderNumberFilter, customerCodeFilter, collectiveCodeFilter, propertyTypeFilter, contractorIdFilter, teamIdFilter, statusFilter, postConstructionReportFilter])
+  }, [baseActiveFilterCount, statusFilter, postConstructionReportFilter])
 
   // Badge variant functions
   const getStatusBadge = (status: ConstructionStatus): BadgeVariant => {
@@ -89,73 +82,23 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
     }
   }
 
-  // Filter data
+  // Construction固有のフィルターを適用
   const filteredData = useMemo(() => {
-    return data.filter(item => {
-      // 受注番号（部分一致）
-      if (orderNumberFilter && !item.orderNumber?.toLowerCase().includes(orderNumberFilter.toLowerCase())) {
-        return false
-      }
-
-      // 個別/集合（テーブル表示と同じロジックで判定）
-      if (propertyTypeFilter) {
-        if (propertyTypeFilter === '個別') {
-          // 個別を選択した場合、propertyTypeが'個別'のもののみ表示
-          if (item.propertyType !== '個別') {
-            return false
-          }
-        } else if (propertyTypeFilter === '集合') {
-          // 集合を選択した場合、propertyTypeが'個別'でないもの（集合またはundefined等）を表示
-          if (item.propertyType === '個別') {
-            return false
-          }
-        }
-      }
-
-      // 顧客コード（個別のみ、部分一致）
-      if (customerCodeFilter) {
-        // 個別物件の場合のみチェック
-        if (item.propertyType === '個別') {
-          if (!(item.customerCode || '').toLowerCase().includes(customerCodeFilter.toLowerCase())) {
-            return false
-          }
-        } else {
-          // 集合物件の場合は、顧客コードフィルターで除外しない（スキップ）
-          // ただし、propertyTypeFilterで個別が選択されている場合は、集合物件は除外される
-        }
-      }
-
-      // 集合コード（集合のみ、部分一致）
-      if (collectiveCodeFilter) {
-        // 集合物件の場合のみチェック
-        if (item.propertyType === '集合') {
-          if (!(item.collectiveCode || '').toLowerCase().includes(collectiveCodeFilter.toLowerCase())) {
-            return false
-          }
-        } else {
-          // 個別物件の場合は、集合コードフィルターで除外しない（スキップ）
-          // ただし、propertyTypeFilterで集合が選択されている場合は、個別物件は除外される
-        }
-      }
-
-      if (contractorIdFilter && item.contractorId !== contractorIdFilter) {
-        return false
-      }
-      if (teamIdFilter && item.teamId !== teamIdFilter) {
-        return false
-      }
+    return baseFilteredData.filter(item => {
+      // 状態
       if (statusFilter && item.status !== statusFilter) {
         return false
       }
+      // 工事後報告
       if (postConstructionReportFilter && item.postConstructionReport !== postConstructionReportFilter) {
         return false
       }
       return true
     })
-  }, [data, orderNumberFilter, propertyTypeFilter, customerCodeFilter, collectiveCodeFilter, contractorIdFilter, teamIdFilter, statusFilter, postConstructionReportFilter])
+  }, [baseFilteredData, statusFilter, postConstructionReportFilter])
 
   // フィルターJSX
-  const filters = (
+  const filterElements = (
     <>
       {/* 受注番号 */}
       <div>
@@ -165,8 +108,8 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         <input
           type="text"
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-          value={orderNumberFilter}
-          onChange={(e) => setOrderNumberFilter(e.target.value)}
+          value={filters.orderNumber}
+          onChange={(e) => updateFilter('orderNumber', e.target.value)}
           placeholder="受注番号で絞り込み"
         />
       </div>
@@ -178,8 +121,8 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         </label>
         <select
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-          value={propertyTypeFilter}
-          onChange={(e) => setPropertyTypeFilter(e.target.value as '' | '個別' | '集合')}
+          value={filters.propertyType}
+          onChange={(e) => updateFilter('propertyType', e.target.value as '' | '個別' | '集合')}
         >
           <option value="">全て</option>
           <option value="個別">個別</option>
@@ -195,8 +138,8 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         <input
           type="text"
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm placeholder:text-gray-400"
-          value={customerCodeFilter}
-          onChange={(e) => setCustomerCodeFilter(e.target.value)}
+          value={filters.customerCode}
+          onChange={(e) => updateFilter('customerCode', e.target.value)}
           placeholder="C123456"
         />
         <p className="text-xs text-gray-500 mt-1">※個別物件のみ</p>
@@ -210,8 +153,8 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         <input
           type="text"
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm placeholder:text-gray-400"
-          value={collectiveCodeFilter}
-          onChange={(e) => setCollectiveCodeFilter(e.target.value)}
+          value={filters.collectiveCode}
+          onChange={(e) => updateFilter('collectiveCode', e.target.value)}
           placeholder="K001"
         />
         <p className="text-xs text-gray-500 mt-1">※集合物件のみ</p>
@@ -224,7 +167,7 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         </label>
         <select
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-          value={contractorIdFilter}
+          value={filters.contractorId}
           onChange={(e) => handleContractorChange(e.target.value)}
         >
           <option value="">全て</option>
@@ -243,9 +186,9 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         </label>
         <select
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-          value={teamIdFilter}
-          onChange={(e) => setTeamIdFilter(e.target.value)}
-          disabled={!contractorIdFilter}
+          value={filters.teamId}
+          onChange={(e) => updateFilter('teamId', e.target.value)}
+          disabled={!filters.contractorId}
         >
           <option value="">全て</option>
           {availableTeams.filter(t => t.isActive).map(team => (
@@ -301,7 +244,7 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
       filteredCount={filteredData.length}
       activeFilterCount={activeFilterCount}
       onClearFilters={handleClearFilters}
-      filters={filters}
+      filters={filterElements}
     >
       <div className="w-full overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">

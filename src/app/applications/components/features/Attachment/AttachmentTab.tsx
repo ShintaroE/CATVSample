@@ -7,6 +7,7 @@ import { Contractor } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { Badge, BadgeVariant } from '@/shared/components/ui'
 import FilterableTableLayout from '../../common/FilterableTableLayout'
+import { useApplicationFilters } from '../../../hooks/useApplicationFilters'
 
 interface AttachmentTabProps {
   data: AttachmentRequest[]
@@ -15,94 +16,48 @@ interface AttachmentTabProps {
 }
 
 export default function AttachmentTab({ data, contractors, onEdit }: AttachmentTabProps) {
-  // フィルター状態
-  const [orderNumberFilter, setOrderNumberFilter] = useState('')
-  const [applicationTypeFilter, setApplicationTypeFilter] = useState<'' | '個別' | '集合'>('')
-  const [customerCodeFilter, setCustomerCodeFilter] = useState('')
-  const [apartmentCodeFilter, setApartmentCodeFilter] = useState('')
-  const [contractorIdFilter, setContractorIdFilter] = useState('')
-  const [teamIdFilter, setTeamIdFilter] = useState('')
+  // 共通フィルターフックを使用
+  const {
+    filters,
+    baseFilteredData,
+    updateFilter,
+    clearFilters: clearBaseFilters,
+    activeFilterCount: baseActiveFilterCount,
+  } = useApplicationFilters(data)
+
+  // Attachment固有のフィルター
   const [statusFilter, setStatusFilter] = useState<'' | AttachmentStatus>('')
   const [postConstructionReportFilter, setPostConstructionReportFilter] = useState<'' | 'completed' | 'notCompleted' | 'notRequired'>('')
 
   // 依頼先選択時に利用可能な班を取得
   const availableTeams = useMemo(() => {
-    if (!contractorIdFilter) return []
-    return getTeamsByContractorId(contractorIdFilter)
-  }, [contractorIdFilter])
+    if (!filters.contractorId) return []
+    return getTeamsByContractorId(filters.contractorId)
+  }, [filters.contractorId])
 
-  // 依頼先変更時に班フィルタをリセット
+  // 依頼先変更時に班をリセット（共通フックが自動的に行う）
   const handleContractorChange = (contractorId: string) => {
-    setContractorIdFilter(contractorId)
-    setTeamIdFilter('')
+    updateFilter('contractorId', contractorId)
   }
 
   // フィルタクリア
   const handleClearFilters = () => {
-    setOrderNumberFilter('')
-    setApplicationTypeFilter('')
-    setCustomerCodeFilter('')
-    setApartmentCodeFilter('')
-    setContractorIdFilter('')
-    setTeamIdFilter('')
+    clearBaseFilters()
     setStatusFilter('')
     setPostConstructionReportFilter('')
   }
 
   // 適用中のフィルター数をカウント
   const activeFilterCount = useMemo(() => {
-    let count = 0
-    if (orderNumberFilter) count++
-    if (applicationTypeFilter) count++
-    if (customerCodeFilter) count++
-    if (apartmentCodeFilter) count++
-    if (contractorIdFilter) count++
-    if (teamIdFilter) count++
+    let count = baseActiveFilterCount
     if (statusFilter) count++
     if (postConstructionReportFilter) count++
     return count
-  }, [orderNumberFilter, applicationTypeFilter, customerCodeFilter, apartmentCodeFilter, contractorIdFilter, teamIdFilter, statusFilter, postConstructionReportFilter])
+  }, [baseActiveFilterCount, statusFilter, postConstructionReportFilter])
 
-  // データフィルタリング
+  // Attachment固有のフィルターを適用
   const filtered = useMemo(() => {
-    return data.filter((r) => {
-      // 受注番号 (部分一致)
-      if (orderNumberFilter && !(r.orderNumber || '').includes(orderNumberFilter)) {
-        return false
-      }
-
-      // 個別/集合
-      if (applicationTypeFilter && r.propertyType !== applicationTypeFilter) {
-        return false
-      }
-
-      // 顧客コード (部分一致)
-      if (customerCodeFilter && !(r.customerCode || '').includes(customerCodeFilter)) {
-        return false
-      }
-
-      // 集合コード (部分一致) - 集合の場合のみチェック
-      if (apartmentCodeFilter) {
-        if (r.propertyType === '集合') {
-          if (!(r.collectiveCode || '').includes(apartmentCodeFilter)) {
-            return false
-          }
-        } else {
-          // 個別の場合は集合コードでフィルタリングできない
-          return false
-        }
-      }
-
-      // 依頼先
-      if (contractorIdFilter && r.contractorId !== contractorIdFilter) {
-        return false
-      }
-
-      // 班
-      if (teamIdFilter && r.teamId !== teamIdFilter) {
-        return false
-      }
-
+    return baseFilteredData.filter((r) => {
       // 状態
       if (statusFilter && r.status !== statusFilter) {
         return false
@@ -132,17 +87,7 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
 
       return true
     })
-  }, [
-    data,
-    orderNumberFilter,
-    applicationTypeFilter,
-    customerCodeFilter,
-    apartmentCodeFilter,
-    contractorIdFilter,
-    teamIdFilter,
-    statusFilter,
-    postConstructionReportFilter,
-  ])
+  }, [baseFilteredData, statusFilter, postConstructionReportFilter])
 
   const getStatusBadge = (status: AttachmentStatus): BadgeVariant => {
     const variantMap: Record<AttachmentStatus, BadgeVariant> = {
@@ -166,7 +111,7 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
   }
 
   // フィルターJSX
-  const filters = (
+  const filterElements = (
     <>
       {/* 受注番号 */}
       <div>
@@ -175,8 +120,8 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
         </label>
         <input
           type="text"
-          value={orderNumberFilter}
-          onChange={(e) => setOrderNumberFilter(e.target.value)}
+          value={filters.orderNumber}
+          onChange={(e) => updateFilter('orderNumber', e.target.value)}
           placeholder="2024031500001"
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
         />
@@ -188,8 +133,8 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
           個別/集合
         </label>
         <select
-          value={applicationTypeFilter}
-          onChange={(e) => setApplicationTypeFilter(e.target.value as '' | '個別' | '集合')}
+          value={filters.propertyType}
+          onChange={(e) => updateFilter('propertyType', e.target.value as '' | '個別' | '集合')}
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
         >
           <option value="">全て</option>
@@ -205,8 +150,8 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
         </label>
         <input
           type="text"
-          value={customerCodeFilter}
-          onChange={(e) => setCustomerCodeFilter(e.target.value)}
+          value={filters.customerCode}
+          onChange={(e) => updateFilter('customerCode', e.target.value)}
           placeholder="123456789"
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
         />
@@ -220,8 +165,8 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
         </label>
         <input
           type="text"
-          value={apartmentCodeFilter}
-          onChange={(e) => setApartmentCodeFilter(e.target.value)}
+          value={filters.collectiveCode}
+          onChange={(e) => updateFilter('collectiveCode', e.target.value)}
           placeholder="K001"
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
         />
@@ -234,7 +179,7 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
           依頼先
         </label>
         <select
-          value={contractorIdFilter}
+          value={filters.contractorId}
           onChange={(e) => handleContractorChange(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
         >
@@ -251,9 +196,9 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
           班
         </label>
         <select
-          value={teamIdFilter}
-          onChange={(e) => setTeamIdFilter(e.target.value)}
-          disabled={!contractorIdFilter}
+          value={filters.teamId}
+          onChange={(e) => updateFilter('teamId', e.target.value)}
+          disabled={!filters.contractorId}
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
         >
           <option value="">全て</option>
@@ -308,7 +253,7 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
       filteredCount={filtered.length}
       activeFilterCount={activeFilterCount}
       onClearFilters={handleClearFilters}
-      filters={filters}
+      filters={filterElements}
     >
       <div className="w-full overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
