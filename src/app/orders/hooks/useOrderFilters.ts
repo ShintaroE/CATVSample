@@ -128,32 +128,27 @@ export function useOrderFilters(orders: OrderData[]) {
   }
 
   // フィルター適用状態の判定
-  const hasActiveFilters = useMemo(() => {
-    return Object.entries(filters).some(([key, value]) => {
-      if (key === 'orderNumber' || key === 'customerCode' || key === 'apartmentCode') {
-        return value !== ''
-      }
-      if (key === 'additionalCosts') {
-        return (value as AdditionalCostsFilter).enabled
-      }
-      return value !== 'all'
-    })
-  }, [filters])
+  const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
+    if (key === 'orderNumber' || key === 'customerCode' || key === 'apartmentCode') {
+      return value !== ''
+    }
+    if (key === 'additionalCosts') {
+      return (value as AdditionalCostsFilter).enabled
+    }
+    return value !== 'all'
+  })
 
   // 適用中のフィルター数をカウント
-  const activeFilterCount = useMemo(() => {
-    let count = 0
-    Object.entries(filters).forEach(([key, value]) => {
-      if (key === 'orderNumber' || key === 'customerCode' || key === 'apartmentCode') {
-        if (value !== '') count++
-      } else if (key === 'additionalCosts') {
-        if ((value as AdditionalCostsFilter).enabled) count++
-      } else {
-        if (value !== 'all') count++
-      }
-    })
-    return count
-  }, [filters])
+  let activeFilterCount = 0
+  Object.entries(filters).forEach(([key, value]) => {
+    if (key === 'orderNumber' || key === 'customerCode' || key === 'apartmentCode') {
+      if (value !== '') activeFilterCount++
+    } else if (key === 'additionalCosts') {
+      if ((value as AdditionalCostsFilter).enabled) activeFilterCount++
+    } else {
+      if (value !== 'all') activeFilterCount++
+    }
+  })
 
   return {
     filters,

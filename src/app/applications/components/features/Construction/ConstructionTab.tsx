@@ -46,12 +46,9 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
   }
 
   // 適用中のフィルター数をカウント
-  const activeFilterCount = useMemo(() => {
-    let count = baseActiveFilterCount
-    if (statusFilter) count++
-    if (postConstructionReportFilter) count++
-    return count
-  }, [baseActiveFilterCount, statusFilter, postConstructionReportFilter])
+  let activeFilterCount = baseActiveFilterCount
+  if (statusFilter) activeFilterCount++
+  if (postConstructionReportFilter) activeFilterCount++
 
   // Badge variant functions
   const getStatusBadge = (status: ConstructionStatus): BadgeVariant => {

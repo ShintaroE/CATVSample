@@ -56,7 +56,7 @@ export default function ExclusionCalendar({
   onMonthChange
 }: ExclusionCalendarProps) {
   const dates = useMemo(() => getMonthDates(currentMonth), [currentMonth])
-  const today = useMemo(() => formatDateString(new Date()), [])
+  const today = formatDateString(new Date())
 
   // 日付ごとのアイテムをグループ化
   const itemsByDate = useMemo(() => {

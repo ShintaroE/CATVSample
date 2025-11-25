@@ -151,23 +151,18 @@ export function useApplicationFilters<T extends FilterableApplicationData>(
   /**
    * アクティブフィルター数
    */
-  const activeFilterCount = useMemo(() => {
-    let count = 0
-    if (filters.orderNumber) count++
-    if (filters.propertyType) count++
-    if (filters.customerCode) count++
-    if (filters.collectiveCode) count++
-    if (filters.contractorId) count++
-    if (filters.teamId) count++
-    return count
-  }, [filters])
+  let activeFilterCount = 0
+  if (filters.orderNumber) activeFilterCount++
+  if (filters.propertyType) activeFilterCount++
+  if (filters.customerCode) activeFilterCount++
+  if (filters.collectiveCode) activeFilterCount++
+  if (filters.contractorId) activeFilterCount++
+  if (filters.teamId) activeFilterCount++
 
   /**
    * フィルター適用状態の判定
    */
-  const hasActiveFilters = useMemo(() => {
-    return activeFilterCount > 0
-  }, [activeFilterCount])
+  const hasActiveFilters = activeFilterCount > 0
 
   return {
     filters,
