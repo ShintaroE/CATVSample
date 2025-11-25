@@ -48,11 +48,8 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
   }
 
   // 適用中のフィルター数をカウント
-  const activeFilterCount = useMemo(() => {
-    let count = baseActiveFilterCount
-    if (statusFilter) count++
-    return count
-  }, [baseActiveFilterCount, statusFilter])
+  let activeFilterCount = baseActiveFilterCount
+  if (statusFilter) activeFilterCount++
 
   // Survey固有のフィルターを適用
   const filtered = useMemo(() => {

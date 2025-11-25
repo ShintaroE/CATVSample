@@ -48,12 +48,9 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
   }
 
   // 適用中のフィルター数をカウント
-  const activeFilterCount = useMemo(() => {
-    let count = baseActiveFilterCount
-    if (statusFilter) count++
-    if (postConstructionReportFilter) count++
-    return count
-  }, [baseActiveFilterCount, statusFilter, postConstructionReportFilter])
+  let activeFilterCount = baseActiveFilterCount
+  if (statusFilter) activeFilterCount++
+  if (postConstructionReportFilter) activeFilterCount++
 
   // Attachment固有のフィルターを適用
   const filtered = useMemo(() => {
