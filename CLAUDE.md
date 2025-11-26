@@ -60,6 +60,7 @@ src/
 Domain-agnostic utils → shared/utils/
 Domain business logic → features/*/lib/
 Page-specific logic   → app/*/lib/
+Shared hooks         → app/*/hooks/ (when used across multiple tabs/components)
 ```
 
 **Component targets:**
@@ -69,9 +70,15 @@ Page-specific logic   → app/*/lib/
 
 **Naming conventions:**
 - Components: PascalCase (`AddScheduleModal.tsx`)
-- Hooks: `useXxxData`, `useXxxState`, `useXxx`
-- Utils: camelCase (`dateUtils.ts`)
+- Hooks: `useXxxData`, `useXxxState`, `useXxx`, `useXxxFilters`
+- Utils: camelCase (`dateUtils.ts`, `filterUtils.ts`)
 - Types: `types/index.ts`
+
+**Performance Guidelines:**
+- **useMemo**: Use ONLY for heavy operations (array filtering O(n), localStorage I/O, complex calculations)
+- **No useMemo**: For lightweight calculations (O(1) operations, simple conditionals, variable assignments)
+- **useEffect**: Required for data fetching, subscriptions, authentication checks, and props synchronization
+- **Avoid useEffect**: For derived state that can be computed directly from props/state
 
 ## Key Domain Concepts
 
@@ -187,15 +194,23 @@ generateSimplePassword(length = 10): string
 All filter panels use a unified accordion UI with active filter count:
 ```typescript
 // Pattern 1: Using FilterableTableLayout (for applications pages)
-const activeFilterCount = useMemo(() => {
-  let count = 0
-  if (filter1) count++
-  if (filter2) count++
-  // ... count all active filters
-  return count
-}, [filter1, filter2, ...])
+// Use useApplicationFilters hook for shared filter logic
+import { useApplicationFilters } from '@/app/applications/hooks/useApplicationFilters'
 
-const filters = (
+const {
+  filters,
+  setFilters,
+  activeFilterCount,
+  hasActiveFilters,
+  clearFilters
+} = useApplicationFilters(data)
+
+// activeFilterCount is computed without useMemo (lightweight O(1) calculation)
+let activeFilterCount = baseActiveFilterCount
+if (statusFilter) activeFilterCount++
+if (otherFilter) activeFilterCount++
+
+const filterUI = (
   <>
     {/* Filter inputs */}
   </>
@@ -207,7 +222,7 @@ return (
     filteredCount={filtered.length}
     activeFilterCount={activeFilterCount}
     onClearFilters={handleClearFilters}
-    filters={filters}
+    filters={filterUI}
   >
     {/* Table content */}
   </FilterableTableLayout>
@@ -272,15 +287,21 @@ location.reload()
 | login | ✅ Simple | 114 | Already clean |
 
 ### Filter Implementation Status
-| Page | Filter UI | Active Count | Accordion | Pattern |
-|------|-----------|--------------|-----------|---------|
-| applications (Survey) | ✅ | ✅ | ✅ | FilterableTableLayout |
-| applications (Attachment) | ✅ | ✅ | ✅ | FilterableTableLayout |
-| applications (Construction) | ✅ | ✅ | ✅ | FilterableTableLayout |
-| orders | ✅ | ✅ | ✅ | Custom FilterPanel |
-| contractor-requests | ✅ | ❌ | ❌ | Legacy filter UI |
-| schedule | N/A | N/A | N/A | Team filter only |
-| my-exclusions | N/A | N/A | N/A | Schedule type filter only |
+| Page | Filter UI | Active Count | Accordion | Pattern | Shared Hook |
+|------|-----------|--------------|-----------|---------|-------------|
+| applications (Survey) | ✅ | ✅ | ✅ | FilterableTableLayout | useApplicationFilters |
+| applications (Attachment) | ✅ | ✅ | ✅ | FilterableTableLayout | useApplicationFilters |
+| applications (Construction) | ✅ | ✅ | ✅ | FilterableTableLayout | useApplicationFilters |
+| orders | ✅ | ✅ | ✅ | Custom FilterPanel | useOrderFilters |
+| contractor-requests | ✅ | ❌ | ❌ | Legacy filter UI | - |
+| schedule | N/A | N/A | N/A | Team filter only | useFilters |
+| my-exclusions | N/A | N/A | N/A | Schedule type filter only | - |
+
+### Performance Optimization History
+| PR | Change | Files | Impact |
+|----|--------|-------|--------|
+| #47 | Removed unnecessary useMemo | 6 files, 8 useMemos | Reduced memoization overhead for O(1) calculations |
+| #46 | Unified application filters | useApplicationFilters.ts, filterUtils.ts | DRY principle, consistent filtering logic |
 
 ### Future Migration Path
 - **DBMS**: PostgreSQL/MySQL (1-3 months)
