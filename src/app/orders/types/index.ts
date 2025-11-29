@@ -37,82 +37,6 @@ export interface AppointmentHistory {
   }
 }
 
-export interface WeekViewColumn {
-  teamId: string
-  teamName: string
-  contractorId: string
-  contractorName: string
-  color: string
-  date: Date
-  dateStr: string
-  displayName: string
-  teamDisplayName: string
-}
-
-export interface DayColumn {
-  date: Date
-  dateStr: string
-  displayName: string
-  dayOfWeek: number
-}
-
-export interface TeamColumnInDay {
-  day: DayColumn
-  team: {
-    teamId: string
-    teamName: string
-    contractorName: string
-    contractorId: string
-    color: string
-    displayName: string
-  }
-}
-
-export interface TeamGroup {
-  teamId: string
-  teamName: string
-  contractorName: string
-  color: string
-  displayName: string
-  columnCount: number
-}
-
-export interface TeamFilter {
-  contractorId: string
-  contractorName: string
-  teamId: string
-  teamName: string
-  isVisible: boolean
-  color: string
-}
-
-export interface ScheduleTypeFilter {
-  construction: boolean
-  survey: boolean
-}
-
-export type CalendarViewMode = 'month' | 'week'
-
-export interface ScheduleData {
-  assignedDate: string
-  timeSlot: string
-  contractor: string
-  contractorId: string
-  teamId: string
-  teamName: string
-  assignedTeams?: Array<{
-    teamId: string
-    teamName: string
-    contractorId: string
-    contractorName: string
-  }>
-  status: string
-  customerCode: string
-  customerName: string
-  address: string
-  workType: string
-}
-
 export type ConstructionCategory = '個別' | '集合'
 
 export type IndividualWorkType = '個別' | 'マンションタイプ光工事' | 'Gドット' | '防犯カメラ'
@@ -179,8 +103,8 @@ export interface OrderData {
   orderSource: string
   constructionCategory: ConstructionCategory
   workType: IndividualWorkType | CollectiveWorkType
-  apartmentCode?: string
-  apartmentName?: string
+  collectiveCode?: string           // 集合住宅コード（集合の場合）
+  collectiveHousingName?: string    // 集合住宅名（集合の場合）
   customerCode: string
   customerType: '新規' | '既存'
   customerName: string

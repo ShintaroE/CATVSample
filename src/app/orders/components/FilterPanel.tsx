@@ -141,8 +141,8 @@ export default function FilterPanel({
               <input
                 type="text"
                 placeholder="集合コード"
-                value={filters.apartmentCode}
-                onChange={(e) => onUpdateFilter('apartmentCode', e.target.value)}
+                value={filters.collectiveCode}
+                onChange={(e) => onUpdateFilter('collectiveCode', e.target.value)}
                 className="w-full text-sm bg-white text-gray-900 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
