@@ -4,6 +4,8 @@ import React, { useState } from 'react'
 import { ScheduleItem, AssignedTeam, ScheduleType } from '../../../types'
 import { Button, Input, Textarea } from '@/shared/components/ui'
 import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
+import OrderSearchModal from '@/shared/components/order/OrderSearchModal'
+import { OrderData } from '@/app/orders/types'
 
 interface AddScheduleModalProps {
   selectedDate: string
@@ -27,6 +29,7 @@ export default function AddScheduleModal({
   const [endTime, setEndTime] = useState('12:00')
   const [memo, setMemo] = useState('')
   const [selectedTeams, setSelectedTeams] = useState<AssignedTeam[]>([])
+  const [showOrderSearchModal, setShowOrderSearchModal] = useState(false)
 
   const handleAddTeam = (teamId: string) => {
     const team = getTeams().find(t => t.id === teamId)
@@ -43,6 +46,26 @@ export default function AddScheduleModal({
 
   const handleRemoveTeam = (teamId: string) => {
     setSelectedTeams(prev => prev.filter(t => t.teamId !== teamId))
+  }
+
+  const handleOrderSelect = (order: OrderData) => {
+    // 受注番号（必須）
+    setOrderNumber(order.orderNumber)
+
+    // 物件種別によって分岐
+    if (order.constructionCategory === '個別') {
+      setCustomerName(order.customerName)
+      setCollectiveHousingName('')
+    } else {
+      setCustomerName('')
+      setCollectiveHousingName(order.apartmentName || '')
+    }
+
+    // 共通項目
+    setAddress(order.address || '')
+    setPhoneNumber(order.phoneNumber || '')
+
+    setShowOrderSearchModal(false)
   }
 
   const handleSave = () => {
@@ -118,6 +141,16 @@ export default function AddScheduleModal({
             value={orderNumber}
             onChange={(e) => setOrderNumber(e.target.value)}
             required
+            placeholder="例: 2024031500001"
+            endAdornment={
+              <Button
+                variant="secondary"
+                onClick={() => setShowOrderSearchModal(true)}
+                type="button"
+              >
+                🔍 検索
+              </Button>
+            }
           />
 
           {/* 顧客名・集合住宅名 */}
@@ -243,6 +276,13 @@ export default function AddScheduleModal({
           <Button onClick={handleSave} variant="primary">登録</Button>
         </div>
       </div>
+
+      {/* 受注情報検索モーダル */}
+      <OrderSearchModal
+        isOpen={showOrderSearchModal}
+        onClose={() => setShowOrderSearchModal(false)}
+        onSelect={handleOrderSelect}
+      />
     </div>
   )
 }

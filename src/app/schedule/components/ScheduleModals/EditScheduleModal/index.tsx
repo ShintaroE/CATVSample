@@ -119,7 +119,10 @@ export default function EditScheduleModal({
             value={orderNumber}
             onChange={(e) => setOrderNumber(e.target.value)}
             required
+            disabled
+            className="bg-gray-100 text-gray-500"
           />
+          <p className="text-xs text-gray-500 -mt-2">※ 受注番号は編集できません</p>
 
           {/* 顧客名・集合住宅名 */}
           <div className="grid grid-cols-2 gap-4">

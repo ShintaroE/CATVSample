@@ -44,7 +44,7 @@ export function Input({
         <div className="flex gap-2">
           <input
             id={inputId}
-            className={`flex-1 ${inputClassName}`}
+            className={inputClassName}
             {...props}
           />
           {endAdornment}
