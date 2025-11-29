@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react'
 import { OrderData, ConstructionCategory, IndividualWorkType, CollectiveWorkType, getWorkTypeOptions, individualWorkTypeOptions, collectiveWorkTypeOptions, OrderStatus } from '../types'
 import { Button } from '@/shared/components/ui'
-import OrderSearchModal from '@/shared/components/order/OrderSearchModal'
 
 interface OrderFormProps {
     initialData?: Partial<OrderData>
@@ -31,32 +30,12 @@ export default function OrderForm({ initialData, onSubmit, onCancel, isEditing =
     const [formData, setFormData] = useState<Partial<OrderData>>({ ...defaultData, ...initialData })
     const [errors, setErrors] = useState<Record<string, string>>({})
     const [showOptionalFields, setShowOptionalFields] = useState(true)
-    const [showOrderSearchModal, setShowOrderSearchModal] = useState(false)
 
     useEffect(() => {
         if (initialData) {
             setFormData(prev => ({ ...prev, ...initialData }))
         }
     }, [initialData])
-
-    const handleOrderSelect = (order: OrderData) => {
-        setFormData(prev => ({
-            ...prev,
-            orderNumber: order.orderNumber,
-            customerCode: order.customerCode,
-            customerName: order.customerName,
-            address: order.address,
-            phoneNumber: order.phoneNumber,
-            customerType: order.customerType,
-            orderSource: order.orderSource,
-            closureNumber: order.closureNumber,
-            constructionCategory: order.constructionCategory,
-            workType: order.workType,
-            apartmentCode: order.apartmentCode,
-            apartmentName: order.apartmentName,
-        }))
-        setShowOrderSearchModal(false)
-    }
 
     const handleCategoryChange = (category: ConstructionCategory) => {
         setFormData(prev => ({
@@ -162,7 +141,6 @@ export default function OrderForm({ initialData, onSubmit, onCancel, isEditing =
     }
 
     return (
-        <>
         <form onSubmit={handleSubmit} className="space-y-6">
             {/* セクション1: 基本情報 */}
             <div className="p-4 bg-gray-50 rounded-md border border-gray-200">
@@ -173,26 +151,15 @@ export default function OrderForm({ initialData, onSubmit, onCancel, isEditing =
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         受注番号 {isEditing ? '' : <span className="text-red-500">*</span>}
                     </label>
-                    <div className="flex gap-2">
-                        <input
-                            type="text"
-                            value={formData.orderNumber}
-                            onChange={(e) => setFormData({ ...formData, orderNumber: e.target.value })}
-                            placeholder="例: 2025110800004"
-                            className={`flex-1 border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900 ${isEditing ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}`}
-                            required
-                            disabled={isEditing}
-                        />
-                        {!isEditing && (
-                            <Button
-                                variant="secondary"
-                                onClick={() => setShowOrderSearchModal(true)}
-                                type="button"
-                            >
-                                🔍 検索
-                            </Button>
-                        )}
-                    </div>
+                    <input
+                        type="text"
+                        value={formData.orderNumber}
+                        onChange={(e) => setFormData({ ...formData, orderNumber: e.target.value })}
+                        placeholder="例: 2025110800004"
+                        className={`w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900 ${isEditing ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}`}
+                        required
+                        disabled={isEditing}
+                    />
                     {isEditing && <p className="text-xs text-gray-500 mt-1">※ 受注番号は編集できません</p>}
                     {errors.orderNumber && (
                         <p className="text-xs text-red-500 mt-1">{errors.orderNumber}</p>
@@ -518,13 +485,5 @@ export default function OrderForm({ initialData, onSubmit, onCancel, isEditing =
                 </Button>
             </div>
         </form>
-
-        {/* 受注情報検索モーダル */}
-        <OrderSearchModal
-            isOpen={showOrderSearchModal}
-            onClose={() => setShowOrderSearchModal(false)}
-            onSelect={handleOrderSelect}
-        />
-    </>
     )
 }
