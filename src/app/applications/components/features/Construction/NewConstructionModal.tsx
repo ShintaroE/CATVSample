@@ -18,6 +18,8 @@ import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Input, Button } from '@/shared/components/ui'
 import FileAttachmentsComponent from '../../common/FileAttachments'
 import RequestNotesComponent from '../../common/RequestNotes'
+import OrderSearchModal from '@/shared/components/order/OrderSearchModal'
+import { OrderData } from '@/app/orders/types'
 
 interface NewConstructionModalProps {
   contractors: Contractor[]
@@ -60,6 +62,7 @@ export default function NewConstructionModal({
     adminNotes: '',
   })
   const [uploadingFiles, setUploadingFiles] = useState(false)
+  const [showOrderSearchModal, setShowOrderSearchModal] = useState(false)
 
   const availableTeams = useMemo(() => {
     if (formData.assigneeType === 'internal') {
@@ -169,6 +172,37 @@ export default function NewConstructionModal({
     document.body.removeChild(link)
   }
 
+  const handleOrderSelect = (order: OrderData) => {
+    // 受注番号（必須）
+    handleChange('orderNumber', order.orderNumber)
+
+    // 物件種別によって分岐
+    if (order.constructionCategory === '個別') {
+      handleChange('propertyType', '個別')
+      handleChange('customerCode', order.customerCode)
+      handleChange('customerName', order.customerName)
+      handleChange('address', order.address || '')
+      handleChange('phoneNumber', order.phoneNumber || '')
+    } else {
+      handleChange('propertyType', '集合')
+      handleChange('collectiveCode', order.apartmentCode || '')
+      handleChange('collectiveHousingName', order.apartmentName || '')
+      handleChange('address', order.address || '')
+      handleChange('phoneNumber', order.phoneNumber || '')
+    }
+
+    // クロージャ番号があれば備考に追加
+    if (order.closureNumber) {
+      const currentNotes = requestNotes.adminNotes || ''
+      const newNotes = currentNotes
+        ? `${currentNotes}\nクロージャ番号: ${order.closureNumber}`
+        : `クロージャ番号: ${order.closureNumber}`
+      setRequestNotes({ adminNotes: newNotes })
+    }
+
+    setShowOrderSearchModal(false)
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -224,6 +258,15 @@ export default function NewConstructionModal({
                     required
                     className="bg-white text-gray-900"
                     placeholder="例: 2024031500001"
+                    endAdornment={
+                      <Button
+                        variant="secondary"
+                        onClick={() => setShowOrderSearchModal(true)}
+                        type="button"
+                      >
+                        🔍 検索
+                      </Button>
+                    }
                   />
                   <Input
                     label="KCT受取日"
@@ -349,6 +392,13 @@ export default function NewConstructionModal({
               <Button type="submit">登録</Button>
             </div>
           </form>
+
+          {/* 受注情報検索モーダル */}
+          <OrderSearchModal
+            isOpen={showOrderSearchModal}
+            onClose={() => setShowOrderSearchModal(false)}
+            onSelect={handleOrderSelect}
+          />
         </Dialog.Panel>
       </div>
     </Dialog>
