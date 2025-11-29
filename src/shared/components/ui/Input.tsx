@@ -4,12 +4,14 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   label?: string
   error?: string
   fullWidth?: boolean
+  endAdornment?: React.ReactNode
 }
 
 export function Input({
   label,
   error,
   fullWidth = false,
+  endAdornment,
   className = '',
   id,
   ...props
@@ -22,7 +24,7 @@ export function Input({
     error
       ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500'
       : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900',
-    widthClass,
+    endAdornment ? '' : widthClass,
     className,
   ]
     .filter(Boolean)
@@ -38,11 +40,22 @@ export function Input({
           {label}
         </label>
       )}
-      <input
-        id={inputId}
-        className={inputClassName}
-        {...props}
-      />
+      {endAdornment ? (
+        <div className="flex gap-2">
+          <input
+            id={inputId}
+            className={`flex-1 ${inputClassName}`}
+            {...props}
+          />
+          {endAdornment}
+        </div>
+      ) : (
+        <input
+          id={inputId}
+          className={inputClassName}
+          {...props}
+        />
+      )}
       {error && (
         <p className="mt-1 text-sm text-red-600" id={`${inputId}-error`}>
           {error}
