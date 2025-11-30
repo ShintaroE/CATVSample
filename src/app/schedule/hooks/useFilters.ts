@@ -1,13 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
-import { TeamFilter, ScheduleItem, ExclusionEntry, ScheduleItemWithTeam, ScheduleType } from '../types'
+import { TeamFilter, ScheduleItem, ExclusionEntry, ScheduleItemWithTeam, ScheduleType, ScheduleTypeFilter } from '../types'
 import { getContractorColorName } from '@/lib/contractorColors'
 
-// 種別フィルタの型定義
-export interface ScheduleTypeFilter {
-  construction: boolean
-  survey: boolean
-}
+// Re-export ScheduleTypeFilter for backward compatibility
+export type { ScheduleTypeFilter }
 
 export function useFilters(schedules: ScheduleItem[], exclusions: ExclusionEntry[]) {
   const [teamFilters, setTeamFilters] = useState<TeamFilter[]>([])

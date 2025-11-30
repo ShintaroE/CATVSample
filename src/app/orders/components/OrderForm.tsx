@@ -22,8 +22,8 @@ export default function OrderForm({ initialData, onSubmit, onCancel, isEditing =
         customerName: '',
         address: '',
         phoneNumber: '',
-        apartmentCode: '',
-        apartmentName: '',
+        collectiveCode: '',
+        collectiveHousingName: '',
         orderStatus: 'アクティブ',
     }
 
@@ -46,8 +46,8 @@ export default function OrderForm({ initialData, onSubmit, onCancel, isEditing =
                 : collectiveWorkTypeOptions[0],
             // 個別に変更時は集合住宅情報をクリア
             ...(category === '個別' && {
-                apartmentCode: '',
-                apartmentName: '',
+                collectiveCode: '',
+                collectiveHousingName: '',
             })
         }))
 
@@ -55,8 +55,8 @@ export default function OrderForm({ initialData, onSubmit, onCancel, isEditing =
         if (category === '個別') {
             setErrors(prev => {
                 const newErrors = { ...prev }
-                delete newErrors.apartmentCode
-                delete newErrors.apartmentName
+                delete newErrors.collectiveCode
+                delete newErrors.collectiveHousingName
                 return newErrors
             })
         }
@@ -92,11 +92,11 @@ export default function OrderForm({ initialData, onSubmit, onCancel, isEditing =
 
         // 集合住宅の場合: 集合住宅コードと集合住宅名が必須
         if (formData.constructionCategory === '集合') {
-            if (!formData.apartmentCode || formData.apartmentCode.trim() === '') {
-                newErrors.apartmentCode = '集合住宅コードを入力してください'
+            if (!formData.collectiveCode || formData.collectiveCode.trim() === '') {
+                newErrors.collectiveCode = '集合住宅コードを入力してください'
             }
-            if (!formData.apartmentName || formData.apartmentName.trim() === '') {
-                newErrors.apartmentName = '集合住宅名を入力してください'
+            if (!formData.collectiveHousingName || formData.collectiveHousingName.trim() === '') {
+                newErrors.collectiveHousingName = '集合住宅名を入力してください'
             }
         }
 
@@ -262,14 +262,14 @@ export default function OrderForm({ initialData, onSubmit, onCancel, isEditing =
                                 </label>
                                 <input
                                     type="text"
-                                    value={formData.apartmentCode || ''}
-                                    onChange={(e) => setFormData({ ...formData, apartmentCode: e.target.value })}
+                                    value={formData.collectiveCode || ''}
+                                    onChange={(e) => setFormData({ ...formData, collectiveCode: e.target.value })}
                                     placeholder="例: AP-001"
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
                                     required
                                 />
-                                {errors.apartmentCode && (
-                                    <p className="text-xs text-red-500 mt-1">{errors.apartmentCode}</p>
+                                {errors.collectiveCode && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.collectiveCode}</p>
                                 )}
                             </div>
                             <div>
@@ -278,14 +278,14 @@ export default function OrderForm({ initialData, onSubmit, onCancel, isEditing =
                                 </label>
                                 <input
                                     type="text"
-                                    value={formData.apartmentName || ''}
-                                    onChange={(e) => setFormData({ ...formData, apartmentName: e.target.value })}
+                                    value={formData.collectiveHousingName || ''}
+                                    onChange={(e) => setFormData({ ...formData, collectiveHousingName: e.target.value })}
                                     placeholder="例: サンライズマンション"
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
                                     required
                                 />
-                                {errors.apartmentName && (
-                                    <p className="text-xs text-red-500 mt-1">{errors.apartmentName}</p>
+                                {errors.collectiveHousingName && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.collectiveHousingName}</p>
                                 )}
                             </div>
                         </div>

@@ -9,7 +9,7 @@ export interface OrderSearchFilters {
   address: string
   constructionCategory: '' | ConstructionCategory
   workType: string
-  apartmentName: string
+  collectiveHousingName: string
 }
 
 const initialFilters: OrderSearchFilters = {
@@ -19,7 +19,7 @@ const initialFilters: OrderSearchFilters = {
   address: '',
   constructionCategory: '',
   workType: '',
-  apartmentName: '',
+  collectiveHousingName: '',
 }
 
 export function useOrderSearch() {
@@ -60,7 +60,7 @@ export function useOrderSearch() {
         return false
       }
       // 集合住宅名
-      if (filters.apartmentName && order.apartmentName && !order.apartmentName.includes(filters.apartmentName)) {
+      if (filters.collectiveHousingName && order.collectiveHousingName && !order.collectiveHousingName.includes(filters.collectiveHousingName)) {
         return false
       }
       return true

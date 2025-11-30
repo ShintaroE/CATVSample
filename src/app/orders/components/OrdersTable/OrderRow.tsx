@@ -55,11 +55,11 @@ export default function OrderRow({
       </td>
       {/* 集合住宅コード */}
       <td className="hidden xl:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-        {order.apartmentCode || '—'}
+        {order.collectiveCode || '—'}
       </td>
       {/* 集合住宅名（折り返しOK、最大幅制限） */}
       <td className="hidden xl:table-cell px-4 py-3 text-sm text-gray-500 max-w-xs">
-        {order.apartmentName || '—'}
+        {order.collectiveHousingName || '—'}
       </td>
       {/* 新規/既存 */}
       <td className="hidden lg:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">

@@ -117,8 +117,8 @@ export default function OrderSearchFilters({ filters, onFilterChange, onClearFil
         {/* 集合住宅名 */}
         <Input
           label="集合住宅名"
-          value={filters.apartmentName}
-          onChange={(e) => handleChange('apartmentName', e.target.value)}
+          value={filters.collectiveHousingName}
+          onChange={(e) => handleChange('collectiveHousingName', e.target.value)}
           placeholder="部分一致で検索"
           className="bg-white text-gray-900"
         />

@@ -15,7 +15,7 @@ export interface OrderFilters {
   constructionCategory: ConstructionCategory | 'all'
   workType: IndividualWorkType | CollectiveWorkType | 'all'
   customerCode: string
-  apartmentCode: string
+  collectiveCode: string
   orderStatus: OrderStatus | 'all'
   customerType: '新規' | '既存' | 'all'
   additionalCosts: AdditionalCostsFilter
@@ -26,7 +26,7 @@ const defaultFilters: OrderFilters = {
   constructionCategory: 'all',
   workType: 'all',
   customerCode: '',
-  apartmentCode: '',
+  collectiveCode: '',
   orderStatus: 'all',
   customerType: 'all',
   additionalCosts: {
@@ -67,9 +67,9 @@ export function useOrderFilters(orders: OrderData[]) {
         return false
       }
 
-      // 集合コードフィルター（部分一致、apartmentCodeが存在する場合のみ）
-      if (filters.apartmentCode && order.apartmentCode &&
-        !order.apartmentCode.includes(filters.apartmentCode)) {
+      // 集合コードフィルター（部分一致、collectiveCodeが存在する場合のみ）
+      if (filters.collectiveCode && order.collectiveCode &&
+        !order.collectiveCode.includes(filters.collectiveCode)) {
         return false
       }
 
@@ -129,7 +129,7 @@ export function useOrderFilters(orders: OrderData[]) {
 
   // フィルター適用状態の判定
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
-    if (key === 'orderNumber' || key === 'customerCode' || key === 'apartmentCode') {
+    if (key === 'orderNumber' || key === 'customerCode' || key === 'collectiveCode') {
       return value !== ''
     }
     if (key === 'additionalCosts') {
@@ -141,7 +141,7 @@ export function useOrderFilters(orders: OrderData[]) {
   // 適用中のフィルター数をカウント
   let activeFilterCount = 0
   Object.entries(filters).forEach(([key, value]) => {
-    if (key === 'orderNumber' || key === 'customerCode' || key === 'apartmentCode') {
+    if (key === 'orderNumber' || key === 'customerCode' || key === 'collectiveCode') {
       if (value !== '') activeFilterCount++
     } else if (key === 'additionalCosts') {
       if ((value as AdditionalCostsFilter).enabled) activeFilterCount++

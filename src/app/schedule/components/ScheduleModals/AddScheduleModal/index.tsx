@@ -58,7 +58,7 @@ export default function AddScheduleModal({
       setCollectiveHousingName('')
     } else {
       setCustomerName('')
-      setCollectiveHousingName(order.apartmentName || '')
+      setCollectiveHousingName(order.collectiveHousingName || '')
     }
 
     // 共通項目

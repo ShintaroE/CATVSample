@@ -76,7 +76,7 @@ export default function OrderSearchTable({ orders, onSelect }: OrderSearchTableP
                   {order.workType}
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
-                  {order.apartmentName || '-'}
+                  {order.collectiveHousingName || '-'}
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm">
                   <Button

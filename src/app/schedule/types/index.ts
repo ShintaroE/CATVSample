@@ -12,8 +12,11 @@ export interface ScheduleItem {
   id: string
   scheduleType: ScheduleType // 'construction' (工事) | 'survey' (現地調査)
   orderNumber: string
+  propertyType?: '個別' | '集合' // 物件種別
+  customerCode?: string // 顧客コード（個別の場合）
   customerName: string
-  collectiveHousingName?: string // 集合住宅名
+  collectiveCode?: string // 集合住宅コード（集合の場合）
+  collectiveHousingName?: string // 集合住宅名（集合の場合）
   address: string
   phoneNumber?: string // 電話番号
   contractor: '直営班' | '栄光電気' | 'スライヴ'
@@ -93,6 +96,11 @@ export interface TeamFilter {
   teamName: string
   isVisible: boolean
   color: string
+}
+
+export interface ScheduleTypeFilter {
+  construction: boolean
+  survey: boolean
 }
 
 export type ViewMode = 'month' | 'week' | 'day'

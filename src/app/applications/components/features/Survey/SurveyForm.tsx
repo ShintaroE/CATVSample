@@ -168,8 +168,8 @@ export default function SurveyForm({
             handleChange('phoneNumber', order.phoneNumber || '')
         } else {
             handleChange('propertyType', '集合')
-            handleChange('collectiveCode', order.apartmentCode || '')
-            handleChange('collectiveHousingName', order.apartmentName || '')
+            handleChange('collectiveCode', order.collectiveCode || '')
+            handleChange('collectiveHousingName', order.collectiveHousingName || '')
             handleChange('address', order.address || '')
             handleChange('phoneNumber', order.phoneNumber || '')
         }

@@ -1,13 +1,12 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
-import { TeamFilter, CalendarViewMode, WeekViewColumn, TeamGroup, DayColumn, TeamColumnInDay, ScheduleTypeFilter } from '../types'
+import { TeamFilter, WeekViewColumn, TeamGroup, DayColumn, TeamColumnInDay, ScheduleTypeFilter, ScheduleItem, ExclusionEntry, ScheduleType, ViewMode } from '@/app/schedule/types'
 import { exclusionStorage } from '@/app/my-exclusions/lib/exclusionStorage'
 import { getContractorColorName } from '@/lib/contractorColors'
 import { scheduleStorage } from '@/app/schedule/lib/scheduleStorage'
-import { ScheduleItem, ExclusionEntry, ScheduleType } from '@/app/schedule/types'
 
 export function useScheduleViewer() {
-  const [calendarViewMode, setCalendarViewMode] = useState<CalendarViewMode>('month')
+  const [calendarViewMode, setCalendarViewMode] = useState<ViewMode>('month')
   const [teamFilters, setTeamFilters] = useState<TeamFilter[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [schedules, setSchedules] = useState<ScheduleItem[]>([])
@@ -253,7 +252,8 @@ export function useScheduleViewer() {
             contractorName: team.contractorName,
             contractorId: team.contractorId,
             color: team.color,
-            displayName: `${team.contractorName}-${team.teamName}`
+            displayName: `${team.contractorName}-${team.teamName}`,
+            shortName: team.teamName
           }
         })
       })
