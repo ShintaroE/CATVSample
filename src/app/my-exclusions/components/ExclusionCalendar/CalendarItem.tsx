@@ -1,4 +1,4 @@
-import { ScheduleItem, ExclusionEntry } from '@/app/schedule/types'
+import { ScheduleItem, ExclusionEntry } from '@/features/calendar/types'
 
 interface CalendarItemProps {
   type: 'schedule' | 'exclusion'

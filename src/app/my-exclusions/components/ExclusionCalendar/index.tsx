@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
-import { ScheduleItem, ExclusionEntry } from '@/app/schedule/types'
+import { ScheduleItem, ExclusionEntry } from '@/features/calendar/types'
 import DateCell from './DateCell'
 import { formatDateString } from '@/shared/utils/formatters'
 

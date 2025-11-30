@@ -1,9 +1,8 @@
 import { useState, useCallback, useEffect } from 'react'
 import { AppointmentHistory, OrderData } from '../types'
 import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
-import { AssignedTeam } from '@/app/schedule/types'
+import { AssignedTeam, ScheduleItem } from '@/features/calendar/types'
 import { scheduleStorage } from '@/app/schedule/lib/scheduleStorage'
-import { ScheduleItem } from '@/app/schedule/types'
 
 export function useAppointments() {
   const [editingAppointment, setEditingAppointment] = useState<AppointmentHistory | null>(null)

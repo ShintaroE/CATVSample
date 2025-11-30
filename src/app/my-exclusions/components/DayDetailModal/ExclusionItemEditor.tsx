@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ExclusionEntry } from '@/app/schedule/types'
+import { ExclusionEntry } from '@/features/calendar/types'
 import { Team } from '@/features/contractor/types'
 import { Button } from '@/shared/components/ui/Button'
 

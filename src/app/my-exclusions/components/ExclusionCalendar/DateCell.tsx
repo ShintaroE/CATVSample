@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { ScheduleItem, ExclusionEntry } from '@/app/schedule/types'
+import { ScheduleItem, ExclusionEntry } from '@/features/calendar/types'
 import CalendarItem from './CalendarItem'
 import { formatDateString } from '@/shared/utils/formatters'
 

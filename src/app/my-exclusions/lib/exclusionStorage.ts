@@ -1,4 +1,4 @@
-import { ExclusionEntry } from '@/app/schedule/types'
+import { ExclusionEntry } from '@/features/calendar/types'
 import { STORAGE_KEYS } from '@/lib/constants'
 
 const STORAGE_KEY = STORAGE_KEYS.EXCLUSIONS

@@ -1,7 +1,7 @@
 import { useState, Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
-import { ScheduleItem, ExclusionEntry } from '@/app/schedule/types'
+import { ScheduleItem, ExclusionEntry } from '@/features/calendar/types'
 import { Team } from '@/features/contractor/types'
 import ExclusionForm from '../ExclusionForm'
 import { Button } from '@/shared/components/ui/Button'
