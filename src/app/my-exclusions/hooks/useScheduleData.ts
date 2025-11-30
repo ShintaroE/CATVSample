@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { ScheduleItem } from '@/app/schedule/types'
+import { ScheduleItem } from '@/features/calendar/types'
 import { scheduleStorage } from '@/app/schedule/lib/scheduleStorage'
 
 /**

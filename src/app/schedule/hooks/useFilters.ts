@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
-import { TeamFilter, ScheduleItem, ExclusionEntry, ScheduleItemWithTeam, ScheduleType, ScheduleTypeFilter } from '../types'
+import { TeamFilter, ScheduleItem, ExclusionEntry, ScheduleItemWithTeam, ScheduleType, ScheduleTypeFilter } from '@/features/calendar/types'
 import { getContractorColorName } from '@/lib/contractorColors'
 
 // Re-export ScheduleTypeFilter for backward compatibility

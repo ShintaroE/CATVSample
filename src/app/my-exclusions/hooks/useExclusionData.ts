@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import { ExclusionEntry } from '@/app/schedule/types'
+import { ExclusionEntry } from '@/features/calendar/types'
 import { exclusionStorage } from '../lib/exclusionStorage'
 
 /**

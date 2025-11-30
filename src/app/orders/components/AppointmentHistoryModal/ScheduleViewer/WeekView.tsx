@@ -3,7 +3,7 @@
 import React from 'react'
 import { useScheduleViewer } from '../../../hooks/useScheduleViewer'
 import { getContractorSolidColorClass } from '@/lib/contractorColors'
-import { ExclusionEntry, TeamColumnInDay, ScheduleItem } from '@/app/schedule/types'
+import { ExclusionEntry, TeamColumnInDay, ScheduleItem } from '@/features/calendar/types'
 import { getScheduleIcon } from '@/app/schedule/lib/scheduleUtils'
 
 interface WeekViewProps {

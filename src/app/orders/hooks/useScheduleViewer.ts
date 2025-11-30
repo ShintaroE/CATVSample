@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
-import { TeamFilter, WeekViewColumn, TeamGroup, DayColumn, TeamColumnInDay, ScheduleTypeFilter, ScheduleItem, ExclusionEntry, ScheduleType, ViewMode } from '@/app/schedule/types'
+import { TeamFilter, WeekViewColumn, TeamGroup, DayColumn, TeamColumnInDay, ScheduleTypeFilter, ScheduleItem, ExclusionEntry, ScheduleType, ViewMode } from '@/features/calendar/types'
 import { exclusionStorage } from '@/app/my-exclusions/lib/exclusionStorage'
 import { getContractorColorName } from '@/lib/contractorColors'
 import { scheduleStorage } from '@/app/schedule/lib/scheduleStorage'
