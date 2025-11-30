@@ -13,7 +13,6 @@ import {
   SurveyStatus,
   AttachmentStatus,
   ConstructionStatus,
-  PostConstructionReport,
   FileAttachments,
 } from '@/features/applications/types'
 import {
@@ -49,7 +48,6 @@ export default function ContractorRequestsPage() {
   // 絞り込みフィルタ
   const [orderNumberFilter, setOrderNumberFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('')
-  const [postConstructionReportFilter, setPostConstructionReportFilter] = useState<'' | PostConstructionReport>('')
 
   // 協力会社ユーザーでない場合はリダイレクト
   useEffect(() => {
@@ -113,7 +111,6 @@ export default function ContractorRequestsPage() {
   const handleClearFilters = () => {
     setOrderNumberFilter('')
     setStatusFilter('')
-    setPostConstructionReportFilter('')
   }
 
   // 現在のタブデータ
@@ -137,17 +134,9 @@ export default function ContractorRequestsPage() {
         return false
       }
 
-      // 工事後報告
-      if (postConstructionReportFilter && activeTab === 'construction') {
-        const constructionReq = request as ConstructionRequest
-        if (constructionReq.postConstructionReport !== postConstructionReportFilter) {
-          return false
-        }
-      }
-
       return true
     })
-  }, [currentData, orderNumberFilter, statusFilter, postConstructionReportFilter, activeTab])
+  }, [currentData, orderNumberFilter, statusFilter, activeTab])
 
   // 進捗更新を保存
   const handleSaveProgress = (
@@ -341,25 +330,6 @@ export default function ContractorRequestsPage() {
                 )}
               </select>
             </div>
-
-            {/* 工事後報告フィルター - 工事タブのみ */}
-            {activeTab === 'construction' && (
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  工事後報告
-                </label>
-                <select
-                  value={postConstructionReportFilter}
-                  onChange={(e) => setPostConstructionReportFilter(e.target.value as '' | PostConstructionReport)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
-                >
-                  <option value="">全て</option>
-                  <option value="完了">完了</option>
-                  <option value="未完了">未完了</option>
-                  <option value="不要">不要</option>
-                </select>
-              </div>
-            )}
           </div>
 
           {/* クリアボタン */}
@@ -408,7 +378,6 @@ export default function ContractorRequestsPage() {
                       <th className="px-3 py-2 font-medium whitespace-nowrap">依頼日</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">申請提出日</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">申請許可日</th>
-                      <th className="px-3 py-2 font-medium whitespace-nowrap">工事後報告</th>
                       <th className="px-3 py-2 font-medium text-right whitespace-nowrap">操作</th>
                     </>
                   )}
@@ -424,7 +393,6 @@ export default function ContractorRequestsPage() {
                       <th className="px-3 py-2 font-medium">工事依頼日</th>
                       <th className="px-3 py-2 font-medium">工事予定日</th>
                       <th className="px-3 py-2 font-medium">工事完了日</th>
-                      <th className="px-3 py-2 font-medium">工事後報告</th>
                       <th className="px-3 py-2 font-medium text-right">操作</th>
                     </>
                   )}
@@ -531,19 +499,6 @@ export default function ContractorRequestsPage() {
                         <td className="px-3 py-2">{request.requestedAt || '-'}</td>
                         <td className="px-3 py-2">{(request as AttachmentRequest).submittedAt || '-'}</td>
                         <td className="px-3 py-2">{(request as AttachmentRequest).approvedAt || '-'}</td>
-                        <td className="px-3 py-2 text-center">
-                          {(request as AttachmentRequest).postConstructionReport === true ? (
-                            request.status === '申請許可' ? (
-                              <Badge variant="success" size="sm">完了</Badge>
-                            ) : (
-                              <Badge variant="warning" size="sm">未完了</Badge>
-                            )
-                          ) : (request as AttachmentRequest).postConstructionReport === false ? (
-                            <Badge variant="default" size="sm">不要</Badge>
-                          ) : (
-                            <span className="text-gray-400 text-xs">-</span>
-                          )}
-                        </td>
                         <td className="px-3 py-2 text-right">
                           <Button
                             onClick={() => handleOpenProgress(request)}
@@ -598,19 +553,6 @@ export default function ContractorRequestsPage() {
                         <td className="px-3 py-2">{(request as ConstructionRequest).constructionRequestedDate || '-'}</td>
                         <td className="px-3 py-2">{(request as ConstructionRequest).constructionDate || '-'}</td>
                         <td className="px-3 py-2">{(request as ConstructionRequest).constructionCompletedDate || '-'}</td>
-                        <td className="px-3 py-2">
-                          {(request as ConstructionRequest).postConstructionReport ? (
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                              (request as ConstructionRequest).postConstructionReport === '完了'
-                                ? 'bg-green-100 text-green-800'
-                                : (request as ConstructionRequest).postConstructionReport === '未完了'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-gray-100 text-gray-800'
-                            }`}>
-                              {(request as ConstructionRequest).postConstructionReport}
-                            </span>
-                          ) : '-'}
-                        </td>
                         <td className="px-3 py-2 text-right">
                           <Button
                             onClick={() => handleOpenProgress(request)}

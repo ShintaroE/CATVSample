@@ -29,7 +29,7 @@ export default function EditConstructionModal({
   const [formData, setFormData] = useState<Partial<ConstructionRequest>>({
     ...item,
     propertyType: item.propertyType || '個別',
-    postConstructionReport: item.postConstructionReport || '未完了',
+    postConstructionApplicationReport: item.postConstructionApplicationReport || { required: false },
   })
   const [uploadingFiles, setUploadingFiles] = useState(false)
 
@@ -215,8 +215,13 @@ export default function EditConstructionModal({
       return
     }
 
-    if (!updates.postConstructionReport) {
-      alert('工事後報告を選択してください')
+    if (!updates.postConstructionApplicationReport) {
+      alert('工事後の申請完了報告の要否を選択してください')
+      return
+    }
+
+    if (updates.postConstructionApplicationReport.required && !updates.postConstructionApplicationReport.status) {
+      alert('工事後の申請完了報告が必要な場合は、完了状態を選択してください')
       return
     }
 
@@ -371,17 +376,70 @@ export default function EditConstructionModal({
                     onChange={(e) => handleChange('constructionCompletedDate', e.target.value)}
                     className="bg-white text-gray-900"
                   />
+                </div>
 
-                  <SelectField
-                    label="工事後報告"
-                    value={formData.postConstructionReport || ''}
-                    onChange={(value) => handleChange('postConstructionReport', value)}
-                    required
-                  >
-                    <option value="完了">完了</option>
-                    <option value="未完了">未完了</option>
-                    <option value="不要">不要</option>
-                  </SelectField>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    工事後の申請完了報告 <span className="text-red-500">*</span>
+                  </label>
+                  <div className="space-y-3">
+                    {/* 要否選択 */}
+                    <div className="flex gap-4">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          checked={!formData.postConstructionApplicationReport?.required}
+                          onChange={() => {
+                            setFormData(prev => ({
+                              ...prev,
+                              postConstructionApplicationReport: { required: false }
+                            }))
+                          }}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">不要</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          checked={formData.postConstructionApplicationReport?.required === true}
+                          onChange={() => {
+                            setFormData(prev => ({
+                              ...prev,
+                              postConstructionApplicationReport: { required: true, status: 'pending' }
+                            }))
+                          }}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">必要</span>
+                      </label>
+                    </div>
+
+                    {/* 完了状態選択（必要の場合のみ表示） */}
+                    {formData.postConstructionApplicationReport?.required && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          完了状態 <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          value={formData.postConstructionApplicationReport.status || 'pending'}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              postConstructionApplicationReport: {
+                                required: true,
+                                status: e.target.value as 'completed' | 'pending'
+                              }
+                            }))
+                          }}
+                          className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900"
+                        >
+                          <option value="pending">未完了</option>
+                          <option value="completed">完了</option>
+                        </select>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </section>
 

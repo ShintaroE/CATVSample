@@ -137,7 +137,6 @@ export interface AttachmentRequest extends RequestBase {
   submittedAt?: string // 申請提出日
   approvedAt?: string // 許可日
   surveyCompletedAt?: string // 調査完了日
-  postConstructionReport?: boolean // 工事後報告（true: 必要, false: 不要）
   detail?: AttachmentDetail
   preparationStatus?: AttachmentPreparationStatus // 申請準備状況
   applicationReport?: AttachmentApplicationReport // 申請有無報告
@@ -163,8 +162,14 @@ export interface ConstructionWorkProgress {
 }
 
 // 工事依頼
-// 工事後報告ステータス
-export type PostConstructionReport = '完了' | '未完了' | '不要'
+// 工事後の申請完了報告
+export interface PostConstructionApplicationReport {
+  required: boolean                      // 要否 (true: 必要, false: 不要)
+  status?: 'completed' | 'pending'       // 完了状態 (required=trueの場合のみ使用)
+  reportedAt?: string                    // 報告日時 (ISO 8601)
+  reportedBy?: string                    // 報告者ID
+  reportedByName?: string                // 報告者名
+}
 
 export interface ConstructionRequest extends RequestBase {
   type: 'construction'
@@ -172,7 +177,7 @@ export interface ConstructionRequest extends RequestBase {
   constructionType?: string // 工事種別
   constructionRequestedDate?: string // 工事依頼日 (YYYY-MM-DD)
   constructionCompletedDate?: string // 工事完了日 (YYYY-MM-DD)
-  postConstructionReport?: PostConstructionReport // 工事後報告
+  postConstructionApplicationReport?: PostConstructionApplicationReport // 工事後の申請完了報告
   constructionDate?: string // 工事予定日 (YYYY-MM-DD)
   constructionDateSetBy?: string // 工事日を設定した管理者のID
   constructionDateSetByName?: string // 管理者名

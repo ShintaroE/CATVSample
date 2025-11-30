@@ -27,7 +27,6 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
 
   // Attachment固有のフィルター
   const [statusFilter, setStatusFilter] = useState<'' | AttachmentStatus>('')
-  const [postConstructionReportFilter, setPostConstructionReportFilter] = useState<'' | 'completed' | 'notCompleted' | 'notRequired'>('')
 
   // 依頼先選択時に利用可能な班を取得
   const availableTeams = useMemo(() => {
@@ -44,13 +43,11 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
   const handleClearFilters = () => {
     clearBaseFilters()
     setStatusFilter('')
-    setPostConstructionReportFilter('')
   }
 
   // 適用中のフィルター数をカウント
   let activeFilterCount = baseActiveFilterCount
   if (statusFilter) activeFilterCount++
-  if (postConstructionReportFilter) activeFilterCount++
 
   // Attachment固有のフィルターを適用
   const filtered = useMemo(() => {
@@ -60,31 +57,9 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
         return false
       }
 
-      // 工事後報告
-      if (postConstructionReportFilter) {
-        if (postConstructionReportFilter === 'completed') {
-          // 完了：postConstructionReport === true かつ status === '申請許可'
-          if (!r.postConstructionReport || r.status !== '申請許可') {
-            return false
-          }
-        }
-        if (postConstructionReportFilter === 'notCompleted') {
-          // 未完了：postConstructionReport === true かつ status !== '申請許可'
-          if (!r.postConstructionReport || r.status === '申請許可') {
-            return false
-          }
-        }
-        if (postConstructionReportFilter === 'notRequired') {
-          // 不要：postConstructionReport === false
-          if (r.postConstructionReport) {
-            return false
-          }
-        }
-      }
-
       return true
     })
-  }, [baseFilteredData, statusFilter, postConstructionReportFilter])
+  }, [baseFilteredData, statusFilter])
 
   const getStatusBadge = (status: AttachmentStatus): BadgeVariant => {
     const variantMap: Record<AttachmentStatus, BadgeVariant> = {
@@ -224,23 +199,6 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
           <option value="キャンセル">キャンセル</option>
         </select>
       </div>
-
-      {/* 工事後報告 */}
-      <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">
-          工事後報告
-        </label>
-        <select
-          value={postConstructionReportFilter}
-          onChange={(e) => setPostConstructionReportFilter(e.target.value as '' | 'completed' | 'notCompleted' | 'notRequired')}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
-        >
-          <option value="">全て</option>
-          <option value="completed">完了</option>
-          <option value="notCompleted">未完了</option>
-          <option value="notRequired">不要</option>
-        </select>
-      </div>
     </>
   )
 
@@ -302,9 +260,6 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
                 申請要否
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                工事後報告
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 操作
               </th>
             </tr>
@@ -312,7 +267,7 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
           <tbody className="bg-white divide-y divide-gray-200">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={17} className="px-4 py-8 text-center text-sm text-gray-500">
+                <td colSpan={16} className="px-4 py-8 text-center text-sm text-gray-500">
                   条件に一致するデータがありません
                 </td>
               </tr>
@@ -410,19 +365,6 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
                       <span className="text-gray-600 text-sm">不要</span>
                     ) : (
                       <span className="text-gray-400 text-sm">-</span>
-                    )}
-                  </td>
-
-                  {/* 工事後報告 */}
-                  <td className="hidden lg:table-cell px-4 py-3 text-sm whitespace-nowrap text-center">
-                    {r.postConstructionReport ? (
-                      r.status === '申請許可' ? (
-                        <Badge variant="success" size="sm">完了</Badge>
-                      ) : (
-                        <Badge variant="warning" size="sm">未完了</Badge>
-                      )
-                    ) : (
-                      <Badge variant="default" size="sm">不要</Badge>
                     )}
                   </td>
 
