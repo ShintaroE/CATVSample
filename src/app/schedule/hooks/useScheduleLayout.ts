@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
-import { ExclusionEntry, WeekViewColumn, TeamGroup, TeamFilter, DayColumn, TeamColumnInDay } from '../types'
-import { HOUR_HEIGHT, BUSINESS_START_HOUR, BUSINESS_END_HOUR } from '../types'
+import { ExclusionEntry, WeekViewColumn, TeamGroup, TeamFilter, DayColumn, TeamColumnInDay } from '@/features/calendar/types'
+import { HOUR_HEIGHT, BUSINESS_START_HOUR, BUSINESS_END_HOUR } from '@/features/calendar/types'
 
 export function useScheduleLayout(
   teamFilters: TeamFilter[],

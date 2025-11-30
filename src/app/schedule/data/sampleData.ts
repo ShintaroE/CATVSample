@@ -1,4 +1,4 @@
-import { ExclusionEntry, ScheduleItem } from '../types'
+import { ExclusionEntry, ScheduleItem } from '@/features/calendar/types'
 
 export const sampleExclusions: ExclusionEntry[] = [
   {

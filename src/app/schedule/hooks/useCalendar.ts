@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { ViewMode } from '../types'
+import { ViewMode } from '@/features/calendar/types'
 
 export function useCalendar() {
   const [currentDate, setCurrentDate] = useState<Date>(new Date(2025, 8, 15))

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
-import { ScheduleItem, ExclusionEntry, HOUR_HEIGHT, BUSINESS_START_HOUR, BUSINESS_END_HOUR, TeamColumnInDay, AssignedTeam } from '../../../types'
+import { ScheduleItem, ExclusionEntry, HOUR_HEIGHT, BUSINESS_START_HOUR, BUSINESS_END_HOUR, TeamColumnInDay, AssignedTeam } from '@/features/calendar/types'
 import { getContractorColorClasses } from '@/lib/contractorColors'
 import { getScheduleIcon } from '../../../lib/scheduleUtils'
 import { useFilters } from '../../../hooks/useFilters'

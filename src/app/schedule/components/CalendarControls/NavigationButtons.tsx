@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
-import { ViewMode } from '../../types'
+import { ViewMode } from '@/features/calendar/types'
 
 interface NavigationButtonsProps {
   viewMode: ViewMode

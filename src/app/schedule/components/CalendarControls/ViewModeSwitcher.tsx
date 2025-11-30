@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { ViewMode } from '../../types'
+import { ViewMode } from '@/features/calendar/types'
 
 interface ViewModeSwitcherProps {
   viewMode: ViewMode

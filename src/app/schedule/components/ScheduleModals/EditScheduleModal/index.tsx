@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { ScheduleItem, AssignedTeam, ScheduleType } from '../../../types'
+import { ScheduleItem, AssignedTeam, ScheduleType } from '@/features/calendar/types'
 import { Button, Input, Textarea } from '@/shared/components/ui'
 import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
 

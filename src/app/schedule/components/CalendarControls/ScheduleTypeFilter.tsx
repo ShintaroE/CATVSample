@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { ScheduleType } from '../../types'
+import { ScheduleType } from '@/features/calendar/types'
 import { ScheduleTypeFilter as ScheduleTypeFilterType } from '../../hooks/useFilters'
 
 interface ScheduleTypeFilterProps {

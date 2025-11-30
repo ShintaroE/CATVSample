@@ -1,4 +1,4 @@
-import { ScheduleItem } from '../types'
+import { ScheduleItem } from '@/features/calendar/types'
 
 const STORAGE_KEY = 'schedules'
 

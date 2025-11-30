@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { ScheduleItem, ExclusionEntry, ScheduleItemWithTeam } from '../../../types'
+import { ScheduleItem, ExclusionEntry, ScheduleItemWithTeam } from '@/features/calendar/types'
 import { getContractorColorClasses } from '@/lib/contractorColors'
 import { getScheduleIcon } from '../../../lib/scheduleUtils'
 import { useFilters } from '../../../hooks/useFilters'
