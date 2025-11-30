@@ -1,5 +1,6 @@
 import { Admin, Contractor, Team } from '../types'
 import { STORAGE_KEYS } from '@/lib/constants'
+import { sampleAdmins, sampleContractors, sampleTeams } from '@/shared/data'
 
 // ========== 管理者関連の操作 ==========
 
@@ -193,83 +194,13 @@ export const initializeDefaultData = (): void => {
   // 管理者データの初期化
   const existingAdmins = getAdmins()
   if (existingAdmins.length === 0) {
-    const defaultAdmins: Admin[] = [
-      {
-        id: 'admin-1',
-        name: 'KCT管理者',
-        username: 'admin',
-        password: 'admin',
-        createdAt: new Date().toISOString(),
-        isActive: true,
-      },
-    ]
-    saveAdmins(defaultAdmins)
+    saveAdmins(sampleAdmins)
   }
 
   // 協力会社データの初期化
   const existingContractors = getContractors()
   if (existingContractors.length > 0) return
 
-  // デフォルトの協力会社データ
-  const defaultContractors: Contractor[] = [
-    {
-      id: 'contractor-1',
-      name: '直営班',
-      username: 'chokueihan',
-      password: 'password',
-      createdAt: new Date().toISOString(),
-      isActive: true,
-    },
-    {
-      id: 'contractor-2',
-      name: '栄光電気通信',
-      username: 'eiko',
-      password: 'password',
-      createdAt: new Date().toISOString(),
-      isActive: true,
-    },
-    {
-      id: 'contractor-3',
-      name: 'スライヴ',
-      username: 'thrive',
-      password: 'password',
-      createdAt: new Date().toISOString(),
-      isActive: true,
-    },
-  ]
-
-  // デフォルトの班データ
-  const defaultTeams: Team[] = [
-    {
-      id: 'team-1',
-      contractorId: 'contractor-1',
-      teamName: 'A班',
-      createdAt: new Date().toISOString(),
-      isActive: true,
-    },
-    {
-      id: 'team-2',
-      contractorId: 'contractor-1',
-      teamName: 'B班',
-      createdAt: new Date().toISOString(),
-      isActive: true,
-    },
-    {
-      id: 'team-3',
-      contractorId: 'contractor-2',
-      teamName: '1班',
-      createdAt: new Date().toISOString(),
-      isActive: true,
-    },
-    {
-      id: 'team-4',
-      contractorId: 'contractor-3',
-      teamName: '第1班',
-      createdAt: new Date().toISOString(),
-      isActive: true,
-    },
-  ]
-
-  saveContractors(defaultContractors)
-  saveTeams(defaultTeams)
+  saveContractors(sampleContractors)
+  saveTeams(sampleTeams)
 }

@@ -118,8 +118,8 @@ export default function ContractorRequestsPage() {
     activeTab === 'survey'
       ? surveyData
       : activeTab === 'attachment'
-      ? attachmentData
-      : constructionData
+        ? attachmentData
+        : constructionData
 
   // フィルタリング適用
   const filteredData = useMemo(() => {
@@ -136,7 +136,7 @@ export default function ContractorRequestsPage() {
 
       return true
     })
-  }, [currentData, orderNumberFilter, statusFilter, activeTab])
+  }, [currentData, orderNumberFilter, statusFilter])
 
   // 進捗更新を保存
   const handleSaveProgress = (
@@ -236,10 +236,9 @@ export default function ContractorRequestsPage() {
                 variant="ghost"
                 className={`
                   whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm rounded-none
-                  ${
-                    activeTab === tab
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ${activeTab === tab
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }
                 `}
               >
@@ -407,11 +406,10 @@ export default function ContractorRequestsPage() {
                       <>
                         <td className="px-3 py-2">
                           {(request as SurveyRequest).propertyType ? (
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                              (request as SurveyRequest).propertyType === '個別'
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${(request as SurveyRequest).propertyType === '個別'
                                 ? 'bg-blue-100 text-blue-800'
                                 : 'bg-purple-100 text-purple-800'
-                            }`}>
+                              }`}>
                               {(request as SurveyRequest).propertyType}
                             </span>
                           ) : '-'}
@@ -463,11 +461,10 @@ export default function ContractorRequestsPage() {
                       <>
                         <td className="px-3 py-2">
                           {(request as AttachmentRequest).propertyType ? (
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                              (request as AttachmentRequest).propertyType === '個別'
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${(request as AttachmentRequest).propertyType === '個別'
                                 ? 'bg-blue-100 text-blue-800'
                                 : 'bg-purple-100 text-purple-800'
-                            }`}>
+                              }`}>
                               {(request as AttachmentRequest).propertyType}
                             </span>
                           ) : '-'}
@@ -515,11 +512,10 @@ export default function ContractorRequestsPage() {
                       <>
                         <td className="px-3 py-2">
                           {(request as ConstructionRequest).propertyType ? (
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                              (request as ConstructionRequest).propertyType === '個別'
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${(request as ConstructionRequest).propertyType === '個別'
                                 ? 'bg-blue-100 text-blue-800'
                                 : 'bg-purple-100 text-purple-800'
-                            }`}>
+                              }`}>
                               {(request as ConstructionRequest).propertyType}
                             </span>
                           ) : '-'}
@@ -572,8 +568,8 @@ export default function ContractorRequestsPage() {
                     <td
                       colSpan={
                         activeTab === 'survey' ? 13 :
-                        activeTab === 'attachment' ? 16 :
-                        14
+                          activeTab === 'attachment' ? 16 :
+                            14
                       }
                       className="px-3 py-10 text-center text-sm text-gray-500"
                     >
