@@ -98,6 +98,11 @@ export interface TeamFilter {
   color: string
 }
 
+export interface ScheduleTypeFilter {
+  construction: boolean
+  survey: boolean
+}
+
 export type ViewMode = 'month' | 'week' | 'day'
 
 export const HOUR_HEIGHT = 4
