@@ -35,7 +35,9 @@ src/
 │   ├── auth/            # Authentication (authStorage.ts)
 │   ├── contractor/      # Contractors & Teams (contractorStorage.ts)
 │   ├── applications/    # Application requests (applicationStorage.ts)
-│   └── calendar/        # Calendar components (CalendarPicker)
+│   └── calendar/        # Calendar type definitions & components
+│       ├── types/       # ALL calendar-related types (ScheduleItem, ExclusionEntry, ViewMode, etc.)
+│       └── components/  # CalendarPicker component
 │
 └── app/                 # Layer 3: Page-specific code
     ├── applications/    # 申請番号管理 (3 tabs: survey/attachment/construction)
@@ -61,7 +63,14 @@ Domain-agnostic utils → shared/utils/
 Domain business logic → features/*/lib/
 Page-specific logic   → app/*/lib/
 Shared hooks         → app/*/hooks/ (when used across multiple tabs/components)
+Calendar types       → features/calendar/types/ (NEVER create app/*/types for calendar types)
 ```
+
+**CRITICAL: Type Definition Location Rules**
+- **All calendar-related types** (ScheduleItem, ExclusionEntry, ViewMode, TeamFilter, etc.) → `features/calendar/types/index.ts`
+- **Never** create `app/schedule/types` or any app-level types directory for calendar types
+- All app layers import from `@/features/calendar/types` (not relative paths like `../types`)
+- This prevents app-layer cross-dependencies and maintains clean architecture
 
 **Component targets:**
 - Component: 100-300 lines
@@ -297,9 +306,11 @@ location.reload()
 | schedule | N/A | N/A | N/A | Team filter only | useFilters |
 | my-exclusions | N/A | N/A | N/A | Schedule type filter only | - |
 
-### Performance Optimization History
+### Architecture Refactoring History
 | PR | Change | Files | Impact |
 |----|--------|-------|--------|
+| #54 | Removed app/schedule/types completely | 16 files | All imports unified to features/calendar/types |
+| #53 | Moved calendar types to features/calendar/types | 16 files | Fixed app-layer cross-dependencies |
 | #47 | Removed unnecessary useMemo | 6 files, 8 useMemos | Reduced memoization overhead for O(1) calculations |
 | #46 | Unified application filters | useApplicationFilters.ts, filterUtils.ts | DRY principle, consistent filtering logic |
 
