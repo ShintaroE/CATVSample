@@ -3,7 +3,7 @@
 import React from 'react'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import { Button } from '@/shared/components/ui'
-import { ViewMode } from '../../types'
+import { ViewMode } from '@/features/calendar/types'
 import NavigationButtons from './NavigationButtons'
 import ViewModeSwitcher from './ViewModeSwitcher'
 import FilterPanel from './FilterPanel'

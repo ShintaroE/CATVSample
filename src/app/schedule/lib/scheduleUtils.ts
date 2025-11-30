@@ -1,4 +1,4 @@
-import { ScheduleType } from '../types'
+import { ScheduleType } from '@/features/calendar/types'
 
 /**
  * スケジュール種別に対応するアイコンを取得

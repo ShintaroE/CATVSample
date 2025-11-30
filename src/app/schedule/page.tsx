@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Layout from '@/shared/components/layout/Layout'
-import { ScheduleItem, ExclusionEntry } from './types'
+import { ScheduleItem, ExclusionEntry } from '@/features/calendar/types'
 import { exclusionStorage } from '@/app/my-exclusions/lib/exclusionStorage'
 import { useSchedules } from './hooks/useSchedules'
 import { useCalendar } from './hooks/useCalendar'
