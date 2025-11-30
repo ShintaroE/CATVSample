@@ -10,7 +10,7 @@ import {
   FileAttachments,
   RequestNotes,
   AttachedFile,
-  PostConstructionReport,
+  PostConstructionApplicationReport,
 } from '@/features/applications/types'
 import { Contractor, Team } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
@@ -52,8 +52,8 @@ export default function NewConstructionModal({
     status: '未着手',
     kctReceivedDate: '',
     constructionRequestedDate: '',
-    postConstructionReport: '未完了' as PostConstructionReport,
   }))
+  const [postConstructionReport, setPostConstructionReport] = useState<PostConstructionApplicationReport>({ required: false })
   const [attachments, setAttachments] = useState<FileAttachments>({
     fromAdmin: [],
     fromContractor: [],
@@ -216,13 +216,14 @@ export default function NewConstructionModal({
       return
     }
 
-    if (!formData.postConstructionReport) {
-      alert('工事後報告を選択してください')
+    if (postConstructionReport.required && !postConstructionReport.status) {
+      alert('工事後の申請完了報告が必要な場合は、完了状態を選択してください')
       return
     }
 
     onCreate('construction', {
       ...formData,
+      postConstructionApplicationReport: postConstructionReport,
       attachments,
       requestNotes,
     })
@@ -349,17 +350,59 @@ export default function NewConstructionModal({
 
               <section className="space-y-4">
                 <SectionTitle>工事情報</SectionTitle>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <SelectField
-                    label="工事後報告"
-                    value={(formData.postConstructionReport as string) || ''}
-                    onChange={(value) => handleChange('postConstructionReport', value)}
-                    required
-                  >
-                    <option value="未完了">未完了</option>
-                    <option value="完了">完了</option>
-                    <option value="不要">不要</option>
-                  </SelectField>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    工事後の申請完了報告 <span className="text-red-500">*</span>
+                  </label>
+                  <div className="space-y-3">
+                    {/* 要否選択 */}
+                    <div className="flex gap-4">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          checked={!postConstructionReport.required}
+                          onChange={() => {
+                            setPostConstructionReport({ required: false })
+                          }}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">不要</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          checked={postConstructionReport.required === true}
+                          onChange={() => {
+                            setPostConstructionReport({ required: true, status: 'pending' })
+                          }}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">必要</span>
+                      </label>
+                    </div>
+
+                    {/* 完了状態選択（必要の場合のみ表示） */}
+                    {postConstructionReport.required && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          完了状態 <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          value={postConstructionReport.status || 'pending'}
+                          onChange={(e) => {
+                            setPostConstructionReport({
+                              required: true,
+                              status: e.target.value as 'completed' | 'pending'
+                            })
+                          }}
+                          className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900"
+                        >
+                          <option value="pending">未完了</option>
+                          <option value="completed">完了</option>
+                        </select>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </section>
 

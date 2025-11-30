@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { PencilSquareIcon } from '@heroicons/react/24/outline'
-import { ConstructionRequest, ConstructionStatus, PostConstructionReport } from '@/features/applications/types'
+import { ConstructionRequest, ConstructionStatus } from '@/features/applications/types'
 import { Contractor } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
 import { Badge, BadgeVariant } from '@/shared/components/ui'
@@ -25,7 +25,8 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
 
   // Construction固有のフィルター
   const [statusFilter, setStatusFilter] = useState<'' | ConstructionStatus>('')
-  const [postConstructionReportFilter, setPostConstructionReportFilter] = useState<'' | PostConstructionReport>('')
+  const [reportRequiredFilter, setReportRequiredFilter] = useState<'' | 'required' | 'notRequired'>('')
+  const [reportStatusFilter, setReportStatusFilter] = useState<'' | 'completed' | 'pending'>('')
 
   // Get teams for selected contractor
   const availableTeams = useMemo(() => {
@@ -42,13 +43,15 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
   const handleClearFilters = () => {
     clearBaseFilters()
     setStatusFilter('')
-    setPostConstructionReportFilter('')
+    setReportRequiredFilter('')
+    setReportStatusFilter('')
   }
 
   // 適用中のフィルター数をカウント
   let activeFilterCount = baseActiveFilterCount
   if (statusFilter) activeFilterCount++
-  if (postConstructionReportFilter) activeFilterCount++
+  if (reportRequiredFilter) activeFilterCount++
+  if (reportStatusFilter) activeFilterCount++
 
   // Badge variant functions
   const getStatusBadge = (status: ConstructionStatus): BadgeVariant => {
@@ -63,20 +66,26 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
     return variantMap[status]
   }
 
-  const getPostConstructionReportBadge = (report: PostConstructionReport | undefined): { variant: BadgeVariant; text: string } => {
-    if (!report) {
+  const getPostConstructionReportBadge = (item: ConstructionRequest): { variant: BadgeVariant; text: string } => {
+    if (!item.postConstructionApplicationReport) {
       return { variant: 'default', text: '-' }
     }
-    switch (report) {
-      case '完了':
-        return { variant: 'success', text: '完了' }
-      case '未完了':
-        return { variant: 'warning', text: '未完了' }
-      case '不要':
-        return { variant: 'default', text: '不要' }
-      default:
-        return { variant: 'default', text: '-' }
+
+    const report = item.postConstructionApplicationReport
+
+    if (!report.required) {
+      return { variant: 'default', text: '不要' }
     }
+
+    if (report.status === 'completed') {
+      return { variant: 'success', text: '要-完了' }
+    }
+
+    if (report.status === 'pending') {
+      return { variant: 'warning', text: '要-未完了' }
+    }
+
+    return { variant: 'info', text: '要' }
   }
 
   // Construction固有のフィルターを適用
@@ -86,13 +95,30 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
       if (statusFilter && item.status !== statusFilter) {
         return false
       }
-      // 工事後報告
-      if (postConstructionReportFilter && item.postConstructionReport !== postConstructionReportFilter) {
-        return false
+
+      // 工事後報告（要否）
+      if (reportRequiredFilter) {
+        if (reportRequiredFilter === 'required') {
+          if (!item.postConstructionApplicationReport?.required) {
+            return false
+          }
+        } else if (reportRequiredFilter === 'notRequired') {
+          if (item.postConstructionApplicationReport?.required) {
+            return false
+          }
+        }
       }
+
+      // 工事後報告（完了状態） - 「要」の場合のみ有効
+      if (reportStatusFilter && item.postConstructionApplicationReport?.required) {
+        if (item.postConstructionApplicationReport.status !== reportStatusFilter) {
+          return false
+        }
+      }
+
       return true
     })
-  }, [baseFilteredData, statusFilter, postConstructionReportFilter])
+  }, [baseFilteredData, statusFilter, reportRequiredFilter, reportStatusFilter])
 
   // フィルターJSX
   const filterElements = (
@@ -216,21 +242,38 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         </select>
       </div>
 
-      {/* 工事後報告 */}
+      {/* 工事後報告（要否） */}
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">
-          工事後報告
+          工事後報告（要否）
         </label>
         <select
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-          value={postConstructionReportFilter}
-          onChange={(e) => setPostConstructionReportFilter(e.target.value as '' | PostConstructionReport)}
+          value={reportRequiredFilter}
+          onChange={(e) => setReportRequiredFilter(e.target.value as '' | 'required' | 'notRequired')}
         >
           <option value="">全て</option>
-          <option value="完了">完了</option>
-          <option value="未完了">未完了</option>
-          <option value="不要">不要</option>
+          <option value="required">必要</option>
+          <option value="notRequired">不要</option>
         </select>
+      </div>
+
+      {/* 工事後報告（完了状態） */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          工事後報告（完了状態）
+        </label>
+        <select
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+          value={reportStatusFilter}
+          onChange={(e) => setReportStatusFilter(e.target.value as '' | 'completed' | 'pending')}
+          disabled={reportRequiredFilter !== 'required'}
+        >
+          <option value="">全て</option>
+          <option value="completed">完了</option>
+          <option value="pending">未完了</option>
+        </select>
+        <p className="text-xs text-gray-500 mt-1">※「要否」で「必要」を選択時のみ有効</p>
       </div>
     </>
   )
@@ -303,7 +346,7 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
               </tr>
             ) : (
               filteredData.map((item) => {
-                const reportBadge = getPostConstructionReportBadge(item.postConstructionReport)
+                const reportBadge = getPostConstructionReportBadge(item)
                 return (
                   <tr key={item.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap tabular-nums">

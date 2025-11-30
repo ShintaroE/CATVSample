@@ -47,7 +47,6 @@ export default function NewAttachmentModal({
     scheduledDate: '',
     surveyCompletedAt: '',
     submittedAt: '',
-    postConstructionReport: undefined, // 工事後報告（デフォルト: 未設定）
   })
   const [attachments, setAttachments] = useState<FileAttachments>({
     fromAdmin: [],
@@ -371,7 +370,7 @@ export default function NewAttachmentModal({
               {/* スケジュール情報 */}
               <div>
                 <h3 className="text-md font-medium text-gray-900 mb-3">スケジュール情報</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <Input
                     label="調査予定日（オプション）"
                     type="date"
@@ -379,33 +378,6 @@ export default function NewAttachmentModal({
                     onChange={(e) => handleChange('scheduledDate', e.target.value)}
                     className="bg-white text-gray-900"
                   />
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      工事後報告
-                    </label>
-                    <select
-                      value={
-                        formData.postConstructionReport === true
-                          ? 'required'
-                          : formData.postConstructionReport === false
-                            ? 'notRequired'
-                            : ''
-                      }
-                      onChange={(e) => {
-                        const value = e.target.value === 'required'
-                          ? true
-                          : e.target.value === 'notRequired'
-                            ? false
-                            : undefined
-                        handleChange('postConstructionReport', value)
-                      }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
-                    >
-                      <option value="">未設定</option>
-                      <option value="required">必要</option>
-                      <option value="notRequired">不要</option>
-                    </select>
-                  </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-2">※ 調査予定日は後から入力・変更できます</p>
               </div>
