@@ -29,12 +29,19 @@ src/
 │   ├── components/
 │   │   ├── layout/      # Layout, Sidebar
 │   │   └── ui/          # Button, Badge, Modal, Input, Textarea
+│   ├── data/            # Sample/demo data (single source of truth)
+│   │   ├── accounts.ts  # Admin/contractor/team demo accounts
+│   │   ├── applications.ts  # Sample application requests
+│   │   ├── orders.ts    # Sample order data
+│   │   └── schedules.ts # Sample schedule/exclusion data
 │   └── utils/           # formatters, validators, password, constants
 │
 ├── features/            # Layer 2: Domain business logic
 │   ├── auth/            # Authentication (authStorage.ts)
 │   ├── contractor/      # Contractors & Teams (contractorStorage.ts)
 │   ├── applications/    # Application requests (applicationStorage.ts)
+│   ├── admin/           # Admin-specific features
+│   │   └── contractor-management/  # Account management components & hooks
 │   └── calendar/        # Calendar type definitions & components
 │       ├── types/       # ALL calendar-related types (ScheduleItem, ExclusionEntry, ViewMode, etc.)
 │       └── components/  # CalendarPicker component
@@ -288,11 +295,11 @@ location.reload()
 | Page | Status | Lines | Notes |
 |------|--------|-------|-------|
 | applications | ✅ Complete | 222 | 13 components, FilterableTableLayout pattern |
-| contractor-requests | ✅ Complete | 518 | FileAttachments integration |
+| contractor-requests | ⚠️ Needs work | 567 | FileAttachments integration, needs further refactoring |
 | schedule | ✅ Complete | 156 | Multiple components/hooks/lib |
 | orders | ✅ Complete | 230 | FilterPanel with accordion UI |
 | my-exclusions | ✅ Complete | 148 | Multiple components/hooks/lib |
-| contractor-management | ⏳ To refactor | 1,005 | 11+ components needed |
+| contractor-management | ✅ Complete | 161 | Refactored into features/admin/contractor-management |
 | login | ✅ Simple | 114 | Already clean |
 
 ### Filter Implementation Status
@@ -309,6 +316,7 @@ location.reload()
 ### Architecture Refactoring History
 | PR | Change | Files | Impact |
 |----|--------|-------|--------|
+| #56 | Centralized sample data to src/shared/data | 8 files | Single source of truth for demo data, easier maintenance |
 | #54 | Removed app/schedule/types completely | 16 files | All imports unified to features/calendar/types |
 | #53 | Moved calendar types to features/calendar/types | 16 files | Fixed app-layer cross-dependencies |
 | #47 | Removed unnecessary useMemo | 6 files, 8 useMemos | Reduced memoization overhead for O(1) calculations |

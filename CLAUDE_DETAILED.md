@@ -91,6 +91,11 @@ src/
 │   │       ├── Modal.tsx           # Modal wrapper
 │   │       ├── Input.tsx           # Form input with label
 │   │       └── Textarea.tsx        # Form textarea with label
+│   ├── data/                       # Sample/demo data (single source of truth)
+│   │   ├── accounts.ts             # Admin/contractor/team demo accounts
+│   │   ├── applications.ts         # Sample application requests
+│   │   ├── orders.ts               # Sample order data
+│   │   └── schedules.ts            # Sample schedule/exclusion data
 │   └── utils/                      # Domain-agnostic utilities
 │       ├── formatters.ts           # Date/number formatting
 │       ├── validators.ts           # Validation functions
@@ -109,6 +114,17 @@ src/
 │   ├── applications/
 │   │   ├── lib/applicationStorage.ts # Application request CRUD
 │   │   └── types/index.ts          # Application types
+│   ├── admin/                      # Admin-specific features
+│   │   └── contractor-management/  # Account management components & hooks
+│   │       ├── components/
+│   │       │   ├── AdminManagement/
+│   │       │   ├── ContractorManagement/
+│   │       │   ├── TeamManagement/
+│   │       │   └── PasswordModal.tsx
+│   │       └── hooks/
+│   │           ├── useAdminManagement.ts
+│   │           ├── useContractorManagement.ts
+│   │           └── useTeamManagement.ts
 │   └── calendar/
 │       ├── components/
 │       │   └── CalendarPicker/     # Reusable calendar component
@@ -152,12 +168,10 @@ src/
     │   │   └── orderFileStorage.ts  # PDF file management
     │   └── types/index.ts
     │
-    ├── contractor-management/       # ⏳ Refactoring planned (1,005 lines)
-    │   ├── page.tsx
-    │   ├── components/              # To be created
-    │   └── hooks/                   # To be created
+    ├── contractor-management/       # ✅ Complete (161 lines)
+    │   └── page.tsx                 # Refactored into features/admin/contractor-management
     │
-    ├── contractor-requests/         # ✅ Complete (518 lines)
+    ├── contractor-requests/         # ⚠️ Needs work (567 lines)
     │   ├── page.tsx
     │   └── components/              # Includes FileAttachments integration
     │
@@ -412,15 +426,15 @@ This project is undergoing systematic refactoring to improve maintainability:
 | Page | Status | Current Lines | Components |
 |------|--------|---------------|------------|
 | applications | ✅ Complete | 222 | 13 components (includes FileAttachments, RequestNotes) |
-| contractor-requests | ✅ Complete | 518 | Includes FileAttachments integration |
+| contractor-requests | ⚠️ Needs work | 567 | Includes FileAttachments integration, needs further refactoring |
 | schedule | ✅ Complete | 156 | Multiple components, hooks, and lib modules |
 | orders | ✅ Complete | 230 | Multiple components, hooks, and lib modules |
 | my-exclusions | ✅ Complete | 148 | Multiple components, hooks, and lib modules |
-| contractor-management | ⏳ To refactor | 1,005 | 11+ components needed |
+| contractor-management | ✅ Complete | 161 | Refactored into features/admin/contractor-management |
 | login | ✅ Simple | 114 | Already clean |
 
 **Remaining Work**:
-1. **Phase 1**: Contractor management page refactoring (1,005 lines to be split)
+1. **Phase 1**: Contractor-requests page further refactoring (567 lines to be optimized)
 2. **Phase 2**: Final integration testing and documentation
 
 **Note**: `src/lib/` directory currently contains:
