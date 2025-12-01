@@ -353,7 +353,6 @@ export default function EditConstructionModal({
                     onChange={(value) => handleChange('status', value)}
                     required
                   >
-                    <option value="未着手">未着手</option>
                     <option value="依頼済み">依頼済み</option>
                     <option value="工事日決定">工事日決定</option>
                     <option value="完了">完了</option>

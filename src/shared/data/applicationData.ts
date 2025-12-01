@@ -352,7 +352,7 @@ export const sampleConstructionRequests: ConstructionRequest[] = [
     },
     teamId: 'team-3',
     teamName: '1班',
-    status: '未着手',
+    status: '依頼済み',
     constructionType: '宅内引込',
     requestedAt: '2025-03-10',
     scheduledDate: '2025-04-01',

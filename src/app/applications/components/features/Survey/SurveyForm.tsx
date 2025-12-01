@@ -210,14 +210,6 @@ export default function SurveyForm({
                 <div>
                     <h3 className="text-md font-medium text-gray-900 mb-3">基本情報</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {isEditing && (
-                            <Input
-                                label="整理番号"
-                                value={formData.serialNumber?.toString() || ''}
-                                disabled
-                                className="bg-gray-100"
-                            />
-                        )}
                         <Input
                             label="受注番号"
                             value={formData.orderNumber || ''}

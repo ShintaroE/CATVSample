@@ -1393,7 +1393,8 @@ interface ProgressEntry {
 - preparationStatus: Document/photo readiness, expected submit date
 
 **Construction Request:**
-- Status: '未着手' | '施工中' | '完了' | '保留'
+- Status: '未着手' | '依頼済み' | '工事日決定' | '完了' | '工事返却' | '工事キャンセル'
+  - Note: In 申請番号管理 screen, '未着手' is hidden from dropdown (used in 工事依頼管理 screen only)
 - constructionType: Work category
 - constructionDate: Scheduled work date
 - constructionResult: Completion details (actual date, work hours, materials, photos)
