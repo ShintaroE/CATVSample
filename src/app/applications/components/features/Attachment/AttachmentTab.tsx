@@ -359,9 +359,9 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
 
                   {/* 申請要否 */}
                   <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap text-center">
-                    {r.applicationReport?.applicationNeeded === '必要' ? (
+                    {r.withdrawNeeded === true ? (
                       <span className="text-red-600 text-sm font-semibold">要</span>
-                    ) : r.applicationReport?.applicationNeeded === '不要' ? (
+                    ) : r.withdrawNeeded === false ? (
                       <span className="text-gray-600 text-sm">不要</span>
                     ) : (
                       <span className="text-gray-400 text-sm">-</span>

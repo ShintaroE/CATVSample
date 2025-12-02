@@ -30,6 +30,7 @@ export default function EditAttachmentModal({
     ...item,
     submittedAt: item.submittedAt || '',
     approvedAt: item.approvedAt || '',
+    withdrawNeeded: item.withdrawNeeded ?? false,
   })
   const [uploadingFiles, setUploadingFiles] = useState(false)
 
@@ -347,6 +348,20 @@ export default function EditAttachmentModal({
                       <option value="キャンセル">キャンセル</option>
                     </select>
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      申請要否 <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={formData.withdrawNeeded ? 'required' : 'notRequired'}
+                      onChange={(e) => handleChange('withdrawNeeded', e.target.value === 'required')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                      required
+                    >
+                      <option value="required">申請要</option>
+                      <option value="notRequired">申請不要</option>
+                    </select>
+                  </div>
                   <Input
                     label="調査完了日"
                     type="date"
@@ -361,6 +376,8 @@ export default function EditAttachmentModal({
                     onChange={(e) => handleChange('submittedAt', e.target.value)}
                     className="bg-white text-gray-900"
                   />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
                   <Input
                     label="申請許可日"
                     type="date"

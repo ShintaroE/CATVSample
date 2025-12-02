@@ -382,27 +382,6 @@ export default function NewAttachmentModal({
                 <p className="text-xs text-gray-500 mt-2">※ 調査予定日は後から入力・変更できます</p>
               </div>
 
-              {/* 申請情報 */}
-              <div>
-                <h3 className="text-md font-medium text-gray-900 mb-3">申請情報</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      申請要否 <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={formData.withdrawNeeded ? 'required' : 'notRequired'}
-                      onChange={(e) => handleChange('withdrawNeeded', e.target.value === 'required')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
-                      required
-                    >
-                      <option value="required">申請要</option>
-                      <option value="notRequired">申請不要</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
               {/* 管理者指示事項 */}
               <RequestNotesComponent
                 userRole="admin"
