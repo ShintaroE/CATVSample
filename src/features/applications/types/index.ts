@@ -137,6 +137,7 @@ export interface AttachmentRequest extends RequestBase {
   submittedAt?: string // 申請提出日
   approvedAt?: string // 許可日
   surveyCompletedAt?: string // 調査完了日
+  withdrawNeeded?: boolean // 申請要否 (true: 申請要, false: 申請不要)
   detail?: AttachmentDetail
   preparationStatus?: AttachmentPreparationStatus // 申請準備状況
   applicationReport?: AttachmentApplicationReport // 申請有無報告
