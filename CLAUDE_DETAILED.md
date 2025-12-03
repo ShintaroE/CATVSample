@@ -134,22 +134,31 @@ src/
 └── app/                             # Layer 3: Page-specific code
     ├── applications/                # ✅ Well-structured
     │   ├── page.tsx                 # Main page (222 lines)
-    │   └── components/              # 13 components + 2 folders
-    │       ├── SurveyTab.tsx
-    │       ├── AttachmentTab.tsx
-    │       ├── ConstructionTab.tsx
-    │       ├── NewRequestModal.tsx
-    │       ├── EditSurveyModal.tsx
-    │       ├── EditAttachmentModal.tsx
-    │       ├── EditConstructionModal.tsx
-    │       ├── ProgressHistory.tsx
-    │       ├── FileAttachments/     # File upload/download system
-    │       │   ├── index.tsx        # Main 2-column layout
-    │       │   ├── FileItem.tsx     # Individual file display
-    │       │   ├── FileList.tsx     # File list container
-    │       │   └── FileUploadZone.tsx # Drag & drop upload
-    │       └── RequestNotes/        # Admin instructions display
-    │           └── index.tsx        # Role-based notes component
+    │   └── components/
+    │       ├── features/            # Feature-specific components
+    │       │   ├── Survey/
+    │       │   │   ├── SurveyTab.tsx
+    │       │   │   ├── NewSurveyModal.tsx
+    │       │   │   ├── EditSurveyModal.tsx
+    │       │   │   └── SurveyForm.tsx
+    │       │   ├── Attachment/
+    │       │   │   ├── AttachmentTab.tsx
+    │       │   │   ├── NewAttachmentModal.tsx
+    │       │   │   └── EditAttachmentModal.tsx
+    │       │   └── Construction/
+    │       │       ├── ConstructionTab.tsx
+    │       │       ├── NewConstructionModal.tsx
+    │       │       └── EditConstructionModal.tsx
+    │       └── common/              # Shared components
+    │           ├── FileAttachments/ # File upload/download system
+    │           │   ├── index.tsx
+    │           │   ├── FileItem.tsx
+    │           │   ├── FileList.tsx
+    │           │   └── FileUploadZone.tsx
+    │           ├── RequestNotes/    # Admin instructions display
+    │           │   └── index.tsx
+    │           ├── FilterableTableLayout.tsx
+    │           └── ProgressHistory.tsx
     │
     ├── schedule/                    # ✅ Refactored (156 lines)
     │   ├── page.tsx                 # Main page
@@ -1380,6 +1389,7 @@ interface ProgressEntry {
 
 **Survey Request:**
 - Status: '未着手' | '調査中' | '完了' | 'キャンセル'
+- serialNumber: Auto-generated sequence number (整理番号) - **NOT editable in edit modal**, only visible in display
 - surveyItems: Checklist of survey tasks
 - surveyResult: Findings (closure number, line type, notes, photos)
 - intermediateReport: Mid-progress report with rate, findings, issues
@@ -1387,14 +1397,17 @@ interface ProgressEntry {
 **Attachment Request:**
 - Status: '受付' | '調査済み' | '完了'
 - submittedAt, approvedAt: Application dates
-- withdrawNeeded, withdrawCreated: Withdrawal flags
+- withdrawNeeded: boolean - Withdrawal application required flag (申請要否: true=申請必要, false=申請不要)
+- withdrawCreated: boolean - Withdrawal application created flag
 - postConstructionReport: boolean (true: 必要, false: 不要)
 - detail: Application details (line type, mount height, photos)
 - preparationStatus: Document/photo readiness, expected submit date
 
 **Construction Request:**
-- Status: '未着手' | '依頼済み' | '工事日決定' | '完了' | '工事返却' | '工事キャンセル'
-  - Note: In 申請番号管理 screen, '未着手' is hidden from dropdown (used in 工事依頼管理 screen only)
+- Status: '依頼済み' | '工事日決定' | '完了' | '工事返却' | '工事キャンセル'
+  - **IMPORTANT**: '未着手' status is **NOT available** in 申請番号管理 screen edit modal (removed in PR #57)
+  - '未着手' is only used in 工事依頼管理 screen
+  - Sample data uses '依頼済み' as the initial status for construction requests
 - constructionType: Work category
 - constructionDate: Scheduled work date
 - constructionResult: Completion details (actual date, work hours, materials, photos)
@@ -1426,14 +1439,30 @@ interface ProgressEntry {
 applications/
 ├── page.tsx                    # Main page with tab navigation
 └── components/
-    ├── SurveyTab.tsx          # Survey requests table
-    ├── AttachmentTab.tsx      # Attachment requests table
-    ├── ConstructionTab.tsx    # Construction requests table
-    ├── NewRequestModal.tsx    # Create new request with contractor selection
-    ├── EditSurveyModal.tsx    # Edit survey + view progress history
-    ├── EditAttachmentModal.tsx
-    ├── EditConstructionModal.tsx
-    └── ProgressHistory.tsx    # Displays progress entries with timeline
+    ├── features/               # Feature-specific components
+    │   ├── Survey/
+    │   │   ├── SurveyTab.tsx
+    │   │   ├── NewSurveyModal.tsx
+    │   │   ├── EditSurveyModal.tsx
+    │   │   └── SurveyForm.tsx
+    │   ├── Attachment/
+    │   │   ├── AttachmentTab.tsx
+    │   │   ├── NewAttachmentModal.tsx
+    │   │   └── EditAttachmentModal.tsx
+    │   └── Construction/
+    │       ├── ConstructionTab.tsx
+    │       ├── NewConstructionModal.tsx
+    │       └── EditConstructionModal.tsx
+    └── common/                 # Shared components
+        ├── FileAttachments/    # File upload/download system
+        │   ├── index.tsx
+        │   ├── FileItem.tsx
+        │   ├── FileList.tsx
+        │   └── FileUploadZone.tsx
+        ├── RequestNotes/       # Admin instructions display
+        │   └── index.tsx
+        ├── FilterableTableLayout.tsx
+        └── ProgressHistory.tsx
 ```
 
 ### Contractor Flow (src/app/contractor-requests/page.tsx)

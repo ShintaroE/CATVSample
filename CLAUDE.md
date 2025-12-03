@@ -316,6 +316,7 @@ location.reload()
 ### Architecture Refactoring History
 | PR | Change | Files | Impact |
 |----|--------|-------|--------|
+| #57 | Application fields update and serialNumber hide | 6 files | Removed '未着手' from construction edit modal, added withdrawNeeded field to attachment requests, hidden serialNumber in survey edit modal |
 | #56 | Centralized sample data to src/shared/data | 8 files | Single source of truth for demo data, easier maintenance |
 | #54 | Removed app/schedule/types completely | 16 files | All imports unified to features/calendar/types |
 | #53 | Moved calendar types to features/calendar/types | 16 files | Fixed app-layer cross-dependencies |
