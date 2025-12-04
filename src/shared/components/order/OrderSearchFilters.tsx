@@ -72,6 +72,15 @@ export default function OrderSearchFilters({ filters, onFilterChange, onClearFil
           className="bg-white text-gray-900"
         />
 
+        {/* 電話番号 */}
+        <Input
+          label="電話番号"
+          value={filters.phoneNumber}
+          onChange={(e) => handleChange('phoneNumber', e.target.value)}
+          placeholder="086-123-4567"
+          className="bg-white text-gray-900"
+        />
+
         {/* 住所 */}
         <Input
           label="住所"

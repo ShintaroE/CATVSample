@@ -76,8 +76,8 @@ export default function FilterPanel({
         }`}
       >
         <div className="p-4 pt-0">
-          {/* 第1行：受注番号、個別/集合、工事種別 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {/* 第1行：受注番号、電話番号、個別/集合、工事種別 */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             {/* 受注番号 */}
             <div>
               <label className="block text-xs text-gray-600 mb-1">受注番号</label>
@@ -86,6 +86,18 @@ export default function FilterPanel({
                 placeholder="受注番号"
                 value={filters.orderNumber}
                 onChange={(e) => onUpdateFilter('orderNumber', e.target.value)}
+                className="w-full text-sm bg-white text-gray-900 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* 電話番号 */}
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">電話番号</label>
+              <input
+                type="text"
+                placeholder="086-123-4567"
+                value={filters.phoneNumber}
+                onChange={(e) => onUpdateFilter('phoneNumber', e.target.value)}
                 className="w-full text-sm bg-white text-gray-900 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -121,8 +133,8 @@ export default function FilterPanel({
             </div>
           </div>
 
-          {/* 第2行：顧客コード、集合コード、受注ステータス */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+          {/* 第2行：顧客コード、集合コード、受注ステータス、顧客タイプ */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3">
             {/* 顧客コード */}
             <div>
               <label className="block text-xs text-gray-600 mb-1">顧客コード</label>
@@ -160,10 +172,7 @@ export default function FilterPanel({
                 <option value="キャンセル">キャンセル</option>
               </select>
             </div>
-          </div>
 
-          {/* 第3行：顧客タイプ */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
             {/* 顧客タイプ */}
             <div>
               <label className="block text-xs text-gray-600 mb-1">顧客タイプ</label>
@@ -177,12 +186,9 @@ export default function FilterPanel({
                 <option value="既存">既存</option>
               </select>
             </div>
-
-            {/* 空のスペース（2カラム分） */}
-            <div className="md:col-span-2"></div>
           </div>
 
-          {/* 第4行：各種追加費用フィルター */}
+          {/* 第3行：各種追加費用フィルター */}
           <div className="mt-3">
             <AdditionalCostsFilter
               filter={filters.additionalCosts}
