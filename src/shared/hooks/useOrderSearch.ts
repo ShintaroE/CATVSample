@@ -6,6 +6,7 @@ export interface OrderSearchFilters {
   orderNumber: string
   customerName: string
   customerCode: string
+  phoneNumber: string
   address: string
   constructionCategory: '' | ConstructionCategory
   workType: string
@@ -16,6 +17,7 @@ const initialFilters: OrderSearchFilters = {
   orderNumber: '',
   customerName: '',
   customerCode: '',
+  phoneNumber: '',
   address: '',
   constructionCategory: '',
   workType: '',
@@ -46,6 +48,18 @@ export function useOrderSearch() {
       // 顧客コード
       if (filters.customerCode && !order.customerCode.includes(filters.customerCode)) {
         return false
+      }
+      // 電話番号（ハイフン無視）
+      if (filters.phoneNumber) {
+        const normalizePhone = (phone: string) => phone.replace(/[-\s]/g, '')
+        const normalizedQuery = normalizePhone(filters.phoneNumber.trim())
+        if (!order.phoneNumber) {
+          return false
+        }
+        const normalizedOrderPhone = normalizePhone(order.phoneNumber)
+        if (!normalizedOrderPhone.includes(normalizedQuery)) {
+          return false
+        }
       }
       // 住所
       if (filters.address && order.address && !order.address.includes(filters.address)) {

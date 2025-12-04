@@ -137,6 +137,20 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         />
       </div>
 
+      {/* 電話番号 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          電話番号
+        </label>
+        <input
+          type="text"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
+          value={filters.phoneNumber}
+          onChange={(e) => updateFilter('phoneNumber', e.target.value)}
+          placeholder="086-123-4567"
+        />
+      </div>
+
       {/* 個別/集合 */}
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">

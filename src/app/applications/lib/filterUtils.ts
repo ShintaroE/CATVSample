@@ -111,6 +111,33 @@ export function filterByTeam<T extends { teamId?: string }>(
 }
 
 /**
+ * 電話番号を正規化（ハイフンと空白を除去）
+ */
+export function normalizePhoneNumber(phone: string): string {
+  return phone.replace(/[-\s]/g, '')
+}
+
+/**
+ * 電話番号フィルター（部分一致、ハイフン無視）
+ *
+ * ハイフンと空白を除去した状態で部分一致検索を行います。
+ * 例: "086-123-4567" と "0861234567" は同じ番号として扱われます。
+ */
+export function filterByPhoneNumber<T extends { phoneNumber?: string }>(
+  items: T[],
+  phoneNumber: string
+): T[] {
+  if (!phoneNumber) return items
+  const normalizedQuery = normalizePhoneNumber(phoneNumber.trim())
+
+  return items.filter(item => {
+    if (!item.phoneNumber) return false
+    const normalizedPhone = normalizePhoneNumber(item.phoneNumber)
+    return normalizedPhone.includes(normalizedQuery)
+  })
+}
+
+/**
  * アクティブフィルター数をカウント
  *
  * 文字列フィルターは空文字列でないことをチェック

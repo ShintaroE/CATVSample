@@ -99,6 +99,20 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
         />
       </div>
 
+      {/* 電話番号 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          電話番号
+        </label>
+        <input
+          type="text"
+          value={filters.phoneNumber}
+          onChange={(e) => updateFilter('phoneNumber', e.target.value)}
+          placeholder="086-123-4567"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
+        />
+      </div>
+
       {/* 個別/集合 */}
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">

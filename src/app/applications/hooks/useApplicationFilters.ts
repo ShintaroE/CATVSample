@@ -5,7 +5,8 @@ import {
   filterByCustomerCode,
   filterByCollectiveCode,
   filterByContractor,
-  filterByTeam
+  filterByTeam,
+  filterByPhoneNumber
 } from '../lib/filterUtils'
 
 /**
@@ -16,6 +17,7 @@ import {
  */
 export interface BaseApplicationFilters {
   orderNumber: string
+  phoneNumber: string
   propertyType: '' | '個別' | '集合'
   customerCode: string
   collectiveCode: string
@@ -28,6 +30,7 @@ export interface BaseApplicationFilters {
  */
 export interface FilterableApplicationData {
   orderNumber?: string
+  phoneNumber?: string
   propertyType?: '個別' | '集合'
   customerCode?: string
   collectiveCode?: string
@@ -40,6 +43,7 @@ export interface FilterableApplicationData {
  */
 const defaultBaseFilters: BaseApplicationFilters = {
   orderNumber: '',
+  phoneNumber: '',
   propertyType: '',
   customerCode: '',
   collectiveCode: '',
@@ -82,6 +86,7 @@ export function useApplicationFilters<T extends FilterableApplicationData>(
    *
    * 統一仕様:
    * - 受注番号: 部分一致、大文字小文字区別なし
+   * - 電話番号: 部分一致、ハイフン無視
    * - 顧客コード: 個別物件のみチェック、集合物件は除外しない
    * - 集合コード: 集合物件のみチェック、個別物件は除外しない
    * - 班フィルター: 依頼先フィルター不要（独立して動作）
@@ -91,6 +96,9 @@ export function useApplicationFilters<T extends FilterableApplicationData>(
 
     // 受注番号フィルター
     result = filterByOrderNumber(result, filters.orderNumber)
+
+    // 電話番号フィルター
+    result = filterByPhoneNumber(result, filters.phoneNumber)
 
     // 物件種別フィルター
     result = filterByPropertyType(result, filters.propertyType)
@@ -153,6 +161,7 @@ export function useApplicationFilters<T extends FilterableApplicationData>(
    */
   let activeFilterCount = 0
   if (filters.orderNumber) activeFilterCount++
+  if (filters.phoneNumber) activeFilterCount++
   if (filters.propertyType) activeFilterCount++
   if (filters.customerCode) activeFilterCount++
   if (filters.collectiveCode) activeFilterCount++

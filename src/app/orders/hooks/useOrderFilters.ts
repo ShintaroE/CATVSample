@@ -12,6 +12,7 @@ export interface AdditionalCostsFilter {
 
 export interface OrderFilters {
   orderNumber: string
+  phoneNumber: string
   constructionCategory: ConstructionCategory | 'all'
   workType: IndividualWorkType | CollectiveWorkType | 'all'
   customerCode: string
@@ -23,6 +24,7 @@ export interface OrderFilters {
 
 const defaultFilters: OrderFilters = {
   orderNumber: '',
+  phoneNumber: '',
   constructionCategory: 'all',
   workType: 'all',
   customerCode: '',
@@ -49,6 +51,19 @@ export function useOrderFilters(orders: OrderData[]) {
       if (filters.orderNumber &&
         !order.orderNumber.toLowerCase().includes(filters.orderNumber.toLowerCase())) {
         return false
+      }
+
+      // 電話番号フィルター（部分一致、ハイフン無視）
+      if (filters.phoneNumber) {
+        const normalizePhone = (phone: string) => phone.replace(/[-\s]/g, '')
+        const normalizedQuery = normalizePhone(filters.phoneNumber.trim())
+        if (!order.phoneNumber) {
+          return false
+        }
+        const normalizedOrderPhone = normalizePhone(order.phoneNumber)
+        if (!normalizedOrderPhone.includes(normalizedQuery)) {
+          return false
+        }
       }
 
       // 個別/集合フィルター
@@ -141,7 +156,7 @@ export function useOrderFilters(orders: OrderData[]) {
   // 適用中のフィルター数をカウント
   let activeFilterCount = 0
   Object.entries(filters).forEach(([key, value]) => {
-    if (key === 'orderNumber' || key === 'customerCode' || key === 'collectiveCode') {
+    if (key === 'orderNumber' || key === 'phoneNumber' || key === 'customerCode' || key === 'collectiveCode') {
       if (value !== '') activeFilterCount++
     } else if (key === 'additionalCosts') {
       if ((value as AdditionalCostsFilter).enabled) activeFilterCount++
