@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { OrderFilters } from '../hooks/useOrderFilters'
-import { ConstructionCategory, individualWorkTypeOptions, collectiveWorkTypeOptions, IndividualWorkType, CollectiveWorkType, OrderStatus } from '../types'
+import { ConstructionCategory, individualWorkTypeOptions, collectiveWorkTypeOptions, IndividualWorkType, CollectiveWorkType, OrderStatus, OrderData } from '../types'
 import { ChartBarIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import { Badge } from '@/shared/components/ui'
 import AdditionalCostsFilter from './AdditionalCostsFilter'
+import CsvExportButton from './CsvExportButton'
 
 interface FilterPanelProps {
   filters: OrderFilters
@@ -12,6 +13,7 @@ interface FilterPanelProps {
   activeFilterCount: number
   filteredCount: number
   totalCount: number
+  filteredOrders: OrderData[]
 }
 
 export default function FilterPanel({
@@ -20,7 +22,8 @@ export default function FilterPanel({
   onClear,
   activeFilterCount,
   filteredCount,
-  totalCount
+  totalCount,
+  filteredOrders
 }: FilterPanelProps) {
   const [isOpen, setIsOpen] = useState(true)
 
@@ -51,8 +54,12 @@ export default function FilterPanel({
             </Badge>
           )}
         </div>
-        {/* 表示件数 */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        {/* 右側: CSVエクスポート + 表示件数 */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {/* CSVエクスポートボタン */}
+          <CsvExportButton orders={filteredOrders} />
+
+          {/* 表示件数 */}
           <div className="flex items-center gap-1.5">
             <ChartBarIcon className="w-4 h-4 text-gray-500" />
             <Badge

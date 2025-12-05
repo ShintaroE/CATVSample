@@ -175,6 +175,7 @@ export default function OrdersPage() {
           activeFilterCount={activeFilterCount}
           filteredCount={filteredCount}
           totalCount={totalCount}
+          filteredOrders={filteredOrders}
         />
 
         {/* テーブル */}
