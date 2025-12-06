@@ -58,9 +58,8 @@ export default function CsvExportButton({
       disabled={disabled || isExporting || orders.length === 0}
       className={`
         flex items-center gap-2 px-4 py-2
-        bg-green-600 text-white rounded-md
-        hover:bg-green-700
-        disabled:bg-gray-300 disabled:cursor-not-allowed
+        border rounded-md
+        disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200 disabled:cursor-not-allowed
         transition-colors
         text-sm font-medium
         ${className}

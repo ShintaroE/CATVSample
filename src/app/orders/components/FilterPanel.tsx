@@ -1,10 +1,9 @@
 import React, { useState } from 'react'
 import { OrderFilters } from '../hooks/useOrderFilters'
-import { ConstructionCategory, individualWorkTypeOptions, collectiveWorkTypeOptions, IndividualWorkType, CollectiveWorkType, OrderStatus, OrderData } from '../types'
+import { ConstructionCategory, individualWorkTypeOptions, collectiveWorkTypeOptions, IndividualWorkType, CollectiveWorkType, OrderStatus } from '../types'
 import { ChartBarIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import { Badge } from '@/shared/components/ui'
 import AdditionalCostsFilter from './AdditionalCostsFilter'
-import CsvExportButton from './CsvExportButton'
 
 interface FilterPanelProps {
   filters: OrderFilters
@@ -13,7 +12,6 @@ interface FilterPanelProps {
   activeFilterCount: number
   filteredCount: number
   totalCount: number
-  filteredOrders: OrderData[]
 }
 
 export default function FilterPanel({
@@ -22,8 +20,7 @@ export default function FilterPanel({
   onClear,
   activeFilterCount,
   filteredCount,
-  totalCount,
-  filteredOrders
+  totalCount
 }: FilterPanelProps) {
   const [isOpen, setIsOpen] = useState(true)
 
@@ -54,25 +51,19 @@ export default function FilterPanel({
             </Badge>
           )}
         </div>
-        {/* 右側: CSVエクスポート + 表示件数 */}
-        <div className="flex items-center gap-3 flex-shrink-0">
-          {/* CSVエクスポートボタン */}
-          <CsvExportButton orders={filteredOrders} />
-
-          {/* 表示件数 */}
-          <div className="flex items-center gap-1.5">
-            <ChartBarIcon className="w-4 h-4 text-gray-500" />
-            <Badge
-              variant={filteredCount !== totalCount ? 'info' : 'default'}
-              size="sm"
-              className="font-semibold"
-            >
-              表示: {filteredCount}件
-            </Badge>
-            <Badge variant="default" size="sm" className="font-normal">
-              全: {totalCount}件
-            </Badge>
-          </div>
+        {/* 右側: 表示件数 */}
+        <div className="flex items-center gap-1.5">
+          <ChartBarIcon className="w-4 h-4 text-gray-500" />
+          <Badge
+            variant={filteredCount !== totalCount ? 'info' : 'default'}
+            size="sm"
+            className="font-semibold"
+          >
+            表示: {filteredCount}件
+          </Badge>
+          <Badge variant="default" size="sm" className="font-normal">
+            全: {totalCount}件
+          </Badge>
         </div>
       </button>
 
