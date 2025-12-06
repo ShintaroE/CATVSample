@@ -16,7 +16,7 @@ import {
   getNextSerialNumber,
   initializeApplicationData,
 } from '@/features/applications/lib/applicationStorage'
-import { getContractors, getTeams } from '@/features/contractor/lib/contractorStorage'
+import { getContractors } from '@/features/contractor/lib/contractorStorage'
 import SurveyTab from './components/features/Survey/SurveyTab'
 import AttachmentTab from './components/features/Attachment/AttachmentTab'
 import ConstructionTab from './components/features/Construction/ConstructionTab'
@@ -48,7 +48,6 @@ export default function ApplicationsPage() {
   const [constructionData, setConstructionData] = useState<ConstructionRequest[]>([])
 
   const contractors = getContractors()
-  const teams = getTeams()
 
   // 初期化
   useEffect(() => {
@@ -185,7 +184,6 @@ export default function ApplicationsPage() {
         {isNewModalOpen && activeTab === 'attachment' && (
           <NewAttachmentModal
             contractors={contractors}
-            teams={teams}
             onClose={() => setIsNewModalOpen(false)}
             onCreate={handleCreate}
           />
@@ -193,7 +191,6 @@ export default function ApplicationsPage() {
         {isNewModalOpen && activeTab === 'construction' && (
           <NewConstructionModal
             contractors={contractors}
-            teams={teams}
             onClose={() => setIsNewModalOpen(false)}
             onCreate={handleCreate}
           />
@@ -212,7 +209,6 @@ export default function ApplicationsPage() {
           <EditAttachmentModal
             item={editingItem as AttachmentRequest}
             contractors={contractors}
-            teams={teams}
             onClose={() => setEditingItem(null)}
             onSave={(updates) =>
               handleUpdate('attachment', editingItem.id, updates)
@@ -223,7 +219,6 @@ export default function ApplicationsPage() {
           <EditConstructionModal
             item={editingItem as ConstructionRequest}
             contractors={contractors}
-            teams={teams}
             onClose={() => setEditingItem(null)}
             onSave={(updates) =>
               handleUpdate('construction', editingItem.id, updates)
