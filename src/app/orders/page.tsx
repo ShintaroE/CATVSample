@@ -15,6 +15,7 @@ import OrderDetailModal from './components/OrderDetailModal'
 import NewOrderModal from './components/NewOrderModal'
 import EditOrderModal from './components/EditOrderModal'
 import FilterPanel from './components/FilterPanel'
+import CsvExportButton from './components/CsvExportButton'
 
 export default function OrdersPage() {
   const {
@@ -155,13 +156,20 @@ export default function OrdersPage() {
             <h1 className="text-2xl font-semibold text-gray-900">工事依頼管理</h1>
             <p className="text-sm text-gray-500 mt-1">小川オーダー表形式</p>
           </div>
-          <Button
-            variant="primary"
-            onClick={() => setShowNewOrderModal(true)}
-          >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            新規工事依頼を作成
-          </Button>
+          {/* ボタングループ */}
+          <div className="flex items-center gap-3">
+            {/* CSVエクスポートボタン */}
+            <CsvExportButton orders={filteredOrders} className="bg-white text-gray-700 border-gray-300 hover:bg-gray-50" />
+
+            {/* 新規工事依頼ボタン */}
+            <Button
+              variant="primary"
+              onClick={() => setShowNewOrderModal(true)}
+            >
+              <PlusIcon className="h-5 w-5 mr-2" />
+              新規工事依頼を作成
+            </Button>
+          </div>
         </div>
 
         {/* Excel アップロード */}

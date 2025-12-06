@@ -51,21 +51,19 @@ export default function FilterPanel({
             </Badge>
           )}
         </div>
-        {/* 表示件数 */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <div className="flex items-center gap-1.5">
-            <ChartBarIcon className="w-4 h-4 text-gray-500" />
-            <Badge
-              variant={filteredCount !== totalCount ? 'info' : 'default'}
-              size="sm"
-              className="font-semibold"
-            >
-              表示: {filteredCount}件
-            </Badge>
-            <Badge variant="default" size="sm" className="font-normal">
-              全: {totalCount}件
-            </Badge>
-          </div>
+        {/* 右側: 表示件数 */}
+        <div className="flex items-center gap-1.5">
+          <ChartBarIcon className="w-4 h-4 text-gray-500" />
+          <Badge
+            variant={filteredCount !== totalCount ? 'info' : 'default'}
+            size="sm"
+            className="font-semibold"
+          >
+            表示: {filteredCount}件
+          </Badge>
+          <Badge variant="default" size="sm" className="font-normal">
+            全: {totalCount}件
+          </Badge>
         </div>
       </button>
 
