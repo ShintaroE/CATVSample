@@ -206,6 +206,19 @@ generateSimplePassword(length = 10): string
 - Supported: Images, PDF, Excel (.xlsx, .xls), Word (.doc, .docx)
 - Methods: Drag & drop, click to select, multiple selection
 
+### CSV Export Pattern (Orders Page)
+Orders page includes CSV export functionality with the following characteristics:
+- **Encoding**: UTF-8 with BOM (Excel-compatible, prevents garbled characters)
+- **Format**: 19 columns including order number, customer info, construction details, status fields
+- **Filename**: `工事依頼_YYYYMMDD_HHMMSS.csv`
+- **Implementation**:
+  - `src/app/orders/lib/csvExport.ts` - Core CSV generation and download logic
+  - `src/app/orders/components/CsvExportButton.tsx` - Export button component
+  - Automatically disabled when filtered data is empty
+  - Shows loading state during export
+
+**Known Issue**: React hydration warning due to nested buttons in FilterPanel (button inside accordion button). Functionality works correctly but violates HTML spec. Fix planned for future PR.
+
 ### Filter Panel with Accordion UI Pattern
 All filter panels use a unified accordion UI with active filter count:
 ```typescript
@@ -316,6 +329,8 @@ location.reload()
 ### Architecture Refactoring History
 | PR | Change | Files | Impact |
 |----|--------|-------|--------|
+| #59 | Added CSV export to orders page | 3 files | CSV export with UTF-8 BOM, 19 columns, Excel-compatible |
+| #58 | Added phone number filter and layout improvements | Multiple files | Phone number search, improved order page layout |
 | #57 | Application fields update and serialNumber hide | 6 files | Removed '未着手' from construction edit modal, added withdrawNeeded field to attachment requests, hidden serialNumber in survey edit modal |
 | #56 | Centralized sample data to src/shared/data | 8 files | Single source of truth for demo data, easier maintenance |
 | #54 | Removed app/schedule/types completely | 16 files | All imports unified to features/calendar/types |

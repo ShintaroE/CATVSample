@@ -1837,3 +1837,146 @@ Visual badges showing filtered and total record counts, positioned consistently 
 - **Repository pattern採用**: ストレージ層を抽象化
 - **1-3ヶ月後の移行を想定**: PostgreSQL/MySQL移行時にAPI呼び出しに切り替えやすい設計
 - **ファイルストレージ**: 将来はAWS S3やCloudinaryなどに移行可能
+
+### CSV Export Functionality (Orders Page)
+
+#### Overview
+工事依頼管理画面に実装されたCSVエクスポート機能。フィルタリングされたデータをExcelで開ける形式でダウンロード可能。
+
+#### Implementation Files
+- **`src/app/orders/lib/csvExport.ts`** - CSV生成とダウンロードのコアロジック
+- **`src/app/orders/components/CsvExportButton.tsx`** - エクスポートボタンコンポーネント
+
+#### Technical Specifications
+
+**Encoding**: UTF-8 with BOM
+- Excel互換（日本語の文字化け防止）
+- BOM (Byte Order Mark) を追加することでExcelが自動的にUTF-8として認識
+
+**Export Format**: 19列
+1. 受注番号
+2. 受注元
+3. 個別/集合
+4. 工事種別
+5. 顧客コード
+6. 顧客名
+7. 顧客タイプ
+8. 電話番号
+9. 住所
+10. 工事日
+11. クロージャ番号
+12. 集合コード
+13. 集合住宅名
+14. 現調ステータス
+15. 許可ステータス
+16. 工事ステータス
+17. 受注ステータス
+18. キャンセル日
+19. キャンセル理由
+
+**Filename Convention**: `工事依頼_YYYYMMDD_HHMMSS.csv`
+- タイムスタンプ付きで複数エクスポートしても上書きされない
+
+#### Component Features
+
+**CsvExportButton Component**:
+- フィルタリング済みデータを受け取る (`filteredOrders` prop)
+- データが0件の場合は自動的に無効化
+- エクスポート中はローディング状態を表示
+- FilterPanelヘッダーに統合配置
+
+**User Experience**:
+```typescript
+// データ0件時
+<button disabled className="opacity-50 cursor-not-allowed">
+  CSVエクスポート (0件)
+</button>
+
+// データあり
+<button onClick={handleExport}>
+  CSVエクスポート ({filteredOrders.length}件)
+</button>
+
+// エクスポート中
+<button disabled>
+  <LoadingSpinner /> エクスポート中...
+</button>
+```
+
+#### Integration with FilterPanel
+
+CSVエクスポートボタンはFilterPanelヘッダーに配置:
+```typescript
+// src/app/orders/components/FilterPanel.tsx
+<div className="flex items-center justify-between">
+  <button onClick={togglePanel}>
+    {/* フィルターパネル開閉ボタン */}
+  </button>
+
+  <CsvExportButton filteredOrders={filteredOrders} />
+</div>
+```
+
+**Props Flow**:
+1. `page.tsx` → フィルタリング済みデータ計算
+2. `page.tsx` → `FilterPanel` に `filteredOrders` を渡す
+3. `FilterPanel` → `CsvExportButton` に `filteredOrders` を渡す
+4. `CsvExportButton` → CSV生成・ダウンロード実行
+
+#### Known Issues
+
+**React Hydration Warning**:
+```
+Warning: validateDOMNesting(...): <button> cannot appear as a descendant of <button>
+```
+
+**原因**: FilterPanelのアコーディオンボタン内にCSVエクスポートボタンが配置されているため、HTML仕様違反（ボタンの入れ子）
+
+**影響**:
+- 機能は正常に動作
+- コンソールに警告が表示されるのみ
+- ユーザー体験に影響なし
+
+**対応予定**: 次のPRでレイアウトを修正し、ボタンの入れ子を解消する予定
+
+#### CSV Generation Logic
+
+```typescript
+// csvExport.ts の主要ロジック
+export const exportToCSV = (orders: OrderData[]): void => {
+  // 1. CSVヘッダー行を作成
+  const headers = ['受注番号', '受注元', ...]
+
+  // 2. データ行を作成（フィールド値をカンマ区切りに変換）
+  const rows = orders.map(order => [
+    order.orderNumber,
+    order.source,
+    // ... 19列のフィールド
+  ])
+
+  // 3. CSVコンテンツを結合
+  const csvContent = [headers, ...rows]
+    .map(row => row.join(','))
+    .join('\n')
+
+  // 4. UTF-8 BOMを追加
+  const BOM = '\uFEFF'
+  const csvWithBOM = BOM + csvContent
+
+  // 5. Blobを作成してダウンロード
+  const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+
+  // 6. ダウンロードリンクを生成・実行
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `工事依頼_${timestamp}.csv`
+  link.click()
+}
+```
+
+#### Future Improvements
+- [ ] FilterPanelレイアウト修正でボタン入れ子問題を解決
+- [ ] カスタマイズ可能なエクスポート列選択機能
+- [ ] 複数フォーマット対応（Excel, JSON等）
+- [ ] バッチエクスポート（大量データ対応）
