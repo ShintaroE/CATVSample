@@ -84,18 +84,18 @@ export default function ContractorRequestsPage() {
       (r) => r.contractorId === user.contractorId
     )
 
-    // 「全て」が選択されている場合は全ての班のデータを表示、それ以外は選択した班のみ
+    // 班フィルタリングの適用
+    // 共架・添架: 班に関係なく協力会社全体で表示（teamIdでフィルタリングしない）
+    // 現地調査・工事: 選択された班のみ表示
     if (selectedTeamId === 'all') {
       setSurveyData(contractorSurvey)
-      setAttachmentData(contractorAttachment)
+      setAttachmentData(contractorAttachment) // 共架・添架は常に全体表示
       setConstructionData(contractorConstruction)
     } else {
       setSurveyData(
         contractorSurvey.filter((r) => r.teamId === selectedTeamId)
       )
-      setAttachmentData(
-        contractorAttachment.filter((r) => r.teamId === selectedTeamId)
-      )
+      setAttachmentData(contractorAttachment) // 共架・添架は班に関係なく全体表示
       setConstructionData(
         contractorConstruction.filter((r) => r.teamId === selectedTeamId)
       )
