@@ -338,9 +338,9 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
                   {/* 依頼先 */}
                   <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.assigneeType === 'internal' ? (
-                      <span className="text-blue-600 font-medium">自社 - {r.teamName}</span>
+                      <span className="text-blue-600 font-medium">自社{r.teamName ? ` - ${r.teamName}` : ''}</span>
                     ) : (
-                      <span className="text-gray-900">{r.contractorName} - {r.teamName}</span>
+                      <span className="text-gray-900">{r.contractorName}{r.teamName ? ` - ${r.teamName}` : ''}</span>
                     )}
                   </td>
 
