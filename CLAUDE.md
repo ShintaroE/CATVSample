@@ -149,7 +149,7 @@ All storage modules use repository pattern for future DBMS migration (PostgreSQL
 - Bidirectional file attachments (admin ↔ contractor)
 - Request notes (admin instructions to contractor)
 - Progress tracking with append-only history
-- Team assignment at request creation
+- **Team assignment:** Survey/Construction require team selection; Attachment is contractor-level only (no team filter)
 
 **File Attachments:**
 - 2-column layout (received files | sent files)
@@ -308,7 +308,7 @@ location.reload()
 | Page | Status | Lines | Notes |
 |------|--------|-------|-------|
 | applications | ✅ Complete | 222 | 13 components, FilterableTableLayout pattern |
-| contractor-requests | ⚠️ Needs work | 567 | FileAttachments integration, needs further refactoring |
+| contractor-requests | ⚠️ Needs work | 610 | 3 modal components, accordion filter UI pending |
 | schedule | ✅ Complete | 156 | Multiple components/hooks/lib |
 | orders | ✅ Complete | 230 | FilterPanel with accordion UI |
 | my-exclusions | ✅ Complete | 148 | Multiple components/hooks/lib |
@@ -329,6 +329,7 @@ location.reload()
 ### Architecture Refactoring History
 | PR | Change | Files | Impact |
 |----|--------|-------|--------|
+| #60 | Unified application form structure | 3 files | Removed team selection from Attachment requests; Attachment is now contractor-level only |
 | #59 | Added CSV export to orders page | 3 files | CSV export with UTF-8 BOM, 19 columns, Excel-compatible |
 | #58 | Added phone number filter and layout improvements | Multiple files | Phone number search, improved order page layout |
 | #57 | Application fields update and serialNumber hide | 6 files | Removed '未着手' from construction edit modal, added withdrawNeeded field to attachment requests, hidden serialNumber in survey edit modal |

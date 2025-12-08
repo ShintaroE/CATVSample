@@ -180,9 +180,9 @@ src/
     ├── contractor-management/       # ✅ Complete (161 lines)
     │   └── page.tsx                 # Refactored into features/admin/contractor-management
     │
-    ├── contractor-requests/         # ⚠️ Needs work (567 lines)
+    ├── contractor-requests/         # ⚠️ Needs work (610 lines)
     │   ├── page.tsx
-    │   └── components/              # Includes FileAttachments integration
+    │   └── components/              # 3 modal components (SurveyProgressModal, AttachmentProgressModal, ConstructionProgressModal)
     │
     ├── my-exclusions/               # ✅ Refactored (148 lines)
     │   ├── page.tsx
@@ -435,7 +435,7 @@ This project is undergoing systematic refactoring to improve maintainability:
 | Page | Status | Current Lines | Components |
 |------|--------|---------------|------------|
 | applications | ✅ Complete | 222 | 13 components (includes FileAttachments, RequestNotes) |
-| contractor-requests | ⚠️ Needs work | 567 | Includes FileAttachments integration, needs further refactoring |
+| contractor-requests | ⚠️ Needs work | 610 | 3 modal components, accordion filter UI pending |
 | schedule | ✅ Complete | 156 | Multiple components, hooks, and lib modules |
 | orders | ✅ Complete | 230 | Multiple components, hooks, and lib modules |
 | my-exclusions | ✅ Complete | 148 | Multiple components, hooks, and lib modules |
@@ -443,8 +443,9 @@ This project is undergoing systematic refactoring to improve maintainability:
 | login | ✅ Simple | 114 | Already clean |
 
 **Remaining Work**:
-1. **Phase 1**: Contractor-requests page further refactoring (567 lines to be optimized)
-2. **Phase 2**: Final integration testing and documentation
+1. **Phase 1**: Contractor-requests page further refactoring (610 lines to be optimized)
+2. **Phase 2**: Accordion-style filter UI implementation for contractor-requests page
+3. **Phase 3**: Final integration testing and documentation
 
 **Note**: `src/lib/` directory currently contains:
 - `constants.ts` - App-wide constants (may need reorganization)
@@ -1420,9 +1421,12 @@ interface ProgressEntry {
 2. Select request type tab (survey/attachment/construction)
 3. Fill in customer information
 4. **Assignment Selection**:
-   - Radio: "自社（直営班）" or "協力会社"
-   - If 自社: Select team from 直営班's teams
-   - If 協力会社: Select contractor → select team (2-stage dropdown)
+   - **Survey/Construction**: Radio: "自社（直営班）" or "協力会社"
+     - If 自社: Select team from 直営班's teams
+     - If 協力会社: Select contractor → select team (2-stage dropdown)
+   - **Attachment**: Contractor-level assignment only (no team selection)
+     - Select contractor from dropdown
+     - Team assignment not required (handled at contractor level)
 5. Add type-specific details
 6. Save creates request with initial status
 
@@ -1471,6 +1475,7 @@ applications/
 - Only accessible by users with `role: 'contractor'`
 - Automatically filters to show only requests assigned to logged-in contractor
 - Team filter dropdown if contractor has multiple teams
+- **Attachment requests**: Displayed at contractor level (no team filtering applied)
 
 #### Updating Progress
 1. View assigned requests in table (filtered by contractorId + teamId)
@@ -1557,8 +1562,12 @@ getProgressHistory(type, id): ProgressEntry[]
 ### Important Implementation Notes
 
 1. **Progress History is Append-Only**: Never modify existing entries, always add new ones
-2. **Team Selection at Request Creation**: Unlike exclusions (where team is selected at registration), requests have teamId set during creation
-3. **Contractor Filtering**: Contractor users see only requests where `contractorId` matches their ID AND `teamId` matches selected team
+2. **Team Selection at Request Creation**:
+   - **Survey/Construction**: Team must be selected during creation
+   - **Attachment**: Team selection not required (contractor-level only)
+3. **Contractor Filtering**:
+   - **Survey/Construction requests**: Filter by `contractorId` AND `teamId` (selected team filter applied)
+   - **Attachment requests**: Filter by `contractorId` only (team filter not applied)
 4. **Status Auto-completion**: When status changes to "完了", `completedAt` is auto-set to current date
 5. **Progress Comments are Required**: Contractors must provide context when updating status
 6. **Type Safety**: Use type-specific functions when possible (getSurveyRequests, getAttachmentRequests, getConstructionRequests)
