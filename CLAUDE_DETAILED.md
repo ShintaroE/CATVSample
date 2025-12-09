@@ -206,7 +206,7 @@ src/
   - 工事依頼管理 (Order Management) - 小川オーダー表形式の工事依頼管理 + アポイント履歴にスケジュール統合表示
   - 工事日程調整 (Schedule Management) - Outlookライクなカレンダー + 協力会社除外日表示
   - **申請番号管理 (Application Number Management)** - 3タブ構成（現地調査依頼・共架添架依頼・工事依頼）+ 進捗管理 + 協力会社への依頼機能 + 表示件数バッジ
-  - **依頼一覧 (Contractor Requests)** - 協力会社専用：割り当てられた依頼の確認・進捗更新 + 表示件数バッジ
+  - **依頼一覧 (Contractor Requests)** - 協力会社専用：割り当てられた依頼の確認・進捗更新 + 表示件数バッジ + 班フィルタリング（共架・添架は除外）
   - 除外日管理 (My Exclusions) - 協力会社専用の作業不可日時登録
   - アカウント管理 (Account Management) - 管理者・協力会社・班アカウント管理（管理者専用）
 - **Exclusion Date Management**: Time-specific exclusions (終日/午前/午後/カスタム時間指定)
@@ -1368,7 +1368,10 @@ type AssigneeType = 'internal' | 'contractor'
 #### Base Structure
 All requests extend `RequestBase`:
 - Basic info: serialNumber, orderNumber, contractNo, customerCode, customerName, address, phoneNumber
-- Assignment: assigneeType, contractorId, contractorName, teamId, teamName
+- Assignment: assigneeType, contractorId, contractorName, teamId (optional), teamName (optional)
+  - **Note**: `teamId` and `teamName` are optional fields in the data model
+  - Survey/Construction requests: These fields are required and populated
+  - Attachment requests: These fields are typically not used (remain undefined)
 - Dates: requestedAt, scheduledDate, completedAt
 - Progress tracking: progressHistory, lastUpdatedBy, lastUpdatedByName
 
@@ -1389,30 +1392,33 @@ interface ProgressEntry {
 #### Type-Specific Fields
 
 **Survey Request:**
-- Status: '未着手' | '調査中' | '完了' | 'キャンセル'
+- Status: '依頼済み' | '調査日決定' | '完了' | 'キャンセル'
 - serialNumber: Auto-generated sequence number (整理番号) - **NOT editable in edit modal**, only visible in display
-- surveyItems: Checklist of survey tasks
-- surveyResult: Findings (closure number, line type, notes, photos)
-- intermediateReport: Mid-progress report with rate, findings, issues
+- feasibilityResult: SurveyFeasibilityResult - 工事可否判定結果（協力会社からの報告）
+- **Team assignment**: Required - must select team during creation
 
 **Attachment Request:**
-- Status: '受付' | '調査済み' | '完了'
+- Status: '依頼済み' | '調査済み' | '申請中' | '申請許可' | '申請不許可' | 'キャンセル'
 - submittedAt, approvedAt: Application dates
+- surveyCompletedAt: Survey completion date
 - withdrawNeeded: boolean - Withdrawal application required flag (申請要否: true=申請必要, false=申請不要)
-- withdrawCreated: boolean - Withdrawal application created flag
-- postConstructionReport: boolean (true: 必要, false: 不要)
 - detail: Application details (line type, mount height, photos)
 - preparationStatus: Document/photo readiness, expected submit date
+- applicationReport: AttachmentApplicationReport - 申請有無報告（協力会社からの報告）
+- **Team assignment**: Optional - not typically used for attachment requests (contractor-level only)
 
 **Construction Request:**
-- Status: '依頼済み' | '工事日決定' | '完了' | '工事返却' | '工事キャンセル'
+- Status: '未着手' | '依頼済み' | '工事日決定' | '完了' | '工事返却' | '工事キャンセル'
   - **IMPORTANT**: '未着手' status is **NOT available** in 申請番号管理 screen edit modal (removed in PR #57)
   - '未着手' is only used in 工事依頼管理 screen
-  - Sample data uses '依頼済み' as the initial status for construction requests
-- constructionType: Work category
+  - Sample data uses '依頼済み' as the initial status for construction requests in 申請番号管理
+- constructionRequestedDate: Construction request date
 - constructionDate: Scheduled work date
+- constructionCompletedDate: Actual completion date
+- constructionType: Work category
 - constructionResult: Completion details (actual date, work hours, materials, photos)
 - workProgress: Mid-work status (progress rate, current phase, completion estimate, issues)
+- **Team assignment**: Required - must select team during creation
 
 ### Admin Flow (src/app/applications/page.tsx)
 
@@ -1475,7 +1481,10 @@ applications/
 - Only accessible by users with `role: 'contractor'`
 - Automatically filters to show only requests assigned to logged-in contractor
 - Team filter dropdown if contractor has multiple teams
-- **Attachment requests**: Displayed at contractor level (no team filtering applied)
+- **Team filtering behavior**:
+  - **Survey/Construction requests**: Filtered by selected team (or all teams if "全て" is selected)
+  - **Attachment requests**: Always displayed for entire contractor (team filter does not apply)
+  - This ensures attachment requests are visible regardless of team selection
 
 #### Updating Progress
 1. View assigned requests in table (filtered by contractorId + teamId)
