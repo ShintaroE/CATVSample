@@ -220,7 +220,7 @@ export default function ConstructionForm({
                 {/* 基本情報 */}
                 <div>
                     <h3 className="text-md font-medium text-gray-900 mb-3">基本情報</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                         <Input
                             label="受注番号"
                             value={formData.orderNumber || ''}
@@ -240,20 +240,6 @@ export default function ConstructionForm({
                             ) : undefined}
                         />
                         {isEditing && <p className="text-xs text-gray-500 mt-1">※ 受注番号は編集できません</p>}
-                        <Input
-                            label="KCT受取日"
-                            type="date"
-                            value={formData.kctReceivedDate || ''}
-                            onChange={(e) => handleChange('kctReceivedDate', e.target.value)}
-                            className="bg-white text-gray-900"
-                        />
-                        <Input
-                            label="工事依頼日"
-                            type="date"
-                            value={formData.constructionRequestedDate || ''}
-                            onChange={(e) => handleChange('constructionRequestedDate', e.target.value)}
-                            className="bg-white text-gray-900"
-                        />
                     </div>
                 </div>
 
@@ -351,91 +337,96 @@ export default function ConstructionForm({
                 </div>
 
                 {/* スケジュール情報 */}
+                <div>
+                    <h3 className="text-md font-medium text-gray-900 mb-3">スケジュール情報</h3>
+                    <div className={`grid grid-cols-1 ${isEditing ? 'md:grid-cols-3' : 'md:grid-cols-1'} gap-4`}>
+                        <Input
+                            label={isEditing ? "工事予定日" : "工事予定日（オプション）"}
+                            type="date"
+                            value={formData.scheduledDate || ''}
+                            onChange={(e) => handleChange('scheduledDate', e.target.value)}
+                            className="bg-white text-gray-900"
+                        />
+                        {isEditing && (
+                            <>
+                                <Input
+                                    label="工事完了日"
+                                    type="date"
+                                    value={formData.completedAt || ''}
+                                    onChange={(e) => handleChange('completedAt', e.target.value)}
+                                    className="bg-white text-gray-900"
+                                />
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">状態</label>
+                                    <select
+                                        value={formData.status || '依頼済み'}
+                                        onChange={(e) => handleChange('status', e.target.value as ConstructionStatus)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                                    >
+                                        <option value="依頼済み">依頼済み</option>
+                                        <option value="工事日決定">工事日決定</option>
+                                        <option value="完了">完了</option>
+                                        <option value="工事返却">工事返却</option>
+                                        <option value="工事キャンセル">工事キャンセル</option>
+                                    </select>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                    {!isEditing && <p className="text-xs text-gray-500 mt-2">※ 工事予定日は後から入力・変更できます</p>}
+                </div>
+
+                {/* 工事後の申請完了報告（編集時のみ） */}
                 {isEditing && (
                     <div>
-                        <h3 className="text-md font-medium text-gray-900 mb-3">スケジュール情報</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <Input
-                                label="工事予定日"
-                                type="date"
-                                value={formData.scheduledDate || ''}
-                                onChange={(e) => handleChange('scheduledDate', e.target.value)}
-                                className="bg-white text-gray-900"
-                            />
-                            <Input
-                                label="工事完了日"
-                                type="date"
-                                value={formData.completedAt || ''}
-                                onChange={(e) => handleChange('completedAt', e.target.value)}
-                                className="bg-white text-gray-900"
-                            />
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">状態</label>
-                                <select
-                                    value={formData.status || '依頼済み'}
-                                    onChange={(e) => handleChange('status', e.target.value as ConstructionStatus)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
-                                >
-                                    <option value="依頼済み">依頼済み</option>
-                                    <option value="工事日決定">工事日決定</option>
-                                    <option value="完了">完了</option>
-                                    <option value="工事返却">工事返却</option>
-                                    <option value="工事キャンセル">工事キャンセル</option>
-                                </select>
+                        <h3 className="text-md font-medium text-gray-900 mb-3">工事後の申請完了報告</h3>
+                        <div className="space-y-3">
+                            {/* 要否選択 */}
+                            <div className="flex gap-4">
+                                <label className="flex items-center">
+                                    <input
+                                        type="radio"
+                                        checked={!formData.postConstructionApplicationReport?.required}
+                                        onChange={() => handleChange('postConstructionApplicationReport', { required: false })}
+                                        className="mr-2"
+                                    />
+                                    <span className="text-sm text-gray-700">不要</span>
+                                </label>
+                                <label className="flex items-center">
+                                    <input
+                                        type="radio"
+                                        checked={formData.postConstructionApplicationReport?.required === true}
+                                        onChange={() => handleChange('postConstructionApplicationReport', { required: true, status: 'pending' })}
+                                        className="mr-2"
+                                    />
+                                    <span className="text-sm text-gray-700">必要</span>
+                                </label>
                             </div>
+
+                            {/* 完了状態選択（必要の場合のみ表示） */}
+                            {formData.postConstructionApplicationReport?.required && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        完了状態 <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        value={formData.postConstructionApplicationReport.status || 'pending'}
+                                        onChange={(e) => {
+                                            handleChange('postConstructionApplicationReport', {
+                                                required: true,
+                                                status: e.target.value as 'completed' | 'pending'
+                                            })
+                                        }}
+                                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900"
+                                    >
+                                        <option value="pending">未完了</option>
+                                        <option value="completed">完了</option>
+                                    </select>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
-
-                {/* 工事後の申請完了報告 */}
-                <div>
-                    <h3 className="text-md font-medium text-gray-900 mb-3">工事後の申請完了報告</h3>
-                    <div className="space-y-3">
-                        {/* 要否選択 */}
-                        <div className="flex gap-4">
-                            <label className="flex items-center">
-                                <input
-                                    type="radio"
-                                    checked={!formData.postConstructionApplicationReport?.required}
-                                    onChange={() => handleChange('postConstructionApplicationReport', { required: false })}
-                                    className="mr-2"
-                                />
-                                <span className="text-sm text-gray-700">不要</span>
-                            </label>
-                            <label className="flex items-center">
-                                <input
-                                    type="radio"
-                                    checked={formData.postConstructionApplicationReport?.required === true}
-                                    onChange={() => handleChange('postConstructionApplicationReport', { required: true, status: 'pending' })}
-                                    className="mr-2"
-                                />
-                                <span className="text-sm text-gray-700">必要</span>
-                            </label>
-                        </div>
-
-                        {/* 完了状態選択（必要の場合のみ表示） */}
-                        {formData.postConstructionApplicationReport?.required && (
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    完了状態 <span className="text-red-500">*</span>
-                                </label>
-                                <select
-                                    value={formData.postConstructionApplicationReport.status || 'pending'}
-                                    onChange={(e) => {
-                                        handleChange('postConstructionApplicationReport', {
-                                            required: true,
-                                            status: e.target.value as 'completed' | 'pending'
-                                        })
-                                    }}
-                                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900"
-                                >
-                                    <option value="pending">未完了</option>
-                                    <option value="completed">完了</option>
-                                </select>
-                            </div>
-                        )}
-                    </div>
-                </div>
 
                 {/* 管理者指示事項 */}
                 <RequestNotesComponent

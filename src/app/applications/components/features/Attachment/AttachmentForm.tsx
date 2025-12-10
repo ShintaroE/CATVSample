@@ -192,7 +192,7 @@ export default function AttachmentForm({
                 {/* 基本情報 */}
                 <div>
                     <h3 className="text-md font-medium text-gray-900 mb-3">基本情報</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                         <Input
                             label="受注番号"
                             value={formData.orderNumber || ''}
@@ -212,20 +212,6 @@ export default function AttachmentForm({
                             ) : undefined}
                         />
                         {isEditing && <p className="text-xs text-gray-500 mt-1">※ 受注番号は編集できません</p>}
-                        <Input
-                            label="KCT受取日"
-                            type="date"
-                            value={formData.kctReceivedDate || ''}
-                            onChange={(e) => handleChange('kctReceivedDate', e.target.value)}
-                            className="bg-white text-gray-900"
-                        />
-                        <Input
-                            label="依頼日"
-                            type="date"
-                            value={formData.requestedAt || ''}
-                            onChange={(e) => handleChange('requestedAt', e.target.value)}
-                            className="bg-white text-gray-900"
-                        />
                     </div>
                 </div>
 
@@ -291,78 +277,77 @@ export default function AttachmentForm({
                     </div>
                 </div>
 
-                {/* スケジュール情報 */}
-                <div>
-                    <h3 className="text-md font-medium text-gray-900 mb-3">スケジュール情報</h3>
-                    <div className={`grid grid-cols-1 ${isEditing ? 'md:grid-cols-4' : 'md:grid-cols-2'} gap-4`}>
-                        <Input
-                            label={isEditing ? "調査予定日" : "調査予定日（オプション）"}
-                            type="date"
-                            value={formData.scheduledDate || ''}
-                            onChange={(e) => handleChange('scheduledDate', e.target.value)}
-                            className="bg-white text-gray-900"
-                        />
-                        {isEditing && (
-                            <>
-                                <Input
-                                    label="調査完了日"
-                                    type="date"
-                                    value={formData.surveyCompletedAt || ''}
-                                    onChange={(e) => handleChange('surveyCompletedAt', e.target.value)}
-                                    className="bg-white text-gray-900"
-                                />
-                                <Input
-                                    label="申請提出日"
-                                    type="date"
-                                    value={formData.submittedAt || ''}
-                                    onChange={(e) => handleChange('submittedAt', e.target.value)}
-                                    className="bg-white text-gray-900"
-                                />
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">状態</label>
-                                    <select
-                                        value={formData.status || '依頼済み'}
-                                        onChange={(e) => handleChange('status', e.target.value as AttachmentStatus)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
-                                    >
-                                        <option value="依頼済み">依頼済み</option>
-                                        <option value="調査済み">調査済み</option>
-                                        <option value="申請中">申請中</option>
-                                        <option value="申請許可">申請許可</option>
-                                        <option value="申請不許可">申請不許可</option>
-                                        <option value="キャンセル">キャンセル</option>
-                                    </select>
-                                </div>
-                            </>
-                        )}
+                {/* スケジュール情報（編集時のみ） */}
+                {isEditing && (
+                    <div>
+                        <h3 className="text-md font-medium text-gray-900 mb-3">スケジュール情報</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <Input
+                                label="調査完了日"
+                                type="date"
+                                value={formData.surveyCompletedAt || ''}
+                                onChange={(e) => handleChange('surveyCompletedAt', e.target.value)}
+                                className="bg-white text-gray-900"
+                            />
+                            <Input
+                                label="申請提出日"
+                                type="date"
+                                value={formData.submittedAt || ''}
+                                onChange={(e) => handleChange('submittedAt', e.target.value)}
+                                className="bg-white text-gray-900"
+                            />
+                            <Input
+                                label="申請許可日"
+                                type="date"
+                                value={formData.approvedAt || ''}
+                                onChange={(e) => handleChange('approvedAt', e.target.value)}
+                                className="bg-white text-gray-900"
+                            />
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">状態</label>
+                                <select
+                                    value={formData.status || '依頼済み'}
+                                    onChange={(e) => handleChange('status', e.target.value as AttachmentStatus)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                                >
+                                    <option value="依頼済み">依頼済み</option>
+                                    <option value="調査済み">調査済み</option>
+                                    <option value="申請中">申請中</option>
+                                    <option value="申請許可">申請許可</option>
+                                    <option value="申請不許可">申請不許可</option>
+                                    <option value="キャンセル">キャンセル</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    {!isEditing && <p className="text-xs text-gray-500 mt-2">※ 調査予定日は後から入力・変更できます</p>}
-                </div>
+                )}
 
-                {/* 撤去申請要否 */}
-                <div>
-                    <h3 className="text-md font-medium text-gray-900 mb-3">撤去申請要否</h3>
-                    <div className="flex gap-4">
-                        <label className="flex items-center">
-                            <input
-                                type="radio"
-                                checked={formData.withdrawNeeded === false}
-                                onChange={() => handleChange('withdrawNeeded', false)}
-                                className="mr-2"
-                            />
-                            <span className="text-sm text-gray-700">不要</span>
-                        </label>
-                        <label className="flex items-center">
-                            <input
-                                type="radio"
-                                checked={formData.withdrawNeeded === true}
-                                onChange={() => handleChange('withdrawNeeded', true)}
-                                className="mr-2"
-                            />
-                            <span className="text-sm text-gray-700">必要</span>
-                        </label>
+                {/* 申請要否（編集時のみ） */}
+                {isEditing && (
+                    <div>
+                        <h3 className="text-md font-medium text-gray-900 mb-3">申請要否</h3>
+                        <div className="flex gap-4">
+                            <label className="flex items-center">
+                                <input
+                                    type="radio"
+                                    checked={formData.withdrawNeeded === false}
+                                    onChange={() => handleChange('withdrawNeeded', false)}
+                                    className="mr-2"
+                                />
+                                <span className="text-sm text-gray-700">不要</span>
+                            </label>
+                            <label className="flex items-center">
+                                <input
+                                    type="radio"
+                                    checked={formData.withdrawNeeded === true}
+                                    onChange={() => handleChange('withdrawNeeded', true)}
+                                    className="mr-2"
+                                />
+                                <span className="text-sm text-gray-700">必要</span>
+                            </label>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* 管理者指示事項 */}
                 <RequestNotesComponent
