@@ -209,7 +209,7 @@ export default function SurveyForm({
                 {/* 基本情報 */}
                 <div>
                     <h3 className="text-md font-medium text-gray-900 mb-3">基本情報</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                         <Input
                             label="受注番号"
                             value={formData.orderNumber || ''}
@@ -229,20 +229,6 @@ export default function SurveyForm({
                             ) : undefined}
                         />
                         {isEditing && <p className="text-xs text-gray-500 mt-1">※ 受注番号は編集できません</p>}
-                        <Input
-                            label="KCT受取日"
-                            type="date"
-                            value={formData.kctReceivedDate || ''}
-                            onChange={(e) => handleChange('kctReceivedDate', e.target.value)}
-                            className="bg-white text-gray-900"
-                        />
-                        <Input
-                            label="依頼日"
-                            type="date"
-                            value={formData.requestedAt || ''}
-                            onChange={(e) => handleChange('requestedAt', e.target.value)}
-                            className="bg-white text-gray-900"
-                        />
                     </div>
                 </div>
 
