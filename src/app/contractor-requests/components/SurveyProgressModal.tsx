@@ -90,11 +90,6 @@ export default function SurveyProgressModal({
   }
 
   const handleSave = () => {
-    if (!comment.trim()) {
-      alert('進捗コメントを入力してください')
-      return
-    }
-
     // 協力会社のステータス選択を実際のステータスに変換
     const actualStatus = progressStatus === '完了' ? '完了' : '依頼済み'
     // アップロードされたファイルを含めて保存
@@ -168,7 +163,7 @@ export default function SurveyProgressModal({
             {/* 進捗コメント */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">
-                進捗コメント <span className="text-red-500">*</span>
+                進捗コメント
               </label>
               <Textarea
                 value={comment}
@@ -178,9 +173,6 @@ export default function SurveyProgressModal({
                 className="bg-white text-gray-900"
                 fullWidth
               />
-              <p className="text-xs text-gray-500">
-                ※ 進捗コメントは必須です
-              </p>
             </div>
           </div>
 
