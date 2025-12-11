@@ -90,11 +90,6 @@ export default function ConstructionProgressModal({
   }
 
   const handleSave = () => {
-    if (!comment.trim()) {
-      alert('進捗コメントを入力してください')
-      return
-    }
-
     let newStatus: ConstructionStatus
 
     if (displayStatus === '完了') {
@@ -161,7 +156,7 @@ export default function ConstructionProgressModal({
             {/* ステータス更新 */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">
-                ステータス
+                ステータス<span className="text-red-500">*</span>
               </label>
               <select
                 value={displayStatus}
@@ -176,7 +171,7 @@ export default function ConstructionProgressModal({
             {/* 進捗コメント */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">
-                進捗コメント <span className="text-red-500">*</span>
+                進捗コメント
               </label>
               <Textarea
                 value={comment}
@@ -186,9 +181,6 @@ export default function ConstructionProgressModal({
                 className="bg-white text-gray-900"
                 fullWidth
               />
-              <p className="text-xs text-gray-500">
-                ※ 進捗コメントは必須です
-              </p>
             </div>
           </div>
 
