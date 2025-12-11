@@ -6,7 +6,7 @@ export type AssigneeType = 'internal' | 'contractor' // 自社 or 協力会社
 
 // 各タブのステータス定義
 export type SurveyStatus = '依頼済み' | '調査日決定' | '完了' | 'キャンセル'
-export type AttachmentStatus = '依頼済み' | '調査済み' | '申請中' | '申請許可' | '申請不許可' | 'キャンセル'
+export type AttachmentStatus = '依頼済み' | '調査済み' | '依頼完了' | '申請中' | '申請許可' | '申請不許可' | 'キャンセル'
 export type ConstructionStatus = '未着手' | '依頼済み' | '工事日決定' | '完了' | '工事返却' | '工事キャンセル'
 
 // ========== 協力会社報告機能の型定義 ==========
@@ -138,6 +138,7 @@ export interface AttachmentRequest extends RequestBase {
   approvedAt?: string // 許可日
   surveyCompletedAt?: string // 調査完了日
   withdrawNeeded?: boolean // 申請要否 (true: 申請要, false: 申請不要)
+  surveyStatusByContractor?: 'not_surveyed' | 'surveyed' // 協力会社による調査状況
   detail?: AttachmentDetail
   preparationStatus?: AttachmentPreparationStatus // 申請準備状況
   applicationReport?: AttachmentApplicationReport // 申請有無報告

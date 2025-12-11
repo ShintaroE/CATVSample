@@ -13,7 +13,7 @@ import RequestNotes from '@/app/applications/components/common/RequestNotes'
 interface AttachmentProgressModalProps {
   request: AttachmentRequest
   onClose: () => void
-  onSave: (type: RequestType, id: string, status: string, comment: string, attachments?: FileAttachmentsType, scheduledDate?: string, surveyCompletedAt?: string) => void
+  onSave: (type: RequestType, id: string, status: string, comment: string, attachments?: FileAttachmentsType, scheduledDate?: string, surveyCompletedAt?: string, surveyStatusByContractor?: 'not_surveyed' | 'surveyed') => void
 }
 
 export default function AttachmentProgressModal({
@@ -21,6 +21,9 @@ export default function AttachmentProgressModal({
   onClose,
   onSave,
 }: AttachmentProgressModalProps) {
+  const [surveyStatus, setSurveyStatus] = useState<'not_surveyed' | 'surveyed'>(
+    request.surveyStatusByContractor || 'not_surveyed'
+  )
   const [progressStatus, setProgressStatus] = useState('未完了')
   const [comment, setComment] = useState('')
   const [uploadingFiles, setUploadingFiles] = useState(false)
@@ -89,21 +92,28 @@ export default function AttachmentProgressModal({
   }
 
   const handleSave = () => {
-    if (!comment.trim()) {
-      alert('進捗コメントを入力してください')
-      return
-    }
-
     // 協力会社のステータス選択を実際のステータスに変換
-    const actualStatus = progressStatus === '完了' ? '調査済み' : '依頼済み'
+    let actualStatus: string
+
+    if (surveyStatus === 'surveyed') {
+      // 調査状況が「調査済み」の場合
+      if (progressStatus === '完了') {
+        actualStatus = '依頼完了'
+      } else {
+        actualStatus = '調査済み'
+      }
+    } else {
+      // 調査状況が「未調査」の場合 → 依頼済み
+      actualStatus = '依頼済み'
+    }
 
     // 完了時は調査完了日を自動設定
     const surveyCompletedAt = progressStatus === '完了'
       ? new Date().toISOString().split('T')[0]
       : undefined
 
-    // アップロードされたファイルを含めて保存
-    onSave('attachment', request.id, actualStatus, comment, formData.attachments, undefined, surveyCompletedAt)
+    // アップロードされたファイルと調査状況を含めて保存
+    onSave('attachment', request.id, actualStatus, comment, formData.attachments, undefined, surveyCompletedAt, surveyStatus)
   }
 
   return (
@@ -142,6 +152,21 @@ export default function AttachmentProgressModal({
               uploadingFiles={uploadingFiles}
             />
 
+            {/* 調査状況 */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                調査状況<span className="text-red-500">*</span>
+              </label>
+              <select
+                value={surveyStatus}
+                onChange={(e) => setSurveyStatus(e.target.value as 'not_surveyed' | 'surveyed')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+              >
+                <option value="not_surveyed">未調査</option>
+                <option value="surveyed">調査済み</option>
+              </select>
+            </div>
+
             {/* ステータス更新 */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">
@@ -153,14 +178,19 @@ export default function AttachmentProgressModal({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
               >
                 <option value="未完了">未完了</option>
-                <option value="完了">完了</option>
+                <option value="完了" disabled={surveyStatus === 'not_surveyed'}>完了</option>
               </select>
+              {surveyStatus === 'not_surveyed' && (
+                <p className="text-xs text-gray-500 mt-1">
+                  ※ 調査状況を「調査済み」にしてからステータスを「完了」にできます
+                </p>
+              )}
             </div>
 
             {/* 進捗コメント */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">
-                進捗コメント <span className="text-red-500">*</span>
+                進捗コメント
               </label>
               <Textarea
                 value={comment}
@@ -170,9 +200,6 @@ export default function AttachmentProgressModal({
                 className="bg-white text-gray-900"
                 fullWidth
               />
-              <p className="text-xs text-gray-500">
-                ※ 進捗コメントは必須です
-              </p>
             </div>
           </div>
 
