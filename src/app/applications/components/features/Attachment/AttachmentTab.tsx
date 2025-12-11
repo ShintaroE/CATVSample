@@ -65,6 +65,7 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
     const variantMap: Record<AttachmentStatus, BadgeVariant> = {
       依頼済み: 'default',
       調査済み: 'info',
+      依頼完了: 'info',
       申請中: 'warning',
       申請許可: 'success',
       申請不許可: 'danger',
@@ -207,6 +208,7 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
           <option value="">全て</option>
           <option value="依頼済み">依頼済み</option>
           <option value="調査済み">調査済み</option>
+          <option value="依頼完了">依頼完了</option>
           <option value="申請中">申請中</option>
           <option value="申請許可">申請許可</option>
           <option value="申請不許可">申請不許可</option>

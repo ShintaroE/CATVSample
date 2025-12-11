@@ -1398,14 +1398,20 @@ interface ProgressEntry {
 - **Team assignment**: Required - must select team during creation
 
 **Attachment Request:**
-- Status: '依頼済み' | '調査済み' | '申請中' | '申請許可' | '申請不許可' | 'キャンセル'
+- Status: '依頼済み' | '調査済み' | **'依頼完了'** | '申請中' | '申請許可' | '申請不許可' | 'キャンセル'
 - submittedAt, approvedAt: Application dates
 - surveyCompletedAt: Survey completion date
 - withdrawNeeded: boolean - Withdrawal application required flag (申請要否: true=申請必要, false=申請不要)
+- surveyStatusByContractor: 'not_surveyed' | 'surveyed' - Contractor's survey status (協力会社による調査状況)
 - detail: Application details (line type, mount height, photos)
 - preparationStatus: Document/photo readiness, expected submit date
 - applicationReport: AttachmentApplicationReport - 申請有無報告（協力会社からの報告）
 - **Team assignment**: Optional - not typically used for attachment requests (contractor-level only)
+- **Status workflow (contractor progress modal)**:
+  - Survey status = 未調査 → Final status = 依頼済み (regardless of progress status)
+  - Survey status = 調査済み + Progress = 未完了 → Final status = 調査済み
+  - Survey status = 調査済み + Progress = 完了 → Final status = 依頼完了
+  - UI constraint: "完了" option is disabled when survey status is "未調査"
 
 **Construction Request:**
 - Status: '未着手' | '依頼済み' | '工事日決定' | '完了' | '工事返却' | '工事キャンセル'

@@ -146,7 +146,8 @@ export default function ContractorRequestsPage() {
     comment: string,
     attachments?: FileAttachments,
     scheduledDate?: string,
-    surveyCompletedAt?: string
+    surveyCompletedAt?: string,
+    surveyStatusByContractor?: 'not_surveyed' | 'surveyed'
   ) => {
     // 型に応じて適切な更新オブジェクトを作成
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -161,6 +162,8 @@ export default function ContractorRequestsPage() {
       ...(surveyCompletedAt !== undefined && { surveyCompletedAt }),
       // アップロードされたファイルがある場合は更新
       ...(attachments !== undefined && { attachments }),
+      // 調査状況が指定されている場合のみ更新（共架・添架用）
+      ...(surveyStatusByContractor !== undefined && { surveyStatusByContractor }),
     }
 
     updateApplication(type, id, updates)

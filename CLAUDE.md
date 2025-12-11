@@ -142,14 +142,23 @@ All storage modules use repository pattern for future DBMS migration (PostgreSQL
 ### Application Request System
 **3 Request Types:**
 1. **Survey (現地調査依頼)**: Field surveys for installation planning
+   - Statuses: 依頼済み, 調査日決定, 完了, キャンセル
 2. **Attachment (共架・添架依頼)**: Utility pole attachment permits
+   - Statuses: 依頼済み, 調査済み, **依頼完了**, 申請中, 申請許可, 申請不許可, キャンセル
+   - **Contractor survey status tracking:** Contractors can mark survey status (未調査/調査済み) which affects final status
 3. **Construction (工事依頼)**: Construction work orders
+   - Statuses: 未着手, 依頼済み, 工事日決定, 完了, 工事返却, 工事キャンセル
 
 **Key Features:**
 - Bidirectional file attachments (admin ↔ contractor)
 - Request notes (admin instructions to contractor)
 - Progress tracking with append-only history
 - **Team assignment:** Survey/Construction require team selection; Attachment is contractor-level only (no team filter)
+
+**Attachment Request Workflow:**
+- Contractor selects survey status (未調査/調査済み) + progress status (未完了/完了)
+- Status logic: 調査済み + 完了 → 依頼完了 | 調査済み + 未完了 → 調査済み | 未調査 → 依頼済み
+- UI constraint: Cannot select "完了" when survey status is "未調査"
 
 **File Attachments:**
 - 2-column layout (received files | sent files)

@@ -312,6 +312,7 @@ export default function AttachmentForm({
                                 >
                                     <option value="依頼済み">依頼済み</option>
                                     <option value="調査済み">調査済み</option>
+                                    <option value="依頼完了">依頼完了</option>
                                     <option value="申請中">申請中</option>
                                     <option value="申請許可">申請許可</option>
                                     <option value="申請不許可">申請不許可</option>

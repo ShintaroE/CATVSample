@@ -52,6 +52,7 @@ export default function OrderDetailModal({
       未依頼: { variant: 'default', label: '未依頼' },
       依頼済み: { variant: 'info', label: '依頼済み' },
       調査済み: { variant: 'info', label: '調査済み' },
+      依頼完了: { variant: 'info', label: '依頼完了' },
       申請中: { variant: 'warning', label: '申請中' },
       申請許可: { variant: 'success', label: '申請許可' },
       申請不許可: { variant: 'danger', label: '申請不許可' },
@@ -243,6 +244,7 @@ export default function OrderDetailModal({
                     <p className="mb-1"><strong>未依頼:</strong> まだ協力会社に依頼していない</p>
                     <p className="mb-1"><strong>依頼済み:</strong> 協力会社に依頼済み</p>
                     <p className="mb-1"><strong>調査済み:</strong> 現地調査が完了</p>
+                    <p className="mb-1"><strong>依頼完了:</strong> 調査完了・申請準備完了</p>
                     <p className="mb-1"><strong>申請中:</strong> 申請書を提出済み</p>
                     <p className="mb-1"><strong>申請許可:</strong> 申請が許可された</p>
                     <p className="mb-1"><strong>申請不許可:</strong> 申請が不許可となった</p>
