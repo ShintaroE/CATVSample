@@ -13,7 +13,7 @@ import RequestNotes from '@/app/applications/components/common/RequestNotes'
 interface AttachmentProgressModalProps {
   request: AttachmentRequest
   onClose: () => void
-  onSave: (type: RequestType, id: string, status: string, comment: string, attachments?: FileAttachmentsType, scheduledDate?: string, surveyCompletedAt?: string, surveyStatusByContractor?: 'not_surveyed' | 'surveyed') => void
+  onSave: (type: RequestType, id: string, status: string, comment: string, attachments?: FileAttachmentsType, scheduledDate?: string, surveyCompletedAt?: string, surveyStatusByContractor?: 'not_surveyed' | 'surveyed', withdrawNeeded?: boolean) => void
 }
 
 export default function AttachmentProgressModal({
@@ -25,6 +25,9 @@ export default function AttachmentProgressModal({
     request.surveyStatusByContractor || 'not_surveyed'
   )
   const [progressStatus, setProgressStatus] = useState('未完了')
+  const [applicationNeeded, setApplicationNeeded] = useState<boolean>(
+    request.withdrawNeeded !== undefined ? request.withdrawNeeded : true
+  )
   const [comment, setComment] = useState('')
   const [uploadingFiles, setUploadingFiles] = useState(false)
   const [formData, setFormData] = useState<AttachmentRequest>(request)
@@ -112,8 +115,8 @@ export default function AttachmentProgressModal({
       ? new Date().toISOString().split('T')[0]
       : undefined
 
-    // アップロードされたファイルと調査状況を含めて保存
-    onSave('attachment', request.id, actualStatus, comment, formData.attachments, undefined, surveyCompletedAt, surveyStatus)
+    // アップロードされたファイルと調査状況、申請要否を含めて保存
+    onSave('attachment', request.id, actualStatus, comment, formData.attachments, undefined, surveyCompletedAt, surveyStatus, applicationNeeded)
   }
 
   return (
@@ -159,13 +162,37 @@ export default function AttachmentProgressModal({
               </label>
               <select
                 value={surveyStatus}
-                onChange={(e) => setSurveyStatus(e.target.value as 'not_surveyed' | 'surveyed')}
+                onChange={(e) => {
+                  const newStatus = e.target.value as 'not_surveyed' | 'surveyed'
+                  setSurveyStatus(newStatus)
+                  // 未調査に戻した場合は申請要否をリセット
+                  if (newStatus === 'not_surveyed') {
+                    setApplicationNeeded(true)
+                  }
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
               >
                 <option value="not_surveyed">未調査</option>
                 <option value="surveyed">調査済み</option>
               </select>
             </div>
+
+            {/* 申請要否（調査済みの場合のみ表示） */}
+            {surveyStatus === 'surveyed' && (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  申請要否<span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={applicationNeeded ? 'required' : 'not_required'}
+                  onChange={(e) => setApplicationNeeded(e.target.value === 'required')}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                >
+                  <option value="required">申請要</option>
+                  <option value="not_required">申請不要</option>
+                </select>
+              </div>
+            )}
 
             {/* ステータス更新 */}
             <div className="space-y-2">

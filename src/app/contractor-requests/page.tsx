@@ -147,7 +147,8 @@ export default function ContractorRequestsPage() {
     attachments?: FileAttachments,
     scheduledDate?: string,
     surveyCompletedAt?: string,
-    surveyStatusByContractor?: 'not_surveyed' | 'surveyed'
+    surveyStatusByContractor?: 'not_surveyed' | 'surveyed',
+    withdrawNeeded?: boolean
   ) => {
     // 型に応じて適切な更新オブジェクトを作成
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -164,6 +165,8 @@ export default function ContractorRequestsPage() {
       ...(attachments !== undefined && { attachments }),
       // 調査状況が指定されている場合のみ更新（共架・添架用）
       ...(surveyStatusByContractor !== undefined && { surveyStatusByContractor }),
+      // 申請要否が指定されている場合のみ更新（共架・添架用）
+      ...(withdrawNeeded !== undefined && { withdrawNeeded }),
     }
 
     updateApplication(type, id, updates)
