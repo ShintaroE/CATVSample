@@ -4,10 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Quick Start
 
+### Initial Setup
+```bash
+npm install              # Install dependencies
+npm run dev              # Start development server (http://localhost:3000)
+```
+
+On first launch, sample data is automatically initialized in localStorage via `AuthProvider`.
+
 ### Essential Commands
 - `npm run dev` - Start development server (http://localhost:3000)
 - `npm run build` - Build for production
-- `npm run lint` - Check code quality
+- `npm start` - Start production server (requires `npm run build` first)
+- `npm run lint` - Check code quality with ESLint
 
 ### Demo Accounts
 **Admin:** `admin` / `admin` (all pages)
