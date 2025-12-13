@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Quick Start
+## Quick Start　
 
 ### Essential Commands
 - `npm run dev` - Start development server (http://localhost:3000)
