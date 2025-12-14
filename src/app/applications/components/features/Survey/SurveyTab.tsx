@@ -149,6 +149,36 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
         <p className="text-xs text-gray-500 mt-1">※集合物件のみ</p>
       </div>
 
+      {/* 顧客名 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          顧客名
+        </label>
+        <input
+          type="text"
+          value={filters.customerName}
+          onChange={(e) => updateFilter('customerName', e.target.value)}
+          placeholder="顧客名 or カナ"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
+        />
+        <p className="text-xs text-gray-500 mt-1">※個別物件のみ</p>
+      </div>
+
+      {/* 集合住宅名 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          集合住宅名
+        </label>
+        <input
+          type="text"
+          value={filters.collectiveHousingName}
+          onChange={(e) => updateFilter('collectiveHousingName', e.target.value)}
+          placeholder="集合住宅名 or カナ"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
+        />
+        <p className="text-xs text-gray-500 mt-1">※集合物件のみ</p>
+      </div>
+
       {/* 依頼先 */}
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">
@@ -231,10 +261,16 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
               顧客名
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              顧客名（カナ）
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
               集合コード
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
               集合住宅名
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              集合住宅名（カナ）
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
               住所
@@ -262,7 +298,7 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
         <tbody className="bg-white divide-y divide-gray-200">
           {filtered.length === 0 ? (
             <tr>
-              <td colSpan={14} className="px-4 py-8 text-center text-sm text-gray-500">
+              <td colSpan={16} className="px-4 py-8 text-center text-sm text-gray-500">
                 条件に一致するデータがありません
               </td>
             </tr>
@@ -289,11 +325,17 @@ export default function SurveyTab({ data, contractors, onEdit }: SurveyTabProps)
                 <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                   {r.propertyType === '個別' ? (r.customerName || '-') : (r.collectiveHousingName || '-')}
                 </td>
+                <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">
+                  {r.propertyType === '個別' ? (r.customerNameKana || '-') : (r.collectiveHousingNameKana || '-')}
+                </td>
                 <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                   {r.propertyType === '集合' ? (r.collectiveCode || '-') : '-'}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                   {r.propertyType === '集合' ? (r.collectiveHousingName || '-') : '-'}
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">
+                  {r.propertyType === '集合' ? (r.collectiveHousingNameKana || '-') : '-'}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                   <div className="max-w-[200px] truncate" title={r.address}>

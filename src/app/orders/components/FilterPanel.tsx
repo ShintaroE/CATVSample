@@ -186,7 +186,34 @@ export default function FilterPanel({
             </div>
           </div>
 
-          {/* 第3行：各種追加費用フィルター */}
+          {/* 第3行：顧客名、集合住宅名 */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3">
+            {/* 顧客名（顧客名・顧客名カナで検索） */}
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">顧客名</label>
+              <input
+                type="text"
+                placeholder="顧客名 or カナ"
+                value={filters.customerName}
+                onChange={(e) => onUpdateFilter('customerName', e.target.value)}
+                className="w-full text-sm bg-white text-gray-900 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* 集合住宅名（集合住宅名・集合住宅名カナで検索） */}
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">集合住宅名</label>
+              <input
+                type="text"
+                placeholder="集合住宅名 or カナ"
+                value={filters.collectiveHousingName}
+                onChange={(e) => onUpdateFilter('collectiveHousingName', e.target.value)}
+                className="w-full text-sm bg-white text-gray-900 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          {/* 第4行：各種追加費用フィルター */}
           <div className="mt-3">
             <AdditionalCostsFilter
               filter={filters.additionalCosts}

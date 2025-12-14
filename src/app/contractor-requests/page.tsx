@@ -361,8 +361,10 @@ export default function ContractorRequestsPage() {
                       <th className="px-3 py-2 font-medium whitespace-nowrap">個別/集合</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">顧客コード</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">顧客名</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">顧客名（カナ）</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">集合コード</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">集合住宅名</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">集合住宅名（カナ）</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">住所</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">状態</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">依頼日</th>
@@ -376,8 +378,10 @@ export default function ContractorRequestsPage() {
                       <th className="px-3 py-2 font-medium whitespace-nowrap">個別/集合</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">顧客コード</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">顧客名</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">顧客名（カナ）</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">集合住宅コード</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">集合住宅名</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">集合住宅名（カナ）</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">住所</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">状態</th>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">依頼日</th>
@@ -391,8 +395,10 @@ export default function ContractorRequestsPage() {
                       <th className="px-3 py-2 font-medium">個別/集合</th>
                       <th className="px-3 py-2 font-medium">顧客コード</th>
                       <th className="px-3 py-2 font-medium">顧客名</th>
+                      <th className="px-3 py-2 font-medium">顧客名（カナ）</th>
                       <th className="px-3 py-2 font-medium">集合コード</th>
                       <th className="px-3 py-2 font-medium">集合住宅名</th>
+                      <th className="px-3 py-2 font-medium">集合住宅名（カナ）</th>
                       <th className="px-3 py-2 font-medium">住所</th>
                       <th className="px-3 py-2 font-medium">状態</th>
                       <th className="px-3 py-2 font-medium">工事依頼日</th>
@@ -430,6 +436,11 @@ export default function ContractorRequestsPage() {
                             ? ((request as SurveyRequest).customerName || '-')
                             : (request as SurveyRequest).customerName || '-'}
                         </td>
+                        <td className="px-3 py-2 text-gray-400">
+                          {(request as SurveyRequest).propertyType === '個別'
+                            ? ((request as SurveyRequest).customerNameKana || '-')
+                            : (request as SurveyRequest).collectiveHousingNameKana || '-'}
+                        </td>
                         <td className="px-3 py-2">
                           {(request as SurveyRequest).propertyType === '集合'
                             ? ((request as SurveyRequest).collectiveCode || '-')
@@ -438,6 +449,11 @@ export default function ContractorRequestsPage() {
                         <td className="px-3 py-2">
                           {(request as SurveyRequest).propertyType === '集合'
                             ? ((request as SurveyRequest).collectiveHousingName || '-')
+                            : '-'}
+                        </td>
+                        <td className="px-3 py-2 text-gray-400">
+                          {(request as SurveyRequest).propertyType === '集合'
+                            ? ((request as SurveyRequest).collectiveHousingNameKana || '-')
                             : '-'}
                         </td>
                         <td className="px-3 py-2 max-w-[12rem] truncate" title={request.address}>
@@ -481,6 +497,11 @@ export default function ContractorRequestsPage() {
                             : '-'}
                         </td>
                         <td className="px-3 py-2">{request.customerName || '-'}</td>
+                        <td className="px-3 py-2 text-gray-400">
+                          {(request as AttachmentRequest).propertyType === '個別'
+                            ? ((request as AttachmentRequest).customerNameKana || '-')
+                            : ((request as AttachmentRequest).collectiveHousingNameKana || '-')}
+                        </td>
                         <td className="px-3 py-2">
                           {(request as AttachmentRequest).propertyType === '集合'
                             ? ((request as AttachmentRequest).collectiveCode || '-')
@@ -489,6 +510,11 @@ export default function ContractorRequestsPage() {
                         <td className="px-3 py-2">
                           {(request as AttachmentRequest).propertyType === '集合'
                             ? ((request as AttachmentRequest).collectiveHousingName || '-')
+                            : '-'}
+                        </td>
+                        <td className="px-3 py-2 text-gray-400">
+                          {(request as AttachmentRequest).propertyType === '集合'
+                            ? ((request as AttachmentRequest).collectiveHousingNameKana || '-')
                             : '-'}
                         </td>
                         <td className="px-3 py-2 max-w-[12rem] truncate" title={request.address}>
@@ -534,6 +560,11 @@ export default function ContractorRequestsPage() {
                         <td className="px-3 py-2">
                           {(request as ConstructionRequest).customerName || '-'}
                         </td>
+                        <td className="px-3 py-2 text-gray-400">
+                          {(request as ConstructionRequest).propertyType === '個別'
+                            ? ((request as ConstructionRequest).customerNameKana || '-')
+                            : ((request as ConstructionRequest).collectiveHousingNameKana || '-')}
+                        </td>
                         <td className="px-3 py-2">
                           {(request as ConstructionRequest).propertyType === '集合'
                             ? ((request as ConstructionRequest).collectiveCode || '-')
@@ -542,6 +573,11 @@ export default function ContractorRequestsPage() {
                         <td className="px-3 py-2">
                           {(request as ConstructionRequest).propertyType === '集合'
                             ? ((request as ConstructionRequest).collectiveHousingName || '-')
+                            : '-'}
+                        </td>
+                        <td className="px-3 py-2 text-gray-400">
+                          {(request as ConstructionRequest).propertyType === '集合'
+                            ? ((request as ConstructionRequest).collectiveHousingNameKana || '-')
                             : '-'}
                         </td>
                         <td className="px-3 py-2 max-w-[12rem] truncate" title={request.address}>

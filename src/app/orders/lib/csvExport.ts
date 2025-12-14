@@ -9,11 +9,11 @@ import { OrderData } from '../types'
 /**
  * OrderDataをCSV行に変換
  *
- * 基本情報18列をエクスポート:
+ * 基本情報21列をエクスポート:
  * - 受注番号、受注元、個別/集合、工事種別
- * - 顧客コード、顧客名、顧客タイプ、電話番号
+ * - 顧客コード、顧客名、顧客名カナ、顧客タイプ、電話番号
  * - 住所、工事日、クロージャ番号
- * - 集合コード、集合住宅名
+ * - 集合コード、集合住宅名、集合住宅名カナ
  * - 現調ステータス、許可ステータス、工事ステータス
  * - 受注ステータス、キャンセル日、キャンセル理由
  */
@@ -25,6 +25,7 @@ export function convertOrderToCSVRow(order: OrderData): string[] {
     order.workType,
     order.customerCode,
     order.customerName,
+    order.customerNameKana,
     order.customerType,
     order.phoneNumber || '',
     order.address || '',
@@ -32,6 +33,7 @@ export function convertOrderToCSVRow(order: OrderData): string[] {
     order.closureNumber || '',
     order.collectiveCode || '',
     order.collectiveHousingName || '',
+    order.collectiveHousingNameKana || '',
     order.surveyStatus || '',
     order.permissionStatus || '',
     order.constructionStatus || '',
@@ -55,6 +57,7 @@ export function generateCSV(orders: OrderData[]): string {
     '工事種別',
     '顧客コード',
     '顧客名',
+    '顧客名（カナ）',
     '顧客タイプ',
     '電話番号',
     '住所',
@@ -62,6 +65,7 @@ export function generateCSV(orders: OrderData[]): string {
     'クロージャ番号',
     '集合コード',
     '集合住宅名',
+    '集合住宅名（カナ）',
     '現地調査ステータス',
     '共架・添架ステータス',
     '工事ステータス',

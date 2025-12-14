@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { OrderData, ConstructionCategory, IndividualWorkType, CollectiveWorkType, getWorkTypeOptions, individualWorkTypeOptions, collectiveWorkTypeOptions, OrderStatus } from '../types'
 import { Button } from '@/shared/components/ui'
+import { isKatakanaOnly, getKatakanaValidationMessage } from '@/shared/utils/validators'
 
 interface OrderFormProps {
     initialData?: Partial<OrderData>
@@ -20,10 +21,12 @@ export default function OrderForm({ initialData, onSubmit, onCancel, isEditing =
         orderNumber: '',
         customerCode: '',
         customerName: '',
+        customerNameKana: '',
         address: '',
         phoneNumber: '',
         collectiveCode: '',
         collectiveHousingName: '',
+        collectiveHousingNameKana: '',
         orderStatus: 'アクティブ',
     }
 
@@ -80,6 +83,13 @@ export default function OrderForm({ initialData, onSubmit, onCancel, isEditing =
             newErrors.customerName = '顧客名を入力してください'
         }
 
+        // 顧客名カナ: 必須 + カタカナのみ
+        if (!formData.customerNameKana || formData.customerNameKana.trim() === '') {
+            newErrors.customerNameKana = '顧客名（カナ）を入力してください'
+        } else if (!isKatakanaOnly(formData.customerNameKana)) {
+            newErrors.customerNameKana = getKatakanaValidationMessage('顧客名（カナ）')
+        }
+
         // 住所: 必須
         if (!formData.address || formData.address.trim() === '') {
             newErrors.address = '住所を入力してください'
@@ -97,6 +107,12 @@ export default function OrderForm({ initialData, onSubmit, onCancel, isEditing =
             }
             if (!formData.collectiveHousingName || formData.collectiveHousingName.trim() === '') {
                 newErrors.collectiveHousingName = '集合住宅名を入力してください'
+            }
+            // 集合住宅名カナ: 必須 + カタカナのみ
+            if (!formData.collectiveHousingNameKana || formData.collectiveHousingNameKana.trim() === '') {
+                newErrors.collectiveHousingNameKana = '集合住宅名（カナ）を入力してください'
+            } else if (!isKatakanaOnly(formData.collectiveHousingNameKana)) {
+                newErrors.collectiveHousingNameKana = getKatakanaValidationMessage('集合住宅名（カナ）')
             }
         }
 
@@ -288,6 +304,22 @@ export default function OrderForm({ initialData, onSubmit, onCancel, isEditing =
                                     <p className="text-xs text-red-500 mt-1">{errors.collectiveHousingName}</p>
                                 )}
                             </div>
+                            <div>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">
+                                    集合住宅名（カナ） <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.collectiveHousingNameKana || ''}
+                                    onChange={(e) => setFormData({ ...formData, collectiveHousingNameKana: e.target.value })}
+                                    placeholder="例: サンライズマンション"
+                                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white text-gray-900"
+                                    required
+                                />
+                                {errors.collectiveHousingNameKana && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.collectiveHousingNameKana}</p>
+                                )}
+                            </div>
                         </div>
                     </div>
                 )}
@@ -332,6 +364,26 @@ export default function OrderForm({ initialData, onSubmit, onCancel, isEditing =
                         />
                         {errors.customerName && (
                             <p className="text-xs text-red-500 mt-1">{errors.customerName}</p>
+                        )}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                    {/* 顧客名カナ（必須） */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            顧客名（カナ） <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={formData.customerNameKana}
+                            onChange={(e) => setFormData({ ...formData, customerNameKana: e.target.value })}
+                            placeholder="例: タナカタロウ"
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900"
+                            required
+                        />
+                        {errors.customerNameKana && (
+                            <p className="text-xs text-red-500 mt-1">{errors.customerNameKana}</p>
                         )}
                     </div>
                 </div>

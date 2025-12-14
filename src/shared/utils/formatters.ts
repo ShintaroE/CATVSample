@@ -71,3 +71,27 @@ export function formatPhoneNumber(phone: string): string {
 
   return phone // フォーマットできない場合はそのまま返す
 }
+
+/**
+ * ひらがなをカタカナに変換
+ *
+ * Unicode範囲:
+ * - ひらがな: U+3041 ～ U+3096 (ぁ～ゖ)
+ * - カタカナ: U+30A1 ～ U+30F6 (ァ～ヶ)
+ * - 差分: 0x60 (96)
+ *
+ * 濁音・半濁音・小文字を含む全てのひらがなに対応
+ *
+ * @example
+ * hiraganaToKatakana('たなか') // => 'タナカ'
+ * hiraganaToKatakana('やまだ たろう') // => 'ヤマダ タロウ'
+ * hiraganaToKatakana('ぱぴぷぺぽ') // => 'パピプペポ'
+ * hiraganaToKatakana('サンハイツ') // => 'サンハイツ' (カタカナはそのまま)
+ * hiraganaToKatakana('さんハイツ') // => 'サンハイツ' (混在OK)
+ */
+export function hiraganaToKatakana(str: string): string {
+  return str.replace(/[\u3041-\u3096]/g, (match) => {
+    const code = match.charCodeAt(0) + 0x60
+    return String.fromCharCode(code)
+  })
+}

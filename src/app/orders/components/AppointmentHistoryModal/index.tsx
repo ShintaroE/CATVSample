@@ -59,19 +59,27 @@ export default function AppointmentHistoryModal({
 
         {/* 顧客情報 */}
         <div className="bg-gray-50 p-4 rounded-md mb-4">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">顧客コード</label>
+              <p className="mt-1 text-sm text-gray-900">{currentOrder.customerCode}</p>
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">顧客名</label>
               <p className="mt-1 text-sm text-gray-900">{currentOrder.customerName}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">住所</label>
-              <p className="mt-1 text-sm text-gray-900">{currentOrder.address}</p>
+              <label className="block text-sm font-medium text-gray-700">顧客名（カナ）</label>
+              <p className="mt-1 text-sm text-gray-400">{currentOrder.customerNameKana}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">電話番号</label>
               <p className="mt-1 text-sm text-gray-900">{currentOrder.phoneNumber}</p>
             </div>
+          </div>
+          <div className="mt-3">
+            <label className="block text-sm font-medium text-gray-700">住所</label>
+            <p className="mt-1 text-sm text-gray-900">{currentOrder.address}</p>
           </div>
         </div>
 

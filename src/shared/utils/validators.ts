@@ -106,3 +106,21 @@ export function isStrongPassword(password: string): boolean {
 export function isInRange(value: number, min: number, max: number): boolean {
   return value >= min && value <= max
 }
+
+/**
+ * カタカナのみかチェック
+ * 全角カタカナ、長音記号（ー）、中黒（・）、スペースを許可
+ */
+export function isKatakanaOnly(value: string): boolean {
+  if (!value) return false
+  // 全角カタカナ、長音記号、中黒、全角スペース、半角スペースを許可
+  const katakanaRegex = /^[ァ-ヶー・\s]+$/
+  return katakanaRegex.test(value)
+}
+
+/**
+ * カタカナのバリデーションエラーメッセージ
+ */
+export function getKatakanaValidationMessage(fieldName: string): string {
+  return `${fieldName}は全角カタカナで入力してください（長音記号「ー」、中黒「・」、スペースは使用可能）`
+}

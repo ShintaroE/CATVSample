@@ -5,6 +5,8 @@
  * 共通のフィルタリングロジックを提供します。
  */
 
+import { hiraganaToKatakana } from '@/shared/utils/formatters'
+
 /**
  * 受注番号フィルター（部分一致、大文字小文字区別なし）
  *
@@ -134,6 +136,72 @@ export function filterByPhoneNumber<T extends { phoneNumber?: string }>(
     if (!item.phoneNumber) return false
     const normalizedPhone = normalizePhoneNumber(item.phoneNumber)
     return normalizedPhone.includes(normalizedQuery)
+  })
+}
+
+/**
+ * 顧客名・顧客名カナフィルター（個別物件のみ、部分一致）
+ *
+ * 統一仕様: 1つの検索欄で顧客名と顧客名カナの両方を検索
+ * - 個別物件: 顧客名 OR 顧客名カナで部分一致チェック
+ * - 集合物件: フィルター無視（結果に含める）
+ * - ひらがな入力対応: 検索クエリをカタカナに変換して検索
+ */
+export function filterByCustomerName<T extends {
+  propertyType?: '個別' | '集合'
+  customerName?: string
+  customerNameKana?: string
+}>(
+  items: T[],
+  searchQuery: string
+): T[] {
+  if (!searchQuery) return items
+
+  // ひらがなをカタカナに変換（カタカナはそのまま）
+  const normalizedQuery = hiraganaToKatakana(searchQuery.toLowerCase())
+
+  return items.filter(item => {
+    // 個別物件の場合のみチェック
+    if (item.propertyType === '個別') {
+      const customerName = hiraganaToKatakana((item.customerName || '').toLowerCase())
+      const customerNameKana = hiraganaToKatakana((item.customerNameKana || '').toLowerCase())
+      return customerName.includes(normalizedQuery) || customerNameKana.includes(normalizedQuery)
+    }
+    // 集合物件は無視（除外しない）
+    return true
+  })
+}
+
+/**
+ * 集合住宅名・集合住宅名カナフィルター（集合物件のみ、部分一致）
+ *
+ * 統一仕様: 1つの検索欄で集合住宅名と集合住宅名カナの両方を検索
+ * - 集合物件: 集合住宅名 OR 集合住宅名カナで部分一致チェック
+ * - 個別物件: フィルター無視（結果に含める）
+ * - ひらがな入力対応: 検索クエリをカタカナに変換して検索
+ */
+export function filterByCollectiveHousingName<T extends {
+  propertyType?: '個別' | '集合'
+  collectiveHousingName?: string
+  collectiveHousingNameKana?: string
+}>(
+  items: T[],
+  searchQuery: string
+): T[] {
+  if (!searchQuery) return items
+
+  // ひらがなをカタカナに変換（カタカナはそのまま）
+  const normalizedQuery = hiraganaToKatakana(searchQuery.toLowerCase())
+
+  return items.filter(item => {
+    // 集合物件の場合のみチェック
+    if (item.propertyType === '集合') {
+      const housingName = hiraganaToKatakana((item.collectiveHousingName || '').toLowerCase())
+      const housingNameKana = hiraganaToKatakana((item.collectiveHousingNameKana || '').toLowerCase())
+      return housingName.includes(normalizedQuery) || housingNameKana.includes(normalizedQuery)
+    }
+    // 個別物件は無視（除外しない）
+    return true
   })
 }
 

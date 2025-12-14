@@ -197,6 +197,36 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         <p className="text-xs text-gray-500 mt-1">※集合物件のみ</p>
       </div>
 
+      {/* 顧客名 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          顧客名
+        </label>
+        <input
+          type="text"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm placeholder:text-gray-400"
+          value={filters.customerName}
+          onChange={(e) => updateFilter('customerName', e.target.value)}
+          placeholder="顧客名 or カナ"
+        />
+        <p className="text-xs text-gray-500 mt-1">※個別物件のみ</p>
+      </div>
+
+      {/* 集合住宅名 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          集合住宅名
+        </label>
+        <input
+          type="text"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm placeholder:text-gray-400"
+          value={filters.collectiveHousingName}
+          onChange={(e) => updateFilter('collectiveHousingName', e.target.value)}
+          placeholder="集合住宅名 or カナ"
+        />
+        <p className="text-xs text-gray-500 mt-1">※集合物件のみ</p>
+      </div>
+
       {/* 依頼先 */}
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">
@@ -320,10 +350,16 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
                 顧客名
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                顧客名（カナ）
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 集合コード
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 集合住宅名
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                集合住宅名（カナ）
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 住所
@@ -354,7 +390,7 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredData.length === 0 ? (
               <tr>
-                <td colSpan={15} className="px-4 py-8 text-center text-sm text-gray-500">
+                <td colSpan={17} className="px-4 py-8 text-center text-sm text-gray-500">
                   データがありません
                 </td>
               </tr>
@@ -383,11 +419,17 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
                     <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       {item.propertyType === '個別' ? (item.customerName || '-') : (item.collectiveHousingName || '-')}
                     </td>
+                    <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">
+                      {item.propertyType === '個別' ? (item.customerNameKana || '-') : (item.collectiveHousingNameKana || '-')}
+                    </td>
                     <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       {item.propertyType === '集合' ? (item.collectiveCode || '-') : '-'}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       {item.propertyType === '集合' ? (item.collectiveHousingName || '-') : '-'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">
+                      {item.propertyType === '集合' ? (item.collectiveHousingNameKana || '-') : '-'}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       <div className="max-w-[200px] truncate" title={item.address}>

@@ -44,6 +44,7 @@ export default function ExcelUploadZone({ currentOrderCount, onUpload }: ExcelUp
         customerCode: `${Math.floor(Math.random() * 900000000) + 100000000}`,
         customerType: '新規',
         customerName: '新規顧客',
+        customerNameKana: 'シンキコキャク',
         constructionDate: new Date().toISOString().split('T')[0],
         closureNumber: `CL-${String(currentOrderCount + 1).padStart(3, '0')}-A`,
         address: '倉敷市新規住所',
