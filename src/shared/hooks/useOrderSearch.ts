@@ -4,13 +4,13 @@ import { orderStorage } from '@/app/orders/lib/orderStorage'
 
 export interface OrderSearchFilters {
   orderNumber: string
-  customerName: string
+  customerName: string  // 顧客名・顧客名カナの統合検索
   customerCode: string
   phoneNumber: string
   address: string
   constructionCategory: '' | ConstructionCategory
   workType: string
-  collectiveHousingName: string
+  collectiveHousingName: string  // 集合住宅名・集合住宅名カナの統合検索
 }
 
 const initialFilters: OrderSearchFilters = {
@@ -41,9 +41,14 @@ export function useOrderSearch() {
       if (filters.orderNumber && !order.orderNumber.includes(filters.orderNumber)) {
         return false
       }
-      // 顧客名
-      if (filters.customerName && !order.customerName.includes(filters.customerName)) {
-        return false
+      // 顧客名（顧客名 OR 顧客名カナで部分一致）
+      if (filters.customerName) {
+        const lowerQuery = filters.customerName.toLowerCase()
+        const customerName = (order.customerName || '').toLowerCase()
+        const customerNameKana = (order.customerNameKana || '').toLowerCase()
+        if (!customerName.includes(lowerQuery) && !customerNameKana.includes(lowerQuery)) {
+          return false
+        }
       }
       // 顧客コード
       if (filters.customerCode && !order.customerCode.includes(filters.customerCode)) {
@@ -73,9 +78,14 @@ export function useOrderSearch() {
       if (filters.workType && order.workType !== filters.workType) {
         return false
       }
-      // 集合住宅名
-      if (filters.collectiveHousingName && order.collectiveHousingName && !order.collectiveHousingName.includes(filters.collectiveHousingName)) {
-        return false
+      // 集合住宅名（集合住宅名 OR 集合住宅名カナで部分一致）
+      if (filters.collectiveHousingName && order.collectiveHousingName) {
+        const lowerQuery = filters.collectiveHousingName.toLowerCase()
+        const housingName = (order.collectiveHousingName || '').toLowerCase()
+        const housingNameKana = (order.collectiveHousingNameKana || '').toLowerCase()
+        if (!housingName.includes(lowerQuery) && !housingNameKana.includes(lowerQuery)) {
+          return false
+        }
       }
       return true
     })

@@ -4,6 +4,8 @@ import {
   filterByPropertyType,
   filterByCustomerCode,
   filterByCollectiveCode,
+  filterByCustomerName,
+  filterByCollectiveHousingName,
   filterByContractor,
   filterByTeam,
   filterByPhoneNumber
@@ -20,7 +22,9 @@ export interface BaseApplicationFilters {
   phoneNumber: string
   propertyType: '' | '個別' | '集合'
   customerCode: string
+  customerName: string  // 顧客名・顧客名カナの統合検索
   collectiveCode: string
+  collectiveHousingName: string  // 集合住宅名・集合住宅名カナの統合検索
   contractorId: string
   teamId: string
 }
@@ -33,7 +37,11 @@ export interface FilterableApplicationData {
   phoneNumber?: string
   propertyType?: '個別' | '集合'
   customerCode?: string
+  customerName?: string
+  customerNameKana?: string
   collectiveCode?: string
+  collectiveHousingName?: string
+  collectiveHousingNameKana?: string
   contractorId?: string
   teamId?: string
 }
@@ -46,7 +54,9 @@ const defaultBaseFilters: BaseApplicationFilters = {
   phoneNumber: '',
   propertyType: '',
   customerCode: '',
+  customerName: '',
   collectiveCode: '',
+  collectiveHousingName: '',
   contractorId: '',
   teamId: ''
 }
@@ -88,7 +98,9 @@ export function useApplicationFilters<T extends FilterableApplicationData>(
    * - 受注番号: 部分一致、大文字小文字区別なし
    * - 電話番号: 部分一致、ハイフン無視
    * - 顧客コード: 個別物件のみチェック、集合物件は除外しない
+   * - 顧客名: 個別物件のみ、顧客名 OR 顧客名カナで部分一致
    * - 集合コード: 集合物件のみチェック、個別物件は除外しない
+   * - 集合住宅名: 集合物件のみ、集合住宅名 OR 集合住宅名カナで部分一致
    * - 班フィルター: 依頼先フィルター不要（独立して動作）
    */
   const baseFilteredData = useMemo(() => {
@@ -106,8 +118,14 @@ export function useApplicationFilters<T extends FilterableApplicationData>(
     // 顧客コードフィルター（個別物件のみ）
     result = filterByCustomerCode(result, filters.customerCode)
 
+    // 顧客名フィルター（個別物件のみ、顧客名 OR 顧客名カナ）
+    result = filterByCustomerName(result, filters.customerName)
+
     // 集合コードフィルター（集合物件のみ）
     result = filterByCollectiveCode(result, filters.collectiveCode)
+
+    // 集合住宅名フィルター（集合物件のみ、集合住宅名 OR 集合住宅名カナ）
+    result = filterByCollectiveHousingName(result, filters.collectiveHousingName)
 
     // 依頼先フィルター
     result = filterByContractor(result, filters.contractorId)
@@ -130,13 +148,15 @@ export function useApplicationFilters<T extends FilterableApplicationData>(
 
       // 物件種別が変更された場合、関連フィルターをリセット
       if (key === 'propertyType') {
-        // 個別 → 集合 に変更された場合、顧客コードをクリア
+        // 個別 → 集合 に変更された場合、顧客コード・顧客名をクリア
         if (value === '集合' && prev.propertyType === '個別') {
           newFilters.customerCode = ''
+          newFilters.customerName = ''
         }
-        // 集合 → 個別 に変更された場合、集合コードをクリア
+        // 集合 → 個別 に変更された場合、集合コード・集合住宅名をクリア
         if (value === '個別' && prev.propertyType === '集合') {
           newFilters.collectiveCode = ''
+          newFilters.collectiveHousingName = ''
         }
       }
 
@@ -164,7 +184,9 @@ export function useApplicationFilters<T extends FilterableApplicationData>(
   if (filters.phoneNumber) activeFilterCount++
   if (filters.propertyType) activeFilterCount++
   if (filters.customerCode) activeFilterCount++
+  if (filters.customerName) activeFilterCount++
   if (filters.collectiveCode) activeFilterCount++
+  if (filters.collectiveHousingName) activeFilterCount++
   if (filters.contractorId) activeFilterCount++
   if (filters.teamId) activeFilterCount++
 

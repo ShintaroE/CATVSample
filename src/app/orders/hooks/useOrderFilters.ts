@@ -16,7 +16,9 @@ export interface OrderFilters {
   constructionCategory: ConstructionCategory | 'all'
   workType: IndividualWorkType | CollectiveWorkType | 'all'
   customerCode: string
+  customerName: string  // 顧客名・顧客名カナの統合検索
   collectiveCode: string
+  collectiveHousingName: string  // 集合住宅名・集合住宅名カナの統合検索
   orderStatus: OrderStatus | 'all'
   customerType: '新規' | '既存' | 'all'
   additionalCosts: AdditionalCostsFilter
@@ -28,7 +30,9 @@ const defaultFilters: OrderFilters = {
   constructionCategory: 'all',
   workType: 'all',
   customerCode: '',
+  customerName: '',
   collectiveCode: '',
+  collectiveHousingName: '',
   orderStatus: 'all',
   customerType: 'all',
   additionalCosts: {
@@ -82,10 +86,30 @@ export function useOrderFilters(orders: OrderData[]) {
         return false
       }
 
+      // 顧客名フィルター（顧客名 OR 顧客名カナで部分一致）
+      if (filters.customerName) {
+        const lowerQuery = filters.customerName.toLowerCase()
+        const customerName = (order.customerName || '').toLowerCase()
+        const customerNameKana = (order.customerNameKana || '').toLowerCase()
+        if (!customerName.includes(lowerQuery) && !customerNameKana.includes(lowerQuery)) {
+          return false
+        }
+      }
+
       // 集合コードフィルター（部分一致、collectiveCodeが存在する場合のみ）
       if (filters.collectiveCode && order.collectiveCode &&
         !order.collectiveCode.includes(filters.collectiveCode)) {
         return false
+      }
+
+      // 集合住宅名フィルター（集合住宅名 OR 集合住宅名カナで部分一致）
+      if (filters.collectiveHousingName && order.collectiveHousingName) {
+        const lowerQuery = filters.collectiveHousingName.toLowerCase()
+        const housingName = (order.collectiveHousingName || '').toLowerCase()
+        const housingNameKana = (order.collectiveHousingNameKana || '').toLowerCase()
+        if (!housingName.includes(lowerQuery) && !housingNameKana.includes(lowerQuery)) {
+          return false
+        }
       }
 
       // 受注ステータスフィルター
@@ -156,7 +180,7 @@ export function useOrderFilters(orders: OrderData[]) {
   // 適用中のフィルター数をカウント
   let activeFilterCount = 0
   Object.entries(filters).forEach(([key, value]) => {
-    if (key === 'orderNumber' || key === 'phoneNumber' || key === 'customerCode' || key === 'collectiveCode') {
+    if (key === 'orderNumber' || key === 'phoneNumber' || key === 'customerCode' || key === 'customerName' || key === 'collectiveCode' || key === 'collectiveHousingName') {
       if (value !== '') activeFilterCount++
     } else if (key === 'additionalCosts') {
       if ((value as AdditionalCostsFilter).enabled) activeFilterCount++
