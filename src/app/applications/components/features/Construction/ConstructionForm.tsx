@@ -166,12 +166,14 @@ export default function ConstructionForm({
             handleChange('propertyType', '個別')
             handleChange('customerCode', order.customerCode)
             handleChange('customerName', order.customerName)
+            handleChange('customerNameKana', order.customerNameKana)
             handleChange('address', order.address || '')
             handleChange('phoneNumber', order.phoneNumber || '')
         } else {
             handleChange('propertyType', '集合')
             handleChange('collectiveCode', order.collectiveCode || '')
             handleChange('collectiveHousingName', order.collectiveHousingName || '')
+            handleChange('collectiveHousingNameKana', order.collectiveHousingNameKana || '')
             handleChange('address', order.address || '')
             handleChange('phoneNumber', order.phoneNumber || '')
         }

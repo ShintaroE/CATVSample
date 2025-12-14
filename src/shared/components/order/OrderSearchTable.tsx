@@ -37,6 +37,9 @@ export default function OrderSearchTable({ orders, onSelect }: OrderSearchTableP
                 顧客名
               </th>
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                顧客名（カナ）
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 住所
               </th>
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -47,6 +50,9 @@ export default function OrderSearchTable({ orders, onSelect }: OrderSearchTableP
               </th>
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 集合住宅名
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                集合住宅名（カナ）
               </th>
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 選択
@@ -66,6 +72,9 @@ export default function OrderSearchTable({ orders, onSelect }: OrderSearchTableP
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {order.customerName}
                 </td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-400">
+                  {order.customerNameKana || '-'}
+                </td>
                 <td className="px-3 py-2 text-sm text-gray-900" title={order.address}>
                   {truncateAddress(order.address)}
                 </td>
@@ -77,6 +86,9 @@ export default function OrderSearchTable({ orders, onSelect }: OrderSearchTableP
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
                   {order.collectiveHousingName || '-'}
+                </td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-400">
+                  {order.collectiveHousingNameKana || '-'}
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm">
                   <Button

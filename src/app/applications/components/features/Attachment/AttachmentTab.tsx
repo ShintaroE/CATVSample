@@ -246,10 +246,16 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
                 顧客名
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                顧客名（カナ）
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 集合住宅コード
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 集合住宅名
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                集合住宅名（カナ）
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 住所
@@ -283,7 +289,7 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
           <tbody className="bg-white divide-y divide-gray-200">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={16} className="px-4 py-8 text-center text-sm text-gray-500">
+                <td colSpan={18} className="px-4 py-8 text-center text-sm text-gray-500">
                   条件に一致するデータがありません
                 </td>
               </tr>
@@ -320,6 +326,11 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
                     {r.propertyType === '個別' ? (r.customerName || '-') : (r.collectiveHousingName || '-')}
                   </td>
 
+                  {/* 顧客名カナ */}
+                  <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">
+                    {r.propertyType === '個別' ? (r.customerNameKana || '-') : (r.collectiveHousingNameKana || '-')}
+                  </td>
+
                   {/* 集合住宅コード */}
                   <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.propertyType === '集合' ? (r.collectiveCode || '-') : '-'}
@@ -328,6 +339,11 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
                   {/* 集合住宅名 */}
                   <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                     {r.propertyType === '集合' ? (r.collectiveHousingName || '-') : '-'}
+                  </td>
+
+                  {/* 集合住宅名カナ */}
+                  <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">
+                    {r.propertyType === '集合' ? (r.collectiveHousingNameKana || '-') : '-'}
                   </td>
 
                   {/* 住所 */}

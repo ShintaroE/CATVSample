@@ -320,10 +320,16 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
                 顧客名
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                顧客名（カナ）
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 集合コード
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 集合住宅名
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                集合住宅名（カナ）
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 住所
@@ -354,7 +360,7 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredData.length === 0 ? (
               <tr>
-                <td colSpan={15} className="px-4 py-8 text-center text-sm text-gray-500">
+                <td colSpan={17} className="px-4 py-8 text-center text-sm text-gray-500">
                   データがありません
                 </td>
               </tr>
@@ -383,11 +389,17 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
                     <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       {item.propertyType === '個別' ? (item.customerName || '-') : (item.collectiveHousingName || '-')}
                     </td>
+                    <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">
+                      {item.propertyType === '個別' ? (item.customerNameKana || '-') : (item.collectiveHousingNameKana || '-')}
+                    </td>
                     <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       {item.propertyType === '集合' ? (item.collectiveCode || '-') : '-'}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       {item.propertyType === '集合' ? (item.collectiveHousingName || '-') : '-'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">
+                      {item.propertyType === '集合' ? (item.collectiveHousingNameKana || '-') : '-'}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                       <div className="max-w-[200px] truncate" title={item.address}>
