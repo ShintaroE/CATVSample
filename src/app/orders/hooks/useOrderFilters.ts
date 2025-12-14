@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { OrderData, ConstructionCategory, IndividualWorkType, CollectiveWorkType, OrderStatus } from '../types'
+import { hiraganaToKatakana } from '@/shared/utils/formatters'
 
 export interface AdditionalCostsFilter {
   enabled: boolean
@@ -86,12 +87,12 @@ export function useOrderFilters(orders: OrderData[]) {
         return false
       }
 
-      // 顧客名フィルター（顧客名 OR 顧客名カナで部分一致）
+      // 顧客名フィルター（顧客名 OR 顧客名カナで部分一致、ひらがな対応）
       if (filters.customerName) {
-        const lowerQuery = filters.customerName.toLowerCase()
-        const customerName = (order.customerName || '').toLowerCase()
-        const customerNameKana = (order.customerNameKana || '').toLowerCase()
-        if (!customerName.includes(lowerQuery) && !customerNameKana.includes(lowerQuery)) {
+        const normalizedQuery = hiraganaToKatakana(filters.customerName.toLowerCase())
+        const customerName = hiraganaToKatakana((order.customerName || '').toLowerCase())
+        const customerNameKana = hiraganaToKatakana((order.customerNameKana || '').toLowerCase())
+        if (!customerName.includes(normalizedQuery) && !customerNameKana.includes(normalizedQuery)) {
           return false
         }
       }
@@ -102,12 +103,12 @@ export function useOrderFilters(orders: OrderData[]) {
         return false
       }
 
-      // 集合住宅名フィルター（集合住宅名 OR 集合住宅名カナで部分一致）
+      // 集合住宅名フィルター（集合住宅名 OR 集合住宅名カナで部分一致、ひらがな対応）
       if (filters.collectiveHousingName && order.collectiveHousingName) {
-        const lowerQuery = filters.collectiveHousingName.toLowerCase()
-        const housingName = (order.collectiveHousingName || '').toLowerCase()
-        const housingNameKana = (order.collectiveHousingNameKana || '').toLowerCase()
-        if (!housingName.includes(lowerQuery) && !housingNameKana.includes(lowerQuery)) {
+        const normalizedQuery = hiraganaToKatakana(filters.collectiveHousingName.toLowerCase())
+        const housingName = hiraganaToKatakana((order.collectiveHousingName || '').toLowerCase())
+        const housingNameKana = hiraganaToKatakana((order.collectiveHousingNameKana || '').toLowerCase())
+        if (!housingName.includes(normalizedQuery) && !housingNameKana.includes(normalizedQuery)) {
           return false
         }
       }

@@ -197,6 +197,36 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         <p className="text-xs text-gray-500 mt-1">※集合物件のみ</p>
       </div>
 
+      {/* 顧客名 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          顧客名
+        </label>
+        <input
+          type="text"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm placeholder:text-gray-400"
+          value={filters.customerName}
+          onChange={(e) => updateFilter('customerName', e.target.value)}
+          placeholder="顧客名 or カナ"
+        />
+        <p className="text-xs text-gray-500 mt-1">※個別物件のみ</p>
+      </div>
+
+      {/* 集合住宅名 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          集合住宅名
+        </label>
+        <input
+          type="text"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm placeholder:text-gray-400"
+          value={filters.collectiveHousingName}
+          onChange={(e) => updateFilter('collectiveHousingName', e.target.value)}
+          placeholder="集合住宅名 or カナ"
+        />
+        <p className="text-xs text-gray-500 mt-1">※集合物件のみ</p>
+      </div>
+
       {/* 依頼先 */}
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">
