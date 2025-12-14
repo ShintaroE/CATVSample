@@ -105,9 +105,11 @@ export interface OrderData {
   workType: IndividualWorkType | CollectiveWorkType
   collectiveCode?: string           // 集合住宅コード（集合の場合）
   collectiveHousingName?: string    // 集合住宅名（集合の場合）
+  collectiveHousingNameKana?: string // 集合住宅名カナ（集合の場合）
   customerCode: string
   customerType: '新規' | '既存'
   customerName: string
+  customerNameKana: string          // 顧客名カナ（必須）
   constructionDate?: string
   closureNumber?: string
   address?: string

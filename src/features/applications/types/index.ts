@@ -75,8 +75,10 @@ export interface RequestBase {
   propertyType?: '個別' | '集合' // 個別/集合の区別
   customerCode?: string // 顧客コード（個別の場合）
   customerName?: string // 顧客名（個別の場合）
+  customerNameKana?: string // 顧客名カナ（個別の場合、必須）
   collectiveCode?: string // 集合コード（集合の場合）
   collectiveHousingName?: string // 集合住宅名（集合の場合）
+  collectiveHousingNameKana?: string // 集合住宅名カナ（集合の場合）
   address?: string // 住所（個別の場合）or 部屋番号・顧客名（集合の場合）
   phoneNumber?: string // 電話番号
 

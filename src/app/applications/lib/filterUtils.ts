@@ -138,6 +138,66 @@ export function filterByPhoneNumber<T extends { phoneNumber?: string }>(
 }
 
 /**
+ * 顧客名・顧客名カナフィルター（個別物件のみ、部分一致）
+ *
+ * 統一仕様: 1つの検索欄で顧客名と顧客名カナの両方を検索
+ * - 個別物件: 顧客名 OR 顧客名カナで部分一致チェック
+ * - 集合物件: フィルター無視（結果に含める）
+ */
+export function filterByCustomerName<T extends {
+  propertyType?: '個別' | '集合'
+  customerName?: string
+  customerNameKana?: string
+}>(
+  items: T[],
+  searchQuery: string
+): T[] {
+  if (!searchQuery) return items
+  const lowerQuery = searchQuery.toLowerCase()
+
+  return items.filter(item => {
+    // 個別物件の場合のみチェック
+    if (item.propertyType === '個別') {
+      const customerName = (item.customerName || '').toLowerCase()
+      const customerNameKana = (item.customerNameKana || '').toLowerCase()
+      return customerName.includes(lowerQuery) || customerNameKana.includes(lowerQuery)
+    }
+    // 集合物件は無視（除外しない）
+    return true
+  })
+}
+
+/**
+ * 集合住宅名・集合住宅名カナフィルター（集合物件のみ、部分一致）
+ *
+ * 統一仕様: 1つの検索欄で集合住宅名と集合住宅名カナの両方を検索
+ * - 集合物件: 集合住宅名 OR 集合住宅名カナで部分一致チェック
+ * - 個別物件: フィルター無視（結果に含める）
+ */
+export function filterByCollectiveHousingName<T extends {
+  propertyType?: '個別' | '集合'
+  collectiveHousingName?: string
+  collectiveHousingNameKana?: string
+}>(
+  items: T[],
+  searchQuery: string
+): T[] {
+  if (!searchQuery) return items
+  const lowerQuery = searchQuery.toLowerCase()
+
+  return items.filter(item => {
+    // 集合物件の場合のみチェック
+    if (item.propertyType === '集合') {
+      const housingName = (item.collectiveHousingName || '').toLowerCase()
+      const housingNameKana = (item.collectiveHousingNameKana || '').toLowerCase()
+      return housingName.includes(lowerQuery) || housingNameKana.includes(lowerQuery)
+    }
+    // 個別物件は無視（除外しない）
+    return true
+  })
+}
+
+/**
  * アクティブフィルター数をカウント
  *
  * 文字列フィルターは空文字列でないことをチェック
