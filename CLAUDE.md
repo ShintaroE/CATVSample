@@ -218,6 +218,13 @@ generateSimplePassword(length = 10): string
 // Returns: "aB3xYz7Qm1" (1+ uppercase, 1+ lowercase, 1+ number, Fisher-Yates shuffle)
 ```
 
+### Kana Search & Filtering
+- **Hiragana to Katakana conversion**: `hiraganaToKatakana()` in `src/shared/utils/formatters.ts`
+- Allows users to search katakana fields (顧客名カナ, 集合住宅名カナ) using hiragana input
+- **Implementation**: Convert search input to katakana before filtering
+- **Example**: User types "たなか" → automatically matches "タナカ"
+- **Usage in filters**: Applications page (PR#65), Orders page phoneNumber/customerNameKana filters
+
 ### File Upload Specs
 - Max file size: 10MB (configurable)
 - Max files per upload: 10
@@ -225,15 +232,22 @@ generateSimplePassword(length = 10): string
 - Methods: Drag & drop, click to select, multiple selection
 
 ### CSV Export Pattern (Orders Page)
-Orders page includes CSV export functionality with the following characteristics:
+Orders page includes comprehensive CSV export functionality with application data aggregation:
 - **Encoding**: UTF-8 with BOM (Excel-compatible, prevents garbled characters)
-- **Format**: 19 columns including order number, customer info, construction details, status fields
+- **Format**: 54 columns in horizontal layout
+  - Base order info (21 columns)
+  - Survey requests (10 columns): 申請番号, ステータス, 協力会社, 班名, 調査予定日, 調査完了日, 工事可否判定, 判定報告日時, 依頼日, 進捗履歴最終更新日時
+  - Attachment requests (10 columns): 申請番号, ステータス, 協力会社, 班名, 依頼日, 申請提出日, 許可日, 調査完了日, 申請有無報告日時, 進捗履歴最終更新日時
+  - Construction requests (10 columns): 申請番号, ステータス, 協力会社, 班名, 工事種別, 工事依頼日, 工事予定日, 工事完了日, 工事日設定日時, 進捗履歴最終更新日時
+  - Section separators between each data group
+- **Multiple applications handling**: When an order has multiple applications of the same type, creates separate rows
 - **Filename**: `工事依頼_YYYYMMDD_HHMMSS.csv`
 - **Implementation**:
-  - `src/app/orders/lib/csvExport.ts` - Core CSV generation and download logic
+  - `src/app/orders/lib/csvExport.ts` - Core CSV generation with application aggregation logic
   - `src/app/orders/components/CsvExportButton.tsx` - Export button component
   - Automatically disabled when filtered data is empty
   - Shows loading state during export
+  - Aggregates data from `applications_survey`, `applications_attachment`, `applications_construction` localStorage keys
 
 **Known Issue**: React hydration warning due to nested buttons in FilterPanel (button inside accordion button). Functionality works correctly but violates HTML spec. Fix planned for future PR.
 
@@ -334,21 +348,23 @@ location.reload()
 | login | ✅ Simple | 114 | Already clean |
 
 ### Filter Implementation Status
-| Page | Filter UI | Active Count | Accordion | Pattern | Shared Hook |
-|------|-----------|--------------|-----------|---------|-------------|
-| applications (Survey) | ✅ | ✅ | ✅ | FilterableTableLayout | useApplicationFilters |
-| applications (Attachment) | ✅ | ✅ | ✅ | FilterableTableLayout | useApplicationFilters |
-| applications (Construction) | ✅ | ✅ | ✅ | FilterableTableLayout | useApplicationFilters |
-| orders | ✅ | ✅ | ✅ | Custom FilterPanel | useOrderFilters |
-| contractor-requests | ✅ | ❌ | ❌ | Legacy filter UI | - |
-| schedule | N/A | N/A | N/A | Team filter only | useFilters |
-| my-exclusions | N/A | N/A | N/A | Schedule type filter only | - |
+| Page | Filter UI | Active Count | Accordion | Pattern | Shared Hook | Notes |
+|------|-----------|--------------|-----------|---------|-------------|-------|
+| applications (Survey) | ✅ | ✅ | ✅ | FilterableTableLayout | useApplicationFilters | Shared hook pattern |
+| applications (Attachment) | ✅ | ✅ | ✅ | FilterableTableLayout | useApplicationFilters | Shared hook pattern |
+| applications (Construction) | ✅ | ✅ | ✅ | FilterableTableLayout | useApplicationFilters | Shared hook pattern |
+| orders | ✅ | ✅ | ✅ | Custom FilterPanel | useOrderFilters | Accordion pattern |
+| contractor-requests | ✅ | ⚠️ Manual | ❌ | Legacy inline | useMemo inline | 610 lines, needs refactoring |
+| schedule | N/A | N/A | N/A | Team filter only | useFilters | Hierarchical team filter |
+| my-exclusions | N/A | N/A | N/A | Schedule type filter | - | Simple select dropdown |
 
 ### Architecture Refactoring History
 | PR | Change | Files | Impact |
 |----|--------|-------|--------|
+| #66 | Enhanced CSV export with application data | 3 files | CSV now includes survey/attachment/construction data (54 columns total) |
+| #65 | Added kana fields to appointment history | 4 files | Added customerCode and customerNameKana display; hiragana search support |
 | #60 | Unified application form structure | 3 files | Removed team selection from Attachment requests; Attachment is now contractor-level only |
-| #59 | Added CSV export to orders page | 3 files | CSV export with UTF-8 BOM, 19 columns, Excel-compatible |
+| #59 | Added CSV export to orders page | 3 files | CSV export with UTF-8 BOM, initial 19 columns, Excel-compatible |
 | #58 | Added phone number filter and layout improvements | Multiple files | Phone number search, improved order page layout |
 | #57 | Application fields update and serialNumber hide | 6 files | Removed '未着手' from construction edit modal, added withdrawNeeded field to attachment requests, hidden serialNumber in survey edit modal |
 | #56 | Centralized sample data to src/shared/data | 8 files | Single source of truth for demo data, easier maintenance |
