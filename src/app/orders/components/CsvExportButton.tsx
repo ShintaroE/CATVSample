@@ -3,10 +3,18 @@
 import React, { useState } from 'react'
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 import { OrderData } from '../types'
+import {
+  SurveyRequest,
+  AttachmentRequest,
+  ConstructionRequest,
+} from '@/features/applications/types'
 import { downloadCSV } from '../lib/csvExport'
 
 interface CsvExportButtonProps {
   orders: OrderData[]
+  surveys: SurveyRequest[]
+  attachments: AttachmentRequest[]
+  constructions: ConstructionRequest[]
   disabled?: boolean
   className?: string
 }
@@ -14,13 +22,16 @@ interface CsvExportButtonProps {
 /**
  * CSVエクスポートボタンコンポーネント
  *
- * フィルタリングされた工事データをCSV形式でダウンロードします。
+ * フィルタリングされた工事データと紐づく申請管理データをCSV形式でダウンロードします。
  * - データが0件の場合は自動的に無効化
  * - エクスポート中はローディング表示
  * - エラー時はアラート表示
  */
 export default function CsvExportButton({
   orders,
+  surveys,
+  attachments,
+  constructions,
   disabled = false,
   className = ''
 }: CsvExportButtonProps) {
@@ -38,7 +49,7 @@ export default function CsvExportButton({
       // 少し遅延を入れてローディング表示を見せる
       await new Promise(resolve => setTimeout(resolve, 300))
 
-      downloadCSV(orders)
+      downloadCSV(orders, surveys, attachments, constructions)
 
       // 成功メッセージは不要（ダウンロードが開始されるため）
       // ユーザーが望む場合はコメント解除
