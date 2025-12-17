@@ -54,12 +54,15 @@ export default function OrdersPage() {
     setConstructions(getConstructionRequests())
   }, [])
 
-  // フィルター機能
+  // フィルター機能（検索ボタンパターン）
   const {
-    filters,
+    inputFilters,
+    searchFilters,
     filteredOrders,
-    updateFilter,
-    clearFilters,
+    updateInputFilter,
+    executeSearch,
+    clearInputFilters,
+    isSearching,
     activeFilterCount,
     filteredCount,
     totalCount
@@ -205,9 +208,11 @@ export default function OrdersPage() {
 
         {/* フィルターパネル */}
         <FilterPanel
-          filters={filters}
-          onUpdateFilter={updateFilter}
-          onClear={clearFilters}
+          filters={inputFilters}
+          onUpdateFilter={updateInputFilter}
+          onSearch={executeSearch}
+          onClear={clearInputFilters}
+          isSearching={isSearching}
           activeFilterCount={activeFilterCount}
           filteredCount={filteredCount}
           totalCount={totalCount}

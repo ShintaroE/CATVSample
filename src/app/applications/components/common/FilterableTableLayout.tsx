@@ -54,9 +54,6 @@ export default function FilterableTableLayout({
                             >
                                 表示: {filteredCount}件
                             </Badge>
-                            <Badge variant="default" size="sm" className="font-normal">
-                                全: {totalCount}件
-                            </Badge>
                         </div>
                     </div>
                 </button>

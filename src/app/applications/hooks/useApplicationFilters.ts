@@ -62,19 +62,22 @@ const defaultBaseFilters: BaseApplicationFilters = {
 }
 
 /**
- * 申請管理画面共通フィルターフック
+ * 申請管理画面共通フィルターフック（検索ボタン対応版）
  *
  * 3つのタブで共通のフィルタリングロジックを提供します。
- * 各タブは、このフックから返される baseFilteredData に対して
- * タブ固有のフィルターを追加で適用できます。
+ * 入力用のフィルターと検索実行後のフィルターを分離し、
+ * 検索ボタンクリック時のみデータ絞り込みを実行します。
  *
  * @example
  * // Surveyタブでの使用例
  * const {
- *   filters,
+ *   inputFilters,
+ *   searchFilters,
  *   baseFilteredData,
- *   updateFilter,
- *   clearFilters,
+ *   updateInputFilter,
+ *   executeSearch,
+ *   clearInputFilters,
+ *   isSearching,
  *   activeFilterCount
  * } = useApplicationFilters(surveyData)
  *
@@ -89,10 +92,17 @@ const defaultBaseFilters: BaseApplicationFilters = {
 export function useApplicationFilters<T extends FilterableApplicationData>(
   data: T[]
 ) {
-  const [filters, setFilters] = useState<BaseApplicationFilters>(defaultBaseFilters)
+  // 入力用フィルター（フォームにバインド）
+  const [inputFilters, setInputFilters] = useState<BaseApplicationFilters>(defaultBaseFilters)
+
+  // 検索実行後のフィルター（データ絞り込みに使用）
+  const [searchFilters, setSearchFilters] = useState<BaseApplicationFilters>(defaultBaseFilters)
+
+  // 検索中フラグ
+  const [isSearching, setIsSearching] = useState(false)
 
   /**
-   * 基本フィルター適用後のデータ
+   * 検索実行後のデータ（searchFiltersを使用）
    *
    * 統一仕様:
    * - 受注番号: 部分一致、大文字小文字区別なし
@@ -107,43 +117,52 @@ export function useApplicationFilters<T extends FilterableApplicationData>(
     let result = data
 
     // 受注番号フィルター
-    result = filterByOrderNumber(result, filters.orderNumber)
+    result = filterByOrderNumber(result, searchFilters.orderNumber)
 
     // 電話番号フィルター
-    result = filterByPhoneNumber(result, filters.phoneNumber)
+    result = filterByPhoneNumber(result, searchFilters.phoneNumber)
 
     // 物件種別フィルター
-    result = filterByPropertyType(result, filters.propertyType)
+    result = filterByPropertyType(result, searchFilters.propertyType)
 
     // 顧客コードフィルター（個別物件のみ）
-    result = filterByCustomerCode(result, filters.customerCode)
+    result = filterByCustomerCode(result, searchFilters.customerCode)
 
     // 顧客名フィルター（個別物件のみ、顧客名 OR 顧客名カナ）
-    result = filterByCustomerName(result, filters.customerName)
+    result = filterByCustomerName(result, searchFilters.customerName)
 
     // 集合コードフィルター（集合物件のみ）
-    result = filterByCollectiveCode(result, filters.collectiveCode)
+    result = filterByCollectiveCode(result, searchFilters.collectiveCode)
 
     // 集合住宅名フィルター（集合物件のみ、集合住宅名 OR 集合住宅名カナ）
-    result = filterByCollectiveHousingName(result, filters.collectiveHousingName)
+    result = filterByCollectiveHousingName(result, searchFilters.collectiveHousingName)
 
     // 依頼先フィルター
-    result = filterByContractor(result, filters.contractorId)
+    result = filterByContractor(result, searchFilters.contractorId)
 
     // 班フィルター（独立動作）
-    result = filterByTeam(result, filters.teamId)
+    result = filterByTeam(result, searchFilters.teamId)
 
     return result
-  }, [data, filters])
+  }, [data, searchFilters]) // searchFiltersが変更された時のみ再計算
 
   /**
-   * フィルター更新
+   * 検索実行
    */
-  const updateFilter = <K extends keyof BaseApplicationFilters>(
+  const executeSearch = () => {
+    setIsSearching(true)
+    setSearchFilters(inputFilters)
+    setTimeout(() => setIsSearching(false), 0)
+  }
+
+  /**
+   * フィルター更新（入力フォーム用）
+   */
+  const updateInputFilter = <K extends keyof BaseApplicationFilters>(
     key: K,
     value: BaseApplicationFilters[K]
   ) => {
-    setFilters(prev => {
+    setInputFilters(prev => {
       const newFilters = { ...prev, [key]: value }
 
       // 物件種別が変更された場合、関連フィルターをリセット
@@ -170,25 +189,25 @@ export function useApplicationFilters<T extends FilterableApplicationData>(
   }
 
   /**
-   * フィルタークリア
+   * フィルタークリア（入力フォームのみクリア）
    */
-  const clearFilters = () => {
-    setFilters(defaultBaseFilters)
+  const clearInputFilters = () => {
+    setInputFilters(defaultBaseFilters)
   }
 
   /**
-   * アクティブフィルター数
+   * アクティブフィルター数（searchFiltersを使用）
    */
   let activeFilterCount = 0
-  if (filters.orderNumber) activeFilterCount++
-  if (filters.phoneNumber) activeFilterCount++
-  if (filters.propertyType) activeFilterCount++
-  if (filters.customerCode) activeFilterCount++
-  if (filters.customerName) activeFilterCount++
-  if (filters.collectiveCode) activeFilterCount++
-  if (filters.collectiveHousingName) activeFilterCount++
-  if (filters.contractorId) activeFilterCount++
-  if (filters.teamId) activeFilterCount++
+  if (searchFilters.orderNumber) activeFilterCount++
+  if (searchFilters.phoneNumber) activeFilterCount++
+  if (searchFilters.propertyType) activeFilterCount++
+  if (searchFilters.customerCode) activeFilterCount++
+  if (searchFilters.customerName) activeFilterCount++
+  if (searchFilters.collectiveCode) activeFilterCount++
+  if (searchFilters.collectiveHousingName) activeFilterCount++
+  if (searchFilters.contractorId) activeFilterCount++
+  if (searchFilters.teamId) activeFilterCount++
 
   /**
    * フィルター適用状態の判定
@@ -196,10 +215,13 @@ export function useApplicationFilters<T extends FilterableApplicationData>(
   const hasActiveFilters = activeFilterCount > 0
 
   return {
-    filters,
-    baseFilteredData,
-    updateFilter,
-    clearFilters,
+    inputFilters,          // 入力フォームにバインド
+    searchFilters,         // 検索実行後の条件（表示用）
+    baseFilteredData,      // 検索結果
+    updateInputFilter,     // 入力フォーム更新
+    executeSearch,         // 検索実行
+    clearInputFilters,     // 入力フォームクリア
+    isSearching,           // 検索中フラグ
     activeFilterCount,
     hasActiveFilters,
     totalCount: data.length,

@@ -47,21 +47,28 @@ const defaultFilters: OrderFilters = {
 }
 
 export function useOrderFilters(orders: OrderData[]) {
-  const [filters, setFilters] = useState<OrderFilters>(defaultFilters)
+  // 入力用フィルター（フォームにバインド）
+  const [inputFilters, setInputFilters] = useState<OrderFilters>(defaultFilters)
 
-  // フィルター適用後の注文リスト
+  // 検索実行後のフィルター（データ絞り込みに使用）
+  const [searchFilters, setSearchFilters] = useState<OrderFilters>(defaultFilters)
+
+  // 検索中フラグ
+  const [isSearching, setIsSearching] = useState(false)
+
+  // フィルター適用後の注文リスト（searchFiltersを使用）
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
       // 受注番号フィルター（部分一致、大文字小文字区別なし）
-      if (filters.orderNumber &&
-        !order.orderNumber.toLowerCase().includes(filters.orderNumber.toLowerCase())) {
+      if (searchFilters.orderNumber &&
+        !order.orderNumber.toLowerCase().includes(searchFilters.orderNumber.toLowerCase())) {
         return false
       }
 
       // 電話番号フィルター（部分一致、ハイフン無視）
-      if (filters.phoneNumber) {
+      if (searchFilters.phoneNumber) {
         const normalizePhone = (phone: string) => phone.replace(/[-\s]/g, '')
-        const normalizedQuery = normalizePhone(filters.phoneNumber.trim())
+        const normalizedQuery = normalizePhone(searchFilters.phoneNumber.trim())
         if (!order.phoneNumber) {
           return false
         }
@@ -72,24 +79,24 @@ export function useOrderFilters(orders: OrderData[]) {
       }
 
       // 個別/集合フィルター
-      if (filters.constructionCategory !== 'all' && order.constructionCategory !== filters.constructionCategory) {
+      if (searchFilters.constructionCategory !== 'all' && order.constructionCategory !== searchFilters.constructionCategory) {
         return false
       }
 
       // 工事種別フィルター
-      if (filters.workType !== 'all' && order.workType !== filters.workType) {
+      if (searchFilters.workType !== 'all' && order.workType !== searchFilters.workType) {
         return false
       }
 
       // 顧客コードフィルター（部分一致）
-      if (filters.customerCode &&
-        !order.customerCode.includes(filters.customerCode)) {
+      if (searchFilters.customerCode &&
+        !order.customerCode.includes(searchFilters.customerCode)) {
         return false
       }
 
       // 顧客名フィルター（顧客名 OR 顧客名カナで部分一致、ひらがな対応）
-      if (filters.customerName) {
-        const normalizedQuery = hiraganaToKatakana(filters.customerName.toLowerCase())
+      if (searchFilters.customerName) {
+        const normalizedQuery = hiraganaToKatakana(searchFilters.customerName.toLowerCase())
         const customerName = hiraganaToKatakana((order.customerName || '').toLowerCase())
         const customerNameKana = hiraganaToKatakana((order.customerNameKana || '').toLowerCase())
         if (!customerName.includes(normalizedQuery) && !customerNameKana.includes(normalizedQuery)) {
@@ -98,14 +105,14 @@ export function useOrderFilters(orders: OrderData[]) {
       }
 
       // 集合コードフィルター（部分一致、collectiveCodeが存在する場合のみ）
-      if (filters.collectiveCode && order.collectiveCode &&
-        !order.collectiveCode.includes(filters.collectiveCode)) {
+      if (searchFilters.collectiveCode && order.collectiveCode &&
+        !order.collectiveCode.includes(searchFilters.collectiveCode)) {
         return false
       }
 
       // 集合住宅名フィルター（集合住宅名 OR 集合住宅名カナで部分一致、ひらがな対応）
-      if (filters.collectiveHousingName && order.collectiveHousingName) {
-        const normalizedQuery = hiraganaToKatakana(filters.collectiveHousingName.toLowerCase())
+      if (searchFilters.collectiveHousingName && order.collectiveHousingName) {
+        const normalizedQuery = hiraganaToKatakana(searchFilters.collectiveHousingName.toLowerCase())
         const housingName = hiraganaToKatakana((order.collectiveHousingName || '').toLowerCase())
         const housingNameKana = hiraganaToKatakana((order.collectiveHousingNameKana || '').toLowerCase())
         if (!housingName.includes(normalizedQuery) && !housingNameKana.includes(normalizedQuery)) {
@@ -115,28 +122,28 @@ export function useOrderFilters(orders: OrderData[]) {
 
       // 受注ステータスフィルター
       const currentOrderStatus = order.orderStatus || 'アクティブ'
-      if (filters.orderStatus !== 'all' && currentOrderStatus !== filters.orderStatus) {
+      if (searchFilters.orderStatus !== 'all' && currentOrderStatus !== searchFilters.orderStatus) {
         return false
       }
 
       // 顧客タイプフィルター
-      if (filters.customerType !== 'all' && order.customerType !== filters.customerType) {
+      if (searchFilters.customerType !== 'all' && order.customerType !== searchFilters.customerType) {
         return false
       }
 
       // 追加費用フィルター（OR条件：いずれかにチェックが入っている項目が必須の注文を表示）
-      if (filters.additionalCosts.enabled) {
+      if (searchFilters.additionalCosts.enabled) {
         const additionalCosts = order.additionalCosts
         if (!additionalCosts) {
           return false
         }
 
         const matchesAny = (
-          (filters.additionalCosts.closureExpansion && additionalCosts.closureExpansion.required === 'required') ||
-          (filters.additionalCosts.roadApplication && additionalCosts.roadApplication.required === 'required') ||
-          (filters.additionalCosts.otherCompanyRepair && additionalCosts.otherCompanyRepair.required === 'required') ||
-          (filters.additionalCosts.nwEquipment && additionalCosts.nwEquipment.required === 'required') ||
-          (filters.additionalCosts.serviceLineApplication && additionalCosts.serviceLineApplication.required === 'required')
+          (searchFilters.additionalCosts.closureExpansion && additionalCosts.closureExpansion.required === 'required') ||
+          (searchFilters.additionalCosts.roadApplication && additionalCosts.roadApplication.required === 'required') ||
+          (searchFilters.additionalCosts.otherCompanyRepair && additionalCosts.otherCompanyRepair.required === 'required') ||
+          (searchFilters.additionalCosts.nwEquipment && additionalCosts.nwEquipment.required === 'required') ||
+          (searchFilters.additionalCosts.serviceLineApplication && additionalCosts.serviceLineApplication.required === 'required')
         )
 
         if (!matchesAny) {
@@ -146,11 +153,22 @@ export function useOrderFilters(orders: OrderData[]) {
 
       return true
     })
-  }, [orders, filters])
+  }, [orders, searchFilters])
 
-  // フィルター更新関数
-  const updateFilter = <K extends keyof OrderFilters>(key: K, value: OrderFilters[K]) => {
-    setFilters(prev => {
+  /**
+   * 検索実行
+   */
+  const executeSearch = () => {
+    setIsSearching(true)
+    setSearchFilters(inputFilters)
+    setTimeout(() => setIsSearching(false), 0)
+  }
+
+  /**
+   * フィルター更新関数（入力フォーム用）
+   */
+  const updateInputFilter = <K extends keyof OrderFilters>(key: K, value: OrderFilters[K]) => {
+    setInputFilters(prev => {
       const newFilters = { ...prev, [key]: value }
 
       // 個別/集合が変更された場合、工事種別をリセット
@@ -162,13 +180,15 @@ export function useOrderFilters(orders: OrderData[]) {
     })
   }
 
-  // フィルタークリア
-  const clearFilters = () => {
-    setFilters(defaultFilters)
+  /**
+   * フィルタークリア（入力フォームのみクリア）
+   */
+  const clearInputFilters = () => {
+    setInputFilters(defaultFilters)
   }
 
-  // フィルター適用状態の判定
-  const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
+  // フィルター適用状態の判定（searchFiltersを使用）
+  const hasActiveFilters = Object.entries(searchFilters).some(([key, value]) => {
     if (key === 'orderNumber' || key === 'customerCode' || key === 'collectiveCode') {
       return value !== ''
     }
@@ -178,9 +198,9 @@ export function useOrderFilters(orders: OrderData[]) {
     return value !== 'all'
   })
 
-  // 適用中のフィルター数をカウント
+  // 適用中のフィルター数をカウント（searchFiltersを使用）
   let activeFilterCount = 0
-  Object.entries(filters).forEach(([key, value]) => {
+  Object.entries(searchFilters).forEach(([key, value]) => {
     if (key === 'orderNumber' || key === 'phoneNumber' || key === 'customerCode' || key === 'customerName' || key === 'collectiveCode' || key === 'collectiveHousingName') {
       if (value !== '') activeFilterCount++
     } else if (key === 'additionalCosts') {
@@ -191,10 +211,13 @@ export function useOrderFilters(orders: OrderData[]) {
   })
 
   return {
-    filters,
+    inputFilters,
+    searchFilters,
     filteredOrders,
-    updateFilter,
-    clearFilters,
+    updateInputFilter,
+    executeSearch,
+    clearInputFilters,
+    isSearching,
     hasActiveFilters,
     activeFilterCount,
     totalCount: orders.length,
