@@ -43,6 +43,10 @@ src/
 │   │   ├── applications.ts  # Sample application requests
 │   │   ├── orders.ts    # Sample order data
 │   │   └── schedules.ts # Sample schedule/exclusion data
+│   ├── database/        # PostgreSQL schema definitions (migration ready)
+│   │   ├── README.md    # Detailed migration guide
+│   │   ├── create_all_tables.sql  # All tables creation script
+│   │   └── tables/      # Individual table DDL files (01-12)
 │   └── utils/           # formatters, validators, password, constants
 │
 ├── features/            # Layer 2: Domain business logic
@@ -135,6 +139,93 @@ Login at contractor level, team selection during exclusion registration.
 
 ### Repository Pattern
 All storage modules use repository pattern for future DBMS migration (PostgreSQL/MySQL in 1-3 months).
+
+## Database Schema (PostgreSQL Migration Ready)
+
+### Schema Definition Location
+All database table definitions are in `src/shared/database/`:
+```
+src/shared/database/
+├── README.md              # Detailed migration guide
+├── create_all_tables.sql  # Single script to create all tables
+└── tables/                # Individual table DDL files
+    ├── 01_admins.sql
+    ├── 02_contractors.sql
+    ├── 03_teams.sql
+    ├── 04_orders.sql
+    ├── 05_order_files.sql
+    ├── 06_appointment_histories.sql
+    ├── 07_application_requests.sql
+    ├── 08_progress_histories.sql
+    ├── 09_attached_files.sql
+    ├── 10_schedules.sql
+    ├── 11_exclusions.sql
+    └── 12_assigned_teams.sql
+```
+
+### Database Setup (PostgreSQL)
+```bash
+# Create database
+createdb catv_management
+
+# Connect and create all tables
+psql catv_management -f src/shared/database/create_all_tables.sql
+
+# Or create tables individually
+psql catv_management -f src/shared/database/tables/01_admins.sql
+```
+
+### Key Design Decisions
+
+**1. Unified Application Requests Table**
+- All 3 request types (survey/attachment/construction) in single `application_requests` table
+- `type` column distinguishes request types
+- Shared columns for common data, type-specific columns nullable
+
+**2. JSONB for Dynamic Data**
+- `orders.additional_costs`, `additional_notes`, `collective_construction_info`
+- `application_requests.feasibility_result`, `application_report`
+- `appointment_histories.schedule_info`
+
+**3. File Storage Evolution**
+- **Phase 1 (Current)**: Base64 in DB (`order_files.file_data` max 2MB, `attached_files.file_data` max 10MB)
+- **Phase 2 (Future)**: AWS S3/Cloudinary URLs
+
+**4. Multi-Team Assignment**
+- `schedules` (1) ↔ (many) `assigned_teams` relationship
+- Supports multiple teams per schedule
+
+**5. Append-Only Progress History**
+- `progress_histories` table never updates/deletes, only inserts
+- Complete audit trail preservation
+
+### localStorage → PostgreSQL Mapping
+
+| localStorage Key | PostgreSQL Table | Notes |
+|-----------------|------------------|-------|
+| `user` | `admins` or `contractors` | Session stored separately |
+| `admins` | `admins` | Admin accounts |
+| `contractors` | `contractors` | Contractor accounts |
+| `teams` | `teams` | Team master data |
+| `applications_survey` | `application_requests` | `type='survey'` |
+| `applications_attachment` | `application_requests` | `type='attachment'` |
+| `applications_construction` | `application_requests` | `type='construction'` |
+| `schedules` | `schedules` + `assigned_teams` | Multi-team support |
+| `exclusions` | `exclusions` | Contractor exclusion dates |
+| `orders` | `orders` | Order master |
+| `order_files` | `order_files` | Map PDFs (Base64 → URL in Phase 2) |
+
+### Migration Strategy
+**Phase 1**: DB schema definition (✅ Complete)
+**Phase 2**: Backend API + Repository pattern (⏳ Planned in 1-3 months)
+**Phase 3**: File storage externalization (S3/Cloudinary)
+
+**Security Requirements for Phase 2:**
+- Password hashing with bcrypt (currently plain text)
+- Prepared statements for SQL injection prevention
+- Input validation and sanitization
+
+See [src/shared/database/README.md](src/shared/database/README.md) for detailed schema documentation.
 
 ## Important Technical Patterns
 
@@ -374,7 +465,15 @@ location.reload()
 | #46 | Unified application filters | useApplicationFilters.ts, filterUtils.ts | DRY principle, consistent filtering logic |
 
 ### Future Migration Path
-- **DBMS**: PostgreSQL/MySQL (1-3 months)
+- **DBMS**: PostgreSQL (1-3 months)
+  - ✅ Schema definition complete (`src/shared/database/`)
+  - ✅ Repository pattern in place
+  - ⏳ Backend API implementation (Node.js + Express)
+  - ⏳ Data migration scripts
 - **File storage**: AWS S3 or Cloudinary
-- **API layer**: Repository pattern already in place
-- **Authentication**: Consider proper auth system (currently plain text passwords)
+  - Current: Base64 in localStorage/DB
+  - Future: External storage with URL references
+- **Authentication**: Implement proper security
+  - Current: Plain text passwords
+  - Required: bcrypt password hashing
+  - Required: JWT or session-based auth
