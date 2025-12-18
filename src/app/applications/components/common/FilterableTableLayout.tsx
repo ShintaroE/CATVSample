@@ -1,12 +1,14 @@
 import React, { ReactNode, useState } from 'react'
 import { ChartBarIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
-import { Badge } from '@/shared/components/ui'
+import { Badge, Button } from '@/shared/components/ui'
 
 interface FilterableTableLayoutProps {
     totalCount: number
     filteredCount: number
     activeFilterCount?: number
-    onClearFilters: () => void
+    onSearch: () => void
+    onClear: () => void
+    isSearching?: boolean
     filters: ReactNode
     children: ReactNode
 }
@@ -15,7 +17,9 @@ export default function FilterableTableLayout({
     totalCount,
     filteredCount,
     activeFilterCount = 0,
-    onClearFilters,
+    onSearch,
+    onClear,
+    isSearching = false,
     filters,
     children,
 }: FilterableTableLayoutProps) {
@@ -60,24 +64,31 @@ export default function FilterableTableLayout({
 
                 {/* アコーディオンコンテンツ */}
                 <div
-                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-                    }`}
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                        }`}
                 >
-                    <div className="p-4 pt-0">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-                            {filters}
-                        </div>
+                    {/* フィルターフォーム */}
+                    <div className="p-4 pt-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+                        {filters}
+                    </div>
 
-                        {/* クリアボタン */}
-                        <div className="flex justify-end mt-4 w-full">
-                            <button
-                                onClick={onClearFilters}
-                                className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex-shrink-0"
-                            >
-                                クリア
-                            </button>
-                        </div>
+                    {/* 検索ボタンエリア */}
+                    <div className="px-4 pb-4 flex justify-end gap-2 pt-4 border-t border-gray-200">
+                        <Button
+                            onClick={onSearch}
+                            variant="primary"
+                            size="md"
+                            disabled={isSearching}
+                        >
+                            {isSearching ? '検索中...' : '検索'}
+                        </Button>
+                        <Button
+                            onClick={onClear}
+                            variant="secondary"
+                            size="md"
+                        >
+                            クリア
+                        </Button>
                     </div>
                 </div>
             </div>

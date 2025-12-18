@@ -5,7 +5,7 @@ import {
 import { AttachmentRequest, AttachmentStatus } from '@/features/applications/types'
 import { Contractor } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
-import { Badge, BadgeVariant, Button } from '@/shared/components/ui'
+import { Badge, BadgeVariant } from '@/shared/components/ui'
 import FilterableTableLayout from '../../common/FilterableTableLayout'
 import { useApplicationFilters } from '../../../hooks/useApplicationFilters'
 
@@ -255,25 +255,6 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
           <option value="キャンセル">キャンセル</option>
         </select>
       </div>
-
-      {/* 検索ボタンエリア */}
-      <div className="col-span-full flex gap-2 pt-4 border-t border-gray-200">
-        <Button
-          onClick={handleSearch}
-          variant="primary"
-          size="md"
-          disabled={isSearching}
-        >
-          {isSearching ? '検索中...' : '検索'}
-        </Button>
-        <Button
-          onClick={handleClear}
-          variant="secondary"
-          size="md"
-        >
-          クリア
-        </Button>
-      </div>
     </>
   )
 
@@ -282,7 +263,9 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
       totalCount={data.length}
       filteredCount={filtered.length}
       activeFilterCount={totalActiveFilterCount}
-      onClearFilters={handleClear}
+      onSearch={handleSearch}
+      onClear={handleClear}
+      isSearching={isSearching}
       filters={filterElements}
     >
       <div className="w-full overflow-x-auto">

@@ -3,7 +3,7 @@ import { PencilSquareIcon } from '@heroicons/react/24/outline'
 import { ConstructionRequest, ConstructionStatus } from '@/features/applications/types'
 import { Contractor } from '@/features/contractor/types'
 import { getTeamsByContractorId } from '@/features/contractor/lib/contractorStorage'
-import { Badge, BadgeVariant, Button } from '@/shared/components/ui'
+import { Badge, BadgeVariant } from '@/shared/components/ui'
 import FilterableTableLayout from '../../common/FilterableTableLayout'
 import { useApplicationFilters } from '../../../hooks/useApplicationFilters'
 
@@ -333,25 +333,6 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         </select>
         <p className="text-xs text-gray-500 mt-1">※「要否」で「必要」を選択時のみ有効</p>
       </div>
-
-      {/* 検索ボタンエリア */}
-      <div className="col-span-full flex gap-2 pt-4 border-t border-gray-200">
-        <Button
-          onClick={handleSearch}
-          variant="primary"
-          size="md"
-          disabled={isSearching}
-        >
-          {isSearching ? '検索中...' : '検索'}
-        </Button>
-        <Button
-          onClick={handleClear}
-          variant="secondary"
-          size="md"
-        >
-          クリア
-        </Button>
-      </div>
     </>
   )
 
@@ -360,7 +341,9 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
       totalCount={data.length}
       filteredCount={filteredData.length}
       activeFilterCount={totalActiveFilterCount}
-      onClearFilters={handleClear}
+      onSearch={handleSearch}
+      onClear={handleClear}
+      isSearching={isSearching}
       filters={filterElements}
     >
       <div className="w-full overflow-x-auto">
