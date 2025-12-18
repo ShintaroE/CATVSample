@@ -45,9 +45,9 @@ export default function OrderSearchModal({ isOpen, onClose, onSelect }: OrderSea
 
       {/* モーダル */}
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto max-w-5xl w-full bg-white rounded-lg shadow-xl">
+        <Dialog.Panel className="mx-auto max-w-5xl w-full bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
           {/* ヘッダー */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div className="sticky top-0 bg-white flex items-center justify-between px-6 py-4 border-b border-gray-200 z-10">
             <Dialog.Title className="text-lg font-semibold text-gray-900">
               受注情報検索
             </Dialog.Title>
@@ -107,7 +107,7 @@ export default function OrderSearchModal({ isOpen, onClose, onSelect }: OrderSea
           </div>
 
           {/* フッター */}
-          <div className="flex justify-end px-6 py-4 border-t border-gray-200">
+          <div className="sticky bottom-0 bg-white flex justify-end px-6 py-4 border-t border-gray-200 z-10">
             <button
               onClick={onClose}
               className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
