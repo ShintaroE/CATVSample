@@ -5,7 +5,7 @@ import { OrderData } from '@/app/orders/types'
 import { useOrderSearch } from '@/shared/hooks/useOrderSearch'
 import OrderSearchFilters from './OrderSearchFilters'
 import OrderSearchTable from './OrderSearchTable'
-import { Badge } from '@/shared/components/ui'
+import { Badge, Button } from '@/shared/components/ui'
 
 interface OrderSearchModalProps {
   isOpen: boolean
@@ -15,9 +15,11 @@ interface OrderSearchModalProps {
 
 export default function OrderSearchModal({ isOpen, onClose, onSelect }: OrderSearchModalProps) {
   const {
-    filters,
-    setFilters,
-    clearFilters,
+    inputFilters,
+    setInputFilters,
+    executeSearch,
+    clearInputFilters,
+    isSearching,
     filteredOrders,
     totalCount,
     filteredCount,
@@ -26,6 +28,14 @@ export default function OrderSearchModal({ isOpen, onClose, onSelect }: OrderSea
   const handleSelect = (order: OrderData) => {
     onSelect(order)
     onClose()
+  }
+
+  const handleSearch = () => {
+    executeSearch()
+  }
+
+  const handleClear = () => {
+    clearInputFilters()
   }
 
   return (
@@ -53,10 +63,28 @@ export default function OrderSearchModal({ isOpen, onClose, onSelect }: OrderSea
           <div className="px-6 py-4 space-y-4">
             {/* フィルター */}
             <OrderSearchFilters
-              filters={filters}
-              onFilterChange={setFilters}
-              onClearFilters={clearFilters}
+              filters={inputFilters}
+              onFilterChange={setInputFilters}
             />
+
+            {/* 検索ボタンエリア */}
+            <div className="flex justify-end gap-2 pt-4 border-t border-gray-200">
+              <Button
+                onClick={handleSearch}
+                variant="primary"
+                size="md"
+                disabled={isSearching}
+              >
+                {isSearching ? '検索中...' : '検索'}
+              </Button>
+              <Button
+                onClick={handleClear}
+                variant="secondary"
+                size="md"
+              >
+                クリア
+              </Button>
+            </div>
 
             {/* 検索結果ヘッダー */}
             <div className="flex items-center justify-between">

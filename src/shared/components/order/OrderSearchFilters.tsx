@@ -6,10 +6,9 @@ import { Input } from '@/shared/components/ui'
 interface OrderSearchFiltersProps {
   filters: Filters
   onFilterChange: (filters: Filters) => void
-  onClearFilters: () => void
 }
 
-export default function OrderSearchFilters({ filters, onFilterChange, onClearFilters }: OrderSearchFiltersProps) {
+export default function OrderSearchFilters({ filters, onFilterChange }: OrderSearchFiltersProps) {
   const handleChange = (field: keyof Filters, value: string) => {
     const newFilters = { ...filters, [field]: value }
 
@@ -33,16 +32,7 @@ export default function OrderSearchFilters({ filters, onFilterChange, onClearFil
 
   return (
     <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 space-y-4">
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="text-sm font-semibold text-gray-900">検索条件</h3>
-        <button
-          type="button"
-          onClick={onClearFilters}
-          className="text-xs text-blue-600 hover:text-blue-800"
-        >
-          クリア
-        </button>
-      </div>
+      <h3 className="text-sm font-semibold text-gray-900 mb-2">検索条件</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {/* 受注番号 */}
