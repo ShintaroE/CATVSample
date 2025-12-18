@@ -41,6 +41,7 @@ export default function OrderSearchFilters({ filters, onFilterChange }: OrderSea
           value={filters.orderNumber}
           onChange={(e) => handleChange('orderNumber', e.target.value)}
           placeholder="部分一致で検索"
+          fullWidth={true}
           className="bg-white text-gray-900"
         />
 
@@ -50,6 +51,7 @@ export default function OrderSearchFilters({ filters, onFilterChange }: OrderSea
           value={filters.customerName}
           onChange={(e) => handleChange('customerName', e.target.value)}
           placeholder="部分一致で検索"
+          fullWidth={true}
           className="bg-white text-gray-900"
         />
 
@@ -59,6 +61,7 @@ export default function OrderSearchFilters({ filters, onFilterChange }: OrderSea
           value={filters.customerCode}
           onChange={(e) => handleChange('customerCode', e.target.value)}
           placeholder="部分一致で検索"
+          fullWidth={true}
           className="bg-white text-gray-900"
         />
 
@@ -68,6 +71,7 @@ export default function OrderSearchFilters({ filters, onFilterChange }: OrderSea
           value={filters.phoneNumber}
           onChange={(e) => handleChange('phoneNumber', e.target.value)}
           placeholder="086-123-4567"
+          fullWidth={true}
           className="bg-white text-gray-900"
         />
 
@@ -77,6 +81,7 @@ export default function OrderSearchFilters({ filters, onFilterChange }: OrderSea
           value={filters.address}
           onChange={(e) => handleChange('address', e.target.value)}
           placeholder="部分一致で検索"
+          fullWidth={true}
           className="bg-white text-gray-900"
         />
 
@@ -88,7 +93,7 @@ export default function OrderSearchFilters({ filters, onFilterChange }: OrderSea
           <select
             value={filters.constructionCategory}
             onChange={(e) => handleChange('constructionCategory', e.target.value as '' | ConstructionCategory)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
           >
             <option value="">すべて</option>
             <option value="個別">個別</option>
@@ -104,7 +109,8 @@ export default function OrderSearchFilters({ filters, onFilterChange }: OrderSea
           <select
             value={filters.workType}
             onChange={(e) => handleChange('workType', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+            disabled={!filters.constructionCategory}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
           >
             <option value="">すべて</option>
             {getWorkTypeOptions().map(type => (
@@ -119,6 +125,7 @@ export default function OrderSearchFilters({ filters, onFilterChange }: OrderSea
           value={filters.collectiveHousingName}
           onChange={(e) => handleChange('collectiveHousingName', e.target.value)}
           placeholder="部分一致で検索"
+          fullWidth={true}
           className="bg-white text-gray-900"
         />
       </div>
