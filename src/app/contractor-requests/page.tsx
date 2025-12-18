@@ -45,9 +45,14 @@ export default function ContractorRequestsPage() {
   const [constructionData, setConstructionData] = useState<ConstructionRequest[]>([])
   const [selectedRequest, setSelectedRequest] = useState<ApplicationRequest | null>(null)
 
-  // 絞り込みフィルタ
-  const [orderNumberFilter, setOrderNumberFilter] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('')
+  // 絞り込みフィルタ（入力用と検索用に分離）
+  const [inputOrderNumber, setInputOrderNumber] = useState('')
+  const [searchOrderNumber, setSearchOrderNumber] = useState('')
+  const [inputStatus, setInputStatus] = useState<string>('')
+  const [searchStatus, setSearchStatus] = useState<string>('')
+  const [inputTeamId, setInputTeamId] = useState<string>('all')
+  const [searchTeamId, setSearchTeamId] = useState<string>('all')
+  const [isSearching, setIsSearching] = useState(false)
 
   // 協力会社ユーザーでない場合はリダイレクト
   useEffect(() => {
@@ -65,7 +70,7 @@ export default function ContractorRequestsPage() {
   // 初回読み込み時に「全て」を選択（既に選択されている場合は何もしない）
   // デフォルトで「全て」が選択されているため、このuseEffectは不要
 
-  // データ読み込み
+  // データ読み込み（searchTeamIdを使用）
   useEffect(() => {
     if (!user?.contractorId) return
 
@@ -84,33 +89,43 @@ export default function ContractorRequestsPage() {
       (r) => r.contractorId === user.contractorId
     )
 
-    // 班フィルタリングの適用
+    // 班フィルタリングの適用（searchTeamIdを使用）
     // 共架・添架: 班に関係なく協力会社全体で表示（teamIdでフィルタリングしない）
     // 現地調査・工事: 選択された班のみ表示
-    if (selectedTeamId === 'all') {
+    if (searchTeamId === 'all') {
       setSurveyData(contractorSurvey)
       setAttachmentData(contractorAttachment) // 共架・添架は常に全体表示
       setConstructionData(contractorConstruction)
     } else {
       setSurveyData(
-        contractorSurvey.filter((r) => r.teamId === selectedTeamId)
+        contractorSurvey.filter((r) => r.teamId === searchTeamId)
       )
       setAttachmentData(contractorAttachment) // 共架・添架は班に関係なく全体表示
       setConstructionData(
-        contractorConstruction.filter((r) => r.teamId === selectedTeamId)
+        contractorConstruction.filter((r) => r.teamId === searchTeamId)
       )
     }
-  }, [user, selectedTeamId])
+  }, [user, searchTeamId])
 
   // 進捗更新を開く
   const handleOpenProgress = (request: ApplicationRequest) => {
     setSelectedRequest(request)
   }
 
-  // フィルタクリア
+  // 検索実行
+  const handleSearch = () => {
+    setIsSearching(true)
+    setSearchOrderNumber(inputOrderNumber)
+    setSearchStatus(inputStatus)
+    setSearchTeamId(inputTeamId)
+    setTimeout(() => setIsSearching(false), 0)
+  }
+
+  // フィルタクリア（入力フォームのみクリア）
   const handleClearFilters = () => {
-    setOrderNumberFilter('')
-    setStatusFilter('')
+    setInputOrderNumber('')
+    setInputStatus('')
+    setInputTeamId('all')
   }
 
   // 現在のタブデータ
@@ -121,22 +136,22 @@ export default function ContractorRequestsPage() {
         ? attachmentData
         : constructionData
 
-  // フィルタリング適用
+  // フィルタリング適用（searchフィルターを使用）
   const filteredData = useMemo(() => {
     return currentData.filter((request: ApplicationRequest) => {
       // 受注番号
-      if (orderNumberFilter && !(request.orderNumber || '').includes(orderNumberFilter)) {
+      if (searchOrderNumber && !(request.orderNumber || '').includes(searchOrderNumber)) {
         return false
       }
 
       // 状態
-      if (statusFilter && request.status !== statusFilter) {
+      if (searchStatus && request.status !== searchStatus) {
         return false
       }
 
       return true
     })
-  }, [currentData, orderNumberFilter, statusFilter])
+  }, [currentData, searchOrderNumber, searchStatus])
 
   // 進捗更新を保存
   const handleSaveProgress = (
@@ -210,24 +225,10 @@ export default function ContractorRequestsPage() {
                 班が割り当てられていません
               </p>
             ) : (
-              // 班がある場合: セレクトボックス表示（「全て」オプション含む）
-              <div className="flex items-center gap-2 mt-2">
-                <label className="text-sm font-medium text-gray-700">
-                  表示する班:
-                </label>
-                <select
-                  value={selectedTeamId}
-                  onChange={(e) => setSelectedTeamId(e.target.value)}
-                  className="px-3 py-1.5 border rounded-md bg-white text-gray-900 text-sm"
-                >
-                  <option value="all">全て</option>
-                  {availableTeams.map((team) => (
-                    <option key={team.id} value={team.id}>
-                      {team.teamName}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              // 班がある場合: 検索ボタンで適用されることを表示
+              <p className="text-sm text-gray-500 mt-1">
+                絞り込み条件で班を選択し、検索ボタンで適用してください
+              </p>
             )}
           </div>
         </div>
@@ -272,14 +273,32 @@ export default function ContractorRequestsPage() {
                 >
                   表示: {filteredData.length}件
                 </Badge>
-                <Badge variant="default" size="sm" className="font-normal">
-                  全: {currentData.length}件
-                </Badge>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* 班選択 */}
+            {availableTeams.length > 0 && (
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  班
+                </label>
+                <select
+                  value={inputTeamId}
+                  onChange={(e) => setInputTeamId(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
+                >
+                  <option value="all">全て</option>
+                  {availableTeams.map((team) => (
+                    <option key={team.id} value={team.id}>
+                      {team.teamName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             {/* 受注番号 */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">
@@ -287,8 +306,8 @@ export default function ContractorRequestsPage() {
               </label>
               <input
                 type="text"
-                value={orderNumberFilter}
-                onChange={(e) => setOrderNumberFilter(e.target.value)}
+                value={inputOrderNumber}
+                onChange={(e) => setInputOrderNumber(e.target.value)}
                 placeholder="2024031500001"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
               />
@@ -300,8 +319,8 @@ export default function ContractorRequestsPage() {
                 状態
               </label>
               <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                value={inputStatus}
+                onChange={(e) => setInputStatus(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
               >
                 <option value="">全て</option>
@@ -337,14 +356,23 @@ export default function ContractorRequestsPage() {
             </div>
           </div>
 
-          {/* クリアボタン */}
-          <div className="flex justify-end mt-4">
-            <button
+          {/* 検索ボタンエリア */}
+          <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-gray-200">
+            <Button
+              onClick={handleSearch}
+              variant="primary"
+              size="md"
+              disabled={isSearching}
+            >
+              {isSearching ? '検索中...' : '検索'}
+            </Button>
+            <Button
               onClick={handleClearFilters}
-              className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              variant="secondary"
+              size="md"
             >
               クリア
-            </button>
+            </Button>
           </div>
         </div>
 

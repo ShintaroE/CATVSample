@@ -26,7 +26,9 @@ const initialFilters: OrderSearchFilters = {
 
 export function useOrderSearch() {
   const [orders, setOrders] = useState<OrderData[]>([])
-  const [filters, setFilters] = useState<OrderSearchFilters>(initialFilters)
+  const [inputFilters, setInputFilters] = useState<OrderSearchFilters>(initialFilters)
+  const [searchFilters, setSearchFilters] = useState<OrderSearchFilters>(initialFilters)
+  const [isSearching, setIsSearching] = useState(false)
 
   // localStorageから全受注データを取得
   useEffect(() => {
@@ -38,12 +40,12 @@ export function useOrderSearch() {
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
       // 受注番号
-      if (filters.orderNumber && !order.orderNumber.includes(filters.orderNumber)) {
+      if (searchFilters.orderNumber && !order.orderNumber.includes(searchFilters.orderNumber)) {
         return false
       }
       // 顧客名（顧客名 OR 顧客名カナで部分一致）
-      if (filters.customerName) {
-        const lowerQuery = filters.customerName.toLowerCase()
+      if (searchFilters.customerName) {
+        const lowerQuery = searchFilters.customerName.toLowerCase()
         const customerName = (order.customerName || '').toLowerCase()
         const customerNameKana = (order.customerNameKana || '').toLowerCase()
         if (!customerName.includes(lowerQuery) && !customerNameKana.includes(lowerQuery)) {
@@ -51,13 +53,13 @@ export function useOrderSearch() {
         }
       }
       // 顧客コード
-      if (filters.customerCode && !order.customerCode.includes(filters.customerCode)) {
+      if (searchFilters.customerCode && !order.customerCode.includes(searchFilters.customerCode)) {
         return false
       }
       // 電話番号（ハイフン無視）
-      if (filters.phoneNumber) {
+      if (searchFilters.phoneNumber) {
         const normalizePhone = (phone: string) => phone.replace(/[-\s]/g, '')
-        const normalizedQuery = normalizePhone(filters.phoneNumber.trim())
+        const normalizedQuery = normalizePhone(searchFilters.phoneNumber.trim())
         if (!order.phoneNumber) {
           return false
         }
@@ -67,20 +69,20 @@ export function useOrderSearch() {
         }
       }
       // 住所
-      if (filters.address && order.address && !order.address.includes(filters.address)) {
+      if (searchFilters.address && order.address && !order.address.includes(searchFilters.address)) {
         return false
       }
       // 工事区分
-      if (filters.constructionCategory && order.constructionCategory !== filters.constructionCategory) {
+      if (searchFilters.constructionCategory && order.constructionCategory !== searchFilters.constructionCategory) {
         return false
       }
       // 工事種別
-      if (filters.workType && order.workType !== filters.workType) {
+      if (searchFilters.workType && order.workType !== searchFilters.workType) {
         return false
       }
       // 集合住宅名（集合住宅名 OR 集合住宅名カナで部分一致）
-      if (filters.collectiveHousingName && order.collectiveHousingName) {
-        const lowerQuery = filters.collectiveHousingName.toLowerCase()
+      if (searchFilters.collectiveHousingName && order.collectiveHousingName) {
+        const lowerQuery = searchFilters.collectiveHousingName.toLowerCase()
         const housingName = (order.collectiveHousingName || '').toLowerCase()
         const housingNameKana = (order.collectiveHousingNameKana || '').toLowerCase()
         if (!housingName.includes(lowerQuery) && !housingNameKana.includes(lowerQuery)) {
@@ -89,17 +91,28 @@ export function useOrderSearch() {
       }
       return true
     })
-  }, [orders, filters])
+  }, [orders, searchFilters])
 
-  const clearFilters = () => {
-    setFilters(initialFilters)
+  // 検索実行
+  const executeSearch = () => {
+    setIsSearching(true)
+    setSearchFilters({ ...inputFilters })
+    setTimeout(() => setIsSearching(false), 300)
+  }
+
+  // クリア（入力フォームのみクリア）
+  const clearInputFilters = () => {
+    setInputFilters(initialFilters)
   }
 
   return {
     orders,
-    filters,
-    setFilters,
-    clearFilters,
+    inputFilters,
+    searchFilters,
+    setInputFilters,
+    executeSearch,
+    clearInputFilters,
+    isSearching,
     filteredOrders,
     totalCount: orders.length,
     filteredCount: filteredOrders.length,

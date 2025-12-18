@@ -14,44 +14,58 @@ interface ConstructionTabProps {
 }
 
 const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, onEdit }) => {
-  // 共通フィルターフックを使用
+  // 共通フィルターフックを使用（検索ボタンパターン）
   const {
-    filters,
+    inputFilters,
+    searchFilters,
     baseFilteredData,
-    updateFilter,
-    clearFilters: clearBaseFilters,
+    updateInputFilter,
+    executeSearch,
+    clearInputFilters,
+    isSearching,
     activeFilterCount: baseActiveFilterCount,
   } = useApplicationFilters(data)
 
-  // Construction固有のフィルター
-  const [statusFilter, setStatusFilter] = useState<'' | ConstructionStatus>('')
-  const [reportRequiredFilter, setReportRequiredFilter] = useState<'' | 'required' | 'notRequired'>('')
-  const [reportStatusFilter, setReportStatusFilter] = useState<'' | 'completed' | 'pending'>('')
+  // Construction固有のフィルター（入力用と検索用に分離）
+  const [inputStatus, setInputStatus] = useState<'' | ConstructionStatus>('')
+  const [searchStatus, setSearchStatus] = useState<'' | ConstructionStatus>('')
+  const [inputReportRequired, setInputReportRequired] = useState<'' | 'required' | 'notRequired'>('')
+  const [searchReportRequired, setSearchReportRequired] = useState<'' | 'required' | 'notRequired'>('')
+  const [inputReportStatus, setInputReportStatus] = useState<'' | 'completed' | 'pending'>('')
+  const [searchReportStatus, setSearchReportStatus] = useState<'' | 'completed' | 'pending'>('')
 
-  // Get teams for selected contractor
+  // Get teams for selected contractor（入力フィルターを使用）
   const availableTeams = useMemo(() => {
-    if (!filters.contractorId) return []
-    return getTeamsByContractorId(filters.contractorId)
-  }, [filters.contractorId])
+    if (!inputFilters.contractorId) return []
+    return getTeamsByContractorId(inputFilters.contractorId)
+  }, [inputFilters.contractorId])
 
   // Reset team filter when contractor changes（共通フックが自動的に行う）
   const handleContractorChange = (contractorId: string) => {
-    updateFilter('contractorId', contractorId)
+    updateInputFilter('contractorId', contractorId)
   }
 
-  // フィルタクリア
-  const handleClearFilters = () => {
-    clearBaseFilters()
-    setStatusFilter('')
-    setReportRequiredFilter('')
-    setReportStatusFilter('')
+  // 検索実行
+  const handleSearch = () => {
+    executeSearch()
+    setSearchStatus(inputStatus)
+    setSearchReportRequired(inputReportRequired)
+    setSearchReportStatus(inputReportStatus)
   }
 
-  // 適用中のフィルター数をカウント
-  let activeFilterCount = baseActiveFilterCount
-  if (statusFilter) activeFilterCount++
-  if (reportRequiredFilter) activeFilterCount++
-  if (reportStatusFilter) activeFilterCount++
+  // フィルタクリア（入力フォームのみクリア）
+  const handleClear = () => {
+    clearInputFilters()
+    setInputStatus('')
+    setInputReportRequired('')
+    setInputReportStatus('')
+  }
+
+  // 適用中のフィルター数をカウント（検索後の状態をカウント）
+  let totalActiveFilterCount = baseActiveFilterCount
+  if (searchStatus) totalActiveFilterCount++
+  if (searchReportRequired) totalActiveFilterCount++
+  if (searchReportStatus) totalActiveFilterCount++
 
   // Badge variant functions
   const getStatusBadge = (status: ConstructionStatus): BadgeVariant => {
@@ -88,21 +102,21 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
     return { variant: 'info', text: '要' }
   }
 
-  // Construction固有のフィルターを適用
+  // Construction固有のフィルターを適用（検索後の状態を使用）
   const filteredData = useMemo(() => {
     return baseFilteredData.filter(item => {
       // 状態
-      if (statusFilter && item.status !== statusFilter) {
+      if (searchStatus && item.status !== searchStatus) {
         return false
       }
 
       // 工事後報告（要否）
-      if (reportRequiredFilter) {
-        if (reportRequiredFilter === 'required') {
+      if (searchReportRequired) {
+        if (searchReportRequired === 'required') {
           if (!item.postConstructionApplicationReport?.required) {
             return false
           }
-        } else if (reportRequiredFilter === 'notRequired') {
+        } else if (searchReportRequired === 'notRequired') {
           if (item.postConstructionApplicationReport?.required) {
             return false
           }
@@ -110,15 +124,15 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
       }
 
       // 工事後報告（完了状態） - 「要」の場合のみ有効
-      if (reportStatusFilter && item.postConstructionApplicationReport?.required) {
-        if (item.postConstructionApplicationReport.status !== reportStatusFilter) {
+      if (searchReportStatus && item.postConstructionApplicationReport?.required) {
+        if (item.postConstructionApplicationReport.status !== searchReportStatus) {
           return false
         }
       }
 
       return true
     })
-  }, [baseFilteredData, statusFilter, reportRequiredFilter, reportStatusFilter])
+  }, [baseFilteredData, searchStatus, searchReportRequired, searchReportStatus])
 
   // フィルターJSX
   const filterElements = (
@@ -131,8 +145,8 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         <input
           type="text"
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-          value={filters.orderNumber}
-          onChange={(e) => updateFilter('orderNumber', e.target.value)}
+          value={inputFilters.orderNumber}
+          onChange={(e) => updateInputFilter('orderNumber', e.target.value)}
           placeholder="受注番号で絞り込み"
         />
       </div>
@@ -145,8 +159,8 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         <input
           type="text"
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-          value={filters.phoneNumber}
-          onChange={(e) => updateFilter('phoneNumber', e.target.value)}
+          value={inputFilters.phoneNumber}
+          onChange={(e) => updateInputFilter('phoneNumber', e.target.value)}
           placeholder="086-123-4567"
         />
       </div>
@@ -158,8 +172,8 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         </label>
         <select
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-          value={filters.propertyType}
-          onChange={(e) => updateFilter('propertyType', e.target.value as '' | '個別' | '集合')}
+          value={inputFilters.propertyType}
+          onChange={(e) => updateInputFilter('propertyType', e.target.value as '' | '個別' | '集合')}
         >
           <option value="">全て</option>
           <option value="個別">個別</option>
@@ -175,8 +189,8 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         <input
           type="text"
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm placeholder:text-gray-400"
-          value={filters.customerCode}
-          onChange={(e) => updateFilter('customerCode', e.target.value)}
+          value={inputFilters.customerCode}
+          onChange={(e) => updateInputFilter('customerCode', e.target.value)}
           placeholder="C123456"
         />
         <p className="text-xs text-gray-500 mt-1">※個別物件のみ</p>
@@ -190,8 +204,8 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         <input
           type="text"
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm placeholder:text-gray-400"
-          value={filters.collectiveCode}
-          onChange={(e) => updateFilter('collectiveCode', e.target.value)}
+          value={inputFilters.collectiveCode}
+          onChange={(e) => updateInputFilter('collectiveCode', e.target.value)}
           placeholder="K001"
         />
         <p className="text-xs text-gray-500 mt-1">※集合物件のみ</p>
@@ -205,8 +219,8 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         <input
           type="text"
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm placeholder:text-gray-400"
-          value={filters.customerName}
-          onChange={(e) => updateFilter('customerName', e.target.value)}
+          value={inputFilters.customerName}
+          onChange={(e) => updateInputFilter('customerName', e.target.value)}
           placeholder="顧客名 or カナ"
         />
         <p className="text-xs text-gray-500 mt-1">※個別物件のみ</p>
@@ -220,8 +234,8 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         <input
           type="text"
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm placeholder:text-gray-400"
-          value={filters.collectiveHousingName}
-          onChange={(e) => updateFilter('collectiveHousingName', e.target.value)}
+          value={inputFilters.collectiveHousingName}
+          onChange={(e) => updateInputFilter('collectiveHousingName', e.target.value)}
           placeholder="集合住宅名 or カナ"
         />
         <p className="text-xs text-gray-500 mt-1">※集合物件のみ</p>
@@ -234,7 +248,7 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         </label>
         <select
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-          value={filters.contractorId}
+          value={inputFilters.contractorId}
           onChange={(e) => handleContractorChange(e.target.value)}
         >
           <option value="">全て</option>
@@ -253,9 +267,9 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         </label>
         <select
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-          value={filters.teamId}
-          onChange={(e) => updateFilter('teamId', e.target.value)}
-          disabled={!filters.contractorId}
+          value={inputFilters.teamId}
+          onChange={(e) => updateInputFilter('teamId', e.target.value)}
+          disabled={!inputFilters.contractorId}
         >
           <option value="">全て</option>
           {availableTeams.filter(t => t.isActive).map(team => (
@@ -273,8 +287,8 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         </label>
         <select
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as '' | ConstructionStatus)}
+          value={inputStatus}
+          onChange={(e) => setInputStatus(e.target.value as '' | ConstructionStatus)}
         >
           <option value="">全て</option>
           <option value="未着手">未着手</option>
@@ -293,8 +307,8 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         </label>
         <select
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-          value={reportRequiredFilter}
-          onChange={(e) => setReportRequiredFilter(e.target.value as '' | 'required' | 'notRequired')}
+          value={inputReportRequired}
+          onChange={(e) => setInputReportRequired(e.target.value as '' | 'required' | 'notRequired')}
         >
           <option value="">全て</option>
           <option value="required">必要</option>
@@ -309,9 +323,9 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
         </label>
         <select
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-          value={reportStatusFilter}
-          onChange={(e) => setReportStatusFilter(e.target.value as '' | 'completed' | 'pending')}
-          disabled={reportRequiredFilter !== 'required'}
+          value={inputReportStatus}
+          onChange={(e) => setInputReportStatus(e.target.value as '' | 'completed' | 'pending')}
+          disabled={inputReportRequired !== 'required'}
         >
           <option value="">全て</option>
           <option value="completed">完了</option>
@@ -326,8 +340,10 @@ const ConstructionTab: React.FC<ConstructionTabProps> = ({ data, contractors, on
     <FilterableTableLayout
       totalCount={data.length}
       filteredCount={filteredData.length}
-      activeFilterCount={activeFilterCount}
-      onClearFilters={handleClearFilters}
+      activeFilterCount={totalActiveFilterCount}
+      onSearch={handleSearch}
+      onClear={handleClear}
+      isSearching={isSearching}
       filters={filterElements}
     >
       <div className="w-full overflow-x-auto">

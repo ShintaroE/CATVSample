@@ -18,48 +18,58 @@ interface AttachmentTabProps {
 export default function AttachmentTab({ data, contractors, onEdit }: AttachmentTabProps) {
   // 共通フィルターフックを使用
   const {
-    filters,
+    inputFilters,
+    searchFilters,
     baseFilteredData,
-    updateFilter,
-    clearFilters: clearBaseFilters,
+    updateInputFilter,
+    executeSearch,
+    clearInputFilters,
+    isSearching,
     activeFilterCount: baseActiveFilterCount,
   } = useApplicationFilters(data)
 
-  // Attachment固有のフィルター
-  const [statusFilter, setStatusFilter] = useState<'' | AttachmentStatus>('')
+  // Attachment固有のフィルター（入力用と検索用）
+  const [inputStatus, setInputStatus] = useState<'' | AttachmentStatus>('')
+  const [searchStatus, setSearchStatus] = useState<'' | AttachmentStatus>('')
 
   // 依頼先選択時に利用可能な班を取得
   const availableTeams = useMemo(() => {
-    if (!filters.contractorId) return []
-    return getTeamsByContractorId(filters.contractorId)
-  }, [filters.contractorId])
+    if (!inputFilters.contractorId) return []
+    return getTeamsByContractorId(inputFilters.contractorId)
+  }, [inputFilters.contractorId])
 
   // 依頼先変更時に班をリセット（共通フックが自動的に行う）
   const handleContractorChange = (contractorId: string) => {
-    updateFilter('contractorId', contractorId)
+    updateInputFilter('contractorId', contractorId)
   }
 
-  // フィルタクリア
-  const handleClearFilters = () => {
-    clearBaseFilters()
-    setStatusFilter('')
+  // 検索実行
+  const handleSearch = () => {
+    executeSearch()
+    setSearchStatus(inputStatus)
   }
 
-  // 適用中のフィルター数をカウント
-  let activeFilterCount = baseActiveFilterCount
-  if (statusFilter) activeFilterCount++
+  // クリア（入力フォームのみクリア）
+  const handleClear = () => {
+    clearInputFilters()
+    setInputStatus('')
+  }
 
-  // Attachment固有のフィルターを適用
+  // 適用中のフィルター数をカウント（searchStatusを使用）
+  let totalActiveFilterCount = baseActiveFilterCount
+  if (searchStatus) totalActiveFilterCount++
+
+  // Attachment固有のフィルターを適用（searchStatusを使用）
   const filtered = useMemo(() => {
     return baseFilteredData.filter((r) => {
       // 状態
-      if (statusFilter && r.status !== statusFilter) {
+      if (searchStatus && r.status !== searchStatus) {
         return false
       }
 
       return true
     })
-  }, [baseFilteredData, statusFilter])
+  }, [baseFilteredData, searchStatus])
 
   const getStatusBadge = (status: AttachmentStatus): BadgeVariant => {
     const variantMap: Record<AttachmentStatus, BadgeVariant> = {
@@ -93,8 +103,8 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
         </label>
         <input
           type="text"
-          value={filters.orderNumber}
-          onChange={(e) => updateFilter('orderNumber', e.target.value)}
+          value={inputFilters.orderNumber}
+          onChange={(e) => updateInputFilter('orderNumber', e.target.value)}
           placeholder="2024031500001"
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
         />
@@ -107,8 +117,8 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
         </label>
         <input
           type="text"
-          value={filters.phoneNumber}
-          onChange={(e) => updateFilter('phoneNumber', e.target.value)}
+          value={inputFilters.phoneNumber}
+          onChange={(e) => updateInputFilter('phoneNumber', e.target.value)}
           placeholder="086-123-4567"
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
         />
@@ -120,8 +130,8 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
           個別/集合
         </label>
         <select
-          value={filters.propertyType}
-          onChange={(e) => updateFilter('propertyType', e.target.value as '' | '個別' | '集合')}
+          value={inputFilters.propertyType}
+          onChange={(e) => updateInputFilter('propertyType', e.target.value as '' | '個別' | '集合')}
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
         >
           <option value="">全て</option>
@@ -137,8 +147,8 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
         </label>
         <input
           type="text"
-          value={filters.customerCode}
-          onChange={(e) => updateFilter('customerCode', e.target.value)}
+          value={inputFilters.customerCode}
+          onChange={(e) => updateInputFilter('customerCode', e.target.value)}
           placeholder="123456789"
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
         />
@@ -152,8 +162,8 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
         </label>
         <input
           type="text"
-          value={filters.collectiveCode}
-          onChange={(e) => updateFilter('collectiveCode', e.target.value)}
+          value={inputFilters.collectiveCode}
+          onChange={(e) => updateInputFilter('collectiveCode', e.target.value)}
           placeholder="K001"
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
         />
@@ -167,8 +177,8 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
         </label>
         <input
           type="text"
-          value={filters.customerName}
-          onChange={(e) => updateFilter('customerName', e.target.value)}
+          value={inputFilters.customerName}
+          onChange={(e) => updateInputFilter('customerName', e.target.value)}
           placeholder="顧客名 or カナ"
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
         />
@@ -182,8 +192,8 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
         </label>
         <input
           type="text"
-          value={filters.collectiveHousingName}
-          onChange={(e) => updateFilter('collectiveHousingName', e.target.value)}
+          value={inputFilters.collectiveHousingName}
+          onChange={(e) => updateInputFilter('collectiveHousingName', e.target.value)}
           placeholder="集合住宅名 or カナ"
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm placeholder:text-gray-400"
         />
@@ -196,7 +206,7 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
           依頼先
         </label>
         <select
-          value={filters.contractorId}
+          value={inputFilters.contractorId}
           onChange={(e) => handleContractorChange(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
         >
@@ -213,9 +223,9 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
           班
         </label>
         <select
-          value={filters.teamId}
-          onChange={(e) => updateFilter('teamId', e.target.value)}
-          disabled={!filters.contractorId}
+          value={inputFilters.teamId}
+          onChange={(e) => updateInputFilter('teamId', e.target.value)}
+          disabled={!inputFilters.contractorId}
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
         >
           <option value="">全て</option>
@@ -231,8 +241,8 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
           状態
         </label>
         <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as '' | AttachmentStatus)}
+          value={inputStatus}
+          onChange={(e) => setInputStatus(e.target.value as '' | AttachmentStatus)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
         >
           <option value="">全て</option>
@@ -252,8 +262,10 @@ export default function AttachmentTab({ data, contractors, onEdit }: AttachmentT
     <FilterableTableLayout
       totalCount={data.length}
       filteredCount={filtered.length}
-      activeFilterCount={activeFilterCount}
-      onClearFilters={handleClearFilters}
+      activeFilterCount={totalActiveFilterCount}
+      onSearch={handleSearch}
+      onClear={handleClear}
+      isSearching={isSearching}
       filters={filterElements}
     >
       <div className="w-full overflow-x-auto">

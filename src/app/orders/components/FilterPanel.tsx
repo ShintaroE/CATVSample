@@ -2,13 +2,15 @@ import React, { useState } from 'react'
 import { OrderFilters } from '../hooks/useOrderFilters'
 import { ConstructionCategory, individualWorkTypeOptions, collectiveWorkTypeOptions, IndividualWorkType, CollectiveWorkType, OrderStatus } from '../types'
 import { ChartBarIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
-import { Badge } from '@/shared/components/ui'
+import { Badge, Button } from '@/shared/components/ui'
 import AdditionalCostsFilter from './AdditionalCostsFilter'
 
 interface FilterPanelProps {
   filters: OrderFilters
   onUpdateFilter: <K extends keyof OrderFilters>(key: K, value: OrderFilters[K]) => void
+  onSearch: () => void
   onClear: () => void
+  isSearching: boolean
   activeFilterCount: number
   filteredCount: number
   totalCount: number
@@ -17,7 +19,9 @@ interface FilterPanelProps {
 export default function FilterPanel({
   filters,
   onUpdateFilter,
+  onSearch,
   onClear,
+  isSearching,
   activeFilterCount,
   filteredCount,
   totalCount
@@ -60,9 +64,6 @@ export default function FilterPanel({
             className="font-semibold"
           >
             表示: {filteredCount}件
-          </Badge>
-          <Badge variant="default" size="sm" className="font-normal">
-            全: {totalCount}件
           </Badge>
         </div>
       </button>
@@ -221,14 +222,23 @@ export default function FilterPanel({
             />
           </div>
 
-          {/* クリアボタン */}
-          <div className="flex justify-end mt-4 w-full">
-            <button
+          {/* 検索ボタンエリア */}
+          <div className="flex justify-end gap-2 mt-4 w-full pt-4 border-t border-gray-200">
+            <Button
+              onClick={onSearch}
+              variant="primary"
+              size="md"
+              disabled={isSearching}
+            >
+              {isSearching ? '検索中...' : '検索'}
+            </Button>
+            <Button
               onClick={onClear}
-              className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex-shrink-0"
+              variant="secondary"
+              size="md"
             >
               クリア
-            </button>
+            </Button>
           </div>
         </div>
       </div>
