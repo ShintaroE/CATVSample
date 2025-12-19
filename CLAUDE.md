@@ -342,48 +342,67 @@ Orders page includes comprehensive CSV export functionality with application dat
 
 **Known Issue**: React hydration warning due to nested buttons in FilterPanel (button inside accordion button). Functionality works correctly but violates HTML spec. Fix planned for future PR.
 
-### Filter Panel with Accordion UI Pattern
-All filter panels use a unified accordion UI with active filter count:
+### Search Button Pattern (Unified)
+All filter panels use a search button pattern with input/search state separation:
+
+**Pattern 1: FilterableTableLayout (Applications pages)**
 ```typescript
-// Pattern 1: Using FilterableTableLayout (for applications pages)
-// Use useApplicationFilters hook for shared filter logic
 import { useApplicationFilters } from '@/app/applications/hooks/useApplicationFilters'
 
 const {
-  filters,
-  setFilters,
-  activeFilterCount,
-  hasActiveFilters,
-  clearFilters
+  inputFilters,        // Input state (not applied until search)
+  searchFilters,       // Applied filters (used in useMemo)
+  updateInputFilter,   // Update input state
+  executeSearch,       // Apply filters (inputFilters → searchFilters)
+  clearInputFilters,   // Clear input only
+  isSearching,         // Loading state
+  baseFilteredData,    // Pre-filtered data
+  activeFilterCount,   // Count of active filters
 } = useApplicationFilters(data)
 
-// activeFilterCount is computed without useMemo (lightweight O(1) calculation)
-let activeFilterCount = baseActiveFilterCount
-if (statusFilter) activeFilterCount++
-if (otherFilter) activeFilterCount++
-
-const filterUI = (
-  <>
-    {/* Filter inputs */}
-  </>
-)
-
+// FilterableTableLayout includes search/clear buttons
 return (
   <FilterableTableLayout
     totalCount={data.length}
     filteredCount={filtered.length}
     activeFilterCount={activeFilterCount}
-    onClearFilters={handleClearFilters}
-    filters={filterUI}
+    onSearch={executeSearch}      // Search button handler
+    onClear={clearInputFilters}   // Clear button handler
+    isSearching={isSearching}     // Loading state
+    filters={filterUI}            // Input fields only (no buttons)
   >
     {/* Table content */}
   </FilterableTableLayout>
 )
-
-// Pattern 2: Custom FilterPanel with accordion (for orders page)
-// Implements same accordion UI with ChevronDown/UpIcon toggle
-// Shows "N件のフィルター適用中" badge when filters are active
 ```
+
+**Pattern 2: OrderSearchModal (Order search modal)**
+```typescript
+import { useOrderSearch } from '@/shared/hooks/useOrderSearch'
+
+const {
+  inputFilters,
+  setInputFilters,
+  executeSearch,
+  clearInputFilters,
+  isSearching,
+  filteredOrders,
+} = useOrderSearch()
+
+// Modal includes search/clear buttons below filters
+<OrderSearchFilters filters={inputFilters} onFilterChange={setInputFilters} />
+<div className="flex justify-end gap-2 pt-4 border-t border-gray-200">
+  <Button onClick={executeSearch} disabled={isSearching}>検索</Button>
+  <Button onClick={clearInputFilters}>クリア</Button>
+</div>
+```
+
+**Key Principles:**
+- Input state (`inputFilters`) separate from search state (`searchFilters`)
+- Filtering only executes on search button click (not on input change)
+- Clear button only clears input fields (search results unchanged)
+- Search/clear buttons always right-aligned
+- Consistent UX across all pages
 
 **Key Features:**
 - Default state: Open
@@ -403,8 +422,39 @@ Position badges in filter panel headers:
 </Badge>
 ```
 
-### Form Modal Pattern
-All modals follow this pattern:
+### Modal Pattern (Headless UI)
+All modals use Headless UI Dialog with consistent structure:
+
+**Required Structure:**
+```tsx
+<Dialog.Panel className="mx-auto max-w-5xl w-full bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
+  {/* Header - sticky top */}
+  <div className="sticky top-0 bg-white flex items-center justify-between px-6 py-4 border-b border-gray-200 z-10">
+    <Dialog.Title>タイトル</Dialog.Title>
+    <button onClick={onClose}><XMarkIcon /></button>
+  </div>
+
+  {/* Content - scrollable */}
+  <div className="px-6 py-4">
+    {/* Form content */}
+  </div>
+
+  {/* Footer - sticky bottom */}
+  <div className="sticky bottom-0 bg-white flex justify-end px-6 py-4 border-t border-gray-200 z-10">
+    <Button onClick={onClose}>キャンセル</Button>
+    <Button onClick={onSave}>保存</Button>
+  </div>
+</Dialog.Panel>
+```
+
+**Critical Requirements:**
+- `max-h-[90vh]` - Limit modal height to 90% of viewport
+- `overflow-y-auto` - Enable vertical scrolling
+- `sticky top-0/bottom-0` - Keep header/footer visible while scrolling
+- `bg-white` on sticky elements - Prevent content showing through
+- `z-10` on sticky elements - Layer above scrolling content
+
+**Form Modal Pattern:**
 1. State: `formData`, `uploadingFiles`
 2. Handlers: `handleFileUpload`, `handleFileDelete`, `handleFileDownload`
 3. Components: FileAttachments, RequestNotes (for applications)
@@ -439,19 +489,21 @@ location.reload()
 | login | ✅ Simple | 114 | Already clean |
 
 ### Filter Implementation Status
-| Page | Filter UI | Active Count | Accordion | Pattern | Shared Hook | Notes |
-|------|-----------|--------------|-----------|---------|-------------|-------|
-| applications (Survey) | ✅ | ✅ | ✅ | FilterableTableLayout | useApplicationFilters | Shared hook pattern |
-| applications (Attachment) | ✅ | ✅ | ✅ | FilterableTableLayout | useApplicationFilters | Shared hook pattern |
-| applications (Construction) | ✅ | ✅ | ✅ | FilterableTableLayout | useApplicationFilters | Shared hook pattern |
+| Page | Filter UI | Search Button | Accordion | Pattern | Shared Hook | Notes |
+|------|-----------|---------------|-----------|---------|-------------|-------|
+| applications (Survey) | ✅ | ✅ | ✅ | FilterableTableLayout | useApplicationFilters | Search button in layout |
+| applications (Attachment) | ✅ | ✅ | ✅ | FilterableTableLayout | useApplicationFilters | Search button in layout |
+| applications (Construction) | ✅ | ✅ | ✅ | FilterableTableLayout | useApplicationFilters | Search button in layout |
+| OrderSearchModal | ✅ | ✅ | N/A | Custom modal | useOrderSearch | Search button below filters |
 | orders | ✅ | ✅ | ✅ | Custom FilterPanel | useOrderFilters | Accordion pattern |
-| contractor-requests | ✅ | ⚠️ Manual | ❌ | Legacy inline | useMemo inline | 610 lines, needs refactoring |
+| contractor-requests | ✅ | ✅ | ❌ | Legacy inline | useMemo inline | 610 lines, needs refactoring |
 | schedule | N/A | N/A | N/A | Team filter only | useFilters | Hierarchical team filter |
 | my-exclusions | N/A | N/A | N/A | Schedule type filter | - | Simple select dropdown |
 
 ### Architecture Refactoring History
 | PR | Change | Files | Impact |
 |----|--------|-------|--------|
+| #67 | Search button and clear button unification | 7 files | Integrated search/clear buttons into FilterableTableLayout; added search button pattern to OrderSearchModal; fixed modal scroll issues |
 | #66 | Enhanced CSV export with application data | 3 files | CSV now includes survey/attachment/construction data (54 columns total) |
 | #65 | Added kana fields to appointment history | 4 files | Added customerCode and customerNameKana display; hiragana search support |
 | #60 | Unified application form structure | 3 files | Removed team selection from Attachment requests; Attachment is now contractor-level only |
