@@ -382,8 +382,8 @@ export default function ContractorRequestsPage() {
             <table className="min-w-full bg-white">
               <thead>
                 <tr className="bg-gray-100 text-left text-xs text-gray-600">
-                  <th className="px-3 py-2 font-medium">整理番号</th>
-                  <th className="px-3 py-2 font-medium">受注番号</th>
+                  <th className="px-3 py-2 font-medium whitespace-nowrap">整理番号</th>
+                  <th className="px-3 py-2 font-medium whitespace-nowrap">受注番号</th>
                   {activeTab === 'survey' && (
                     <>
                       <th className="px-3 py-2 font-medium whitespace-nowrap">個別/集合</th>
@@ -420,19 +420,19 @@ export default function ContractorRequestsPage() {
                   )}
                   {activeTab === 'construction' && (
                     <>
-                      <th className="px-3 py-2 font-medium">個別/集合</th>
-                      <th className="px-3 py-2 font-medium">顧客コード</th>
-                      <th className="px-3 py-2 font-medium">顧客名</th>
-                      <th className="px-3 py-2 font-medium">顧客名（カナ）</th>
-                      <th className="px-3 py-2 font-medium">集合コード</th>
-                      <th className="px-3 py-2 font-medium">集合住宅名</th>
-                      <th className="px-3 py-2 font-medium">集合住宅名（カナ）</th>
-                      <th className="px-3 py-2 font-medium">住所</th>
-                      <th className="px-3 py-2 font-medium">状態</th>
-                      <th className="px-3 py-2 font-medium">工事依頼日</th>
-                      <th className="px-3 py-2 font-medium">工事予定日</th>
-                      <th className="px-3 py-2 font-medium">工事完了日</th>
-                      <th className="px-3 py-2 font-medium text-right">操作</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">個別/集合</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">顧客コード</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">顧客名</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">顧客名（カナ）</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">集合コード</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">集合住宅名</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">集合住宅名（カナ）</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">住所</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">状態</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">工事依頼日</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">工事予定日</th>
+                      <th className="px-3 py-2 font-medium whitespace-nowrap">工事完了日</th>
+                      <th className="px-3 py-2 font-medium text-right whitespace-nowrap">操作</th>
                     </>
                   )}
                 </tr>
@@ -440,11 +440,11 @@ export default function ContractorRequestsPage() {
               <tbody className="text-gray-900 divide-y divide-gray-200">
                 {filteredData.map((request) => (
                   <tr key={request.id} className="text-sm odd:bg-white even:bg-gray-50">
-                    <td className="px-3 py-2">{request.serialNumber}</td>
-                    <td className="px-3 py-2">{request.orderNumber || '-'}</td>
+                    <td className="px-3 py-2 whitespace-nowrap">{request.serialNumber}</td>
+                    <td className="px-3 py-2 whitespace-nowrap">{request.orderNumber || '-'}</td>
                     {activeTab === 'survey' && (
                       <>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-2 whitespace-nowrap">
                           {(request as SurveyRequest).propertyType ? (
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${(request as SurveyRequest).propertyType === '個別'
                                 ? 'bg-blue-100 text-blue-800'
@@ -454,48 +454,58 @@ export default function ContractorRequestsPage() {
                             </span>
                           ) : '-'}
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-2 whitespace-nowrap">
                           {(request as SurveyRequest).propertyType === '個別'
                             ? ((request as SurveyRequest).customerCode || '-')
                             : '-'}
                         </td>
                         <td className="px-3 py-2">
-                          {(request as SurveyRequest).propertyType === '個別'
-                            ? ((request as SurveyRequest).customerName || '-')
-                            : (request as SurveyRequest).customerName || '-'}
+                          <div className="whitespace-nowrap truncate" title={(request as SurveyRequest).propertyType === '個別' ? ((request as SurveyRequest).customerName || '-') : ((request as SurveyRequest).customerName || '-')}>
+                            {(request as SurveyRequest).propertyType === '個別'
+                              ? ((request as SurveyRequest).customerName || '-')
+                              : (request as SurveyRequest).customerName || '-'}
+                          </div>
                         </td>
                         <td className="px-3 py-2 text-gray-400">
-                          {(request as SurveyRequest).propertyType === '個別'
-                            ? ((request as SurveyRequest).customerNameKana || '-')
-                            : (request as SurveyRequest).collectiveHousingNameKana || '-'}
+                          <div className="whitespace-nowrap truncate" title={(request as SurveyRequest).propertyType === '個別' ? ((request as SurveyRequest).customerNameKana || '-') : ((request as SurveyRequest).collectiveHousingNameKana || '-')}>
+                            {(request as SurveyRequest).propertyType === '個別'
+                              ? ((request as SurveyRequest).customerNameKana || '-')
+                              : (request as SurveyRequest).collectiveHousingNameKana || '-'}
+                          </div>
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-2 whitespace-nowrap">
                           {(request as SurveyRequest).propertyType === '集合'
                             ? ((request as SurveyRequest).collectiveCode || '-')
                             : '-'}
                         </td>
                         <td className="px-3 py-2">
-                          {(request as SurveyRequest).propertyType === '集合'
-                            ? ((request as SurveyRequest).collectiveHousingName || '-')
-                            : '-'}
+                          <div className="whitespace-nowrap truncate" title={(request as SurveyRequest).propertyType === '集合' ? ((request as SurveyRequest).collectiveHousingName || '-') : '-'}>
+                            {(request as SurveyRequest).propertyType === '集合'
+                              ? ((request as SurveyRequest).collectiveHousingName || '-')
+                              : '-'}
+                          </div>
                         </td>
                         <td className="px-3 py-2 text-gray-400">
-                          {(request as SurveyRequest).propertyType === '集合'
-                            ? ((request as SurveyRequest).collectiveHousingNameKana || '-')
-                            : '-'}
-                        </td>
-                        <td className="px-3 py-2 max-w-[12rem] truncate" title={request.address}>
-                          {request.address || '-'}
+                          <div className="whitespace-nowrap truncate" title={(request as SurveyRequest).propertyType === '集合' ? ((request as SurveyRequest).collectiveHousingNameKana || '-') : '-'}>
+                            {(request as SurveyRequest).propertyType === '集合'
+                              ? ((request as SurveyRequest).collectiveHousingNameKana || '-')
+                              : '-'}
+                          </div>
                         </td>
                         <td className="px-3 py-2">
+                          <div className="whitespace-nowrap truncate" title={request.address || '-'}>
+                            {request.address || '-'}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
                             {request.status}
                           </span>
                         </td>
-                        <td className="px-3 py-2">{request.requestedAt || '-'}</td>
-                        <td className="px-3 py-2">{request.scheduledDate || '-'}</td>
-                        <td className="px-3 py-2">{request.completedAt || '-'}</td>
-                        <td className="px-3 py-2 text-right">
+                        <td className="px-3 py-2 whitespace-nowrap">{request.requestedAt || '-'}</td>
+                        <td className="px-3 py-2 whitespace-nowrap">{request.scheduledDate || '-'}</td>
+                        <td className="px-3 py-2 whitespace-nowrap">{request.completedAt || '-'}</td>
+                        <td className="px-3 py-2 text-right whitespace-nowrap">
                           <Button
                             onClick={() => handleOpenProgress(request)}
                             variant="ghost"
@@ -509,7 +519,7 @@ export default function ContractorRequestsPage() {
                     )}
                     {activeTab === 'attachment' && (
                       <>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-2 whitespace-nowrap">
                           {(request as AttachmentRequest).propertyType ? (
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${(request as AttachmentRequest).propertyType === '個別'
                                 ? 'bg-blue-100 text-blue-800'
@@ -519,44 +529,56 @@ export default function ContractorRequestsPage() {
                             </span>
                           ) : '-'}
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-2 whitespace-nowrap">
                           {(request as AttachmentRequest).propertyType === '個別'
                             ? ((request as AttachmentRequest).customerCode || '-')
                             : '-'}
                         </td>
-                        <td className="px-3 py-2">{request.customerName || '-'}</td>
-                        <td className="px-3 py-2 text-gray-400">
-                          {(request as AttachmentRequest).propertyType === '個別'
-                            ? ((request as AttachmentRequest).customerNameKana || '-')
-                            : ((request as AttachmentRequest).collectiveHousingNameKana || '-')}
-                        </td>
                         <td className="px-3 py-2">
+                          <div className="whitespace-nowrap truncate" title={request.customerName || '-'}>
+                            {request.customerName || '-'}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 text-gray-400">
+                          <div className="whitespace-nowrap truncate" title={(request as AttachmentRequest).propertyType === '個別' ? ((request as AttachmentRequest).customerNameKana || '-') : ((request as AttachmentRequest).collectiveHousingNameKana || '-')}>
+                            {(request as AttachmentRequest).propertyType === '個別'
+                              ? ((request as AttachmentRequest).customerNameKana || '-')
+                              : ((request as AttachmentRequest).collectiveHousingNameKana || '-')}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
                           {(request as AttachmentRequest).propertyType === '集合'
                             ? ((request as AttachmentRequest).collectiveCode || '-')
                             : '-'}
                         </td>
                         <td className="px-3 py-2">
-                          {(request as AttachmentRequest).propertyType === '集合'
-                            ? ((request as AttachmentRequest).collectiveHousingName || '-')
-                            : '-'}
+                          <div className="whitespace-nowrap truncate" title={(request as AttachmentRequest).propertyType === '集合' ? ((request as AttachmentRequest).collectiveHousingName || '-') : '-'}>
+                            {(request as AttachmentRequest).propertyType === '集合'
+                              ? ((request as AttachmentRequest).collectiveHousingName || '-')
+                              : '-'}
+                          </div>
                         </td>
                         <td className="px-3 py-2 text-gray-400">
-                          {(request as AttachmentRequest).propertyType === '集合'
-                            ? ((request as AttachmentRequest).collectiveHousingNameKana || '-')
-                            : '-'}
-                        </td>
-                        <td className="px-3 py-2 max-w-[12rem] truncate" title={request.address}>
-                          {request.address || '-'}
+                          <div className="whitespace-nowrap truncate" title={(request as AttachmentRequest).propertyType === '集合' ? ((request as AttachmentRequest).collectiveHousingNameKana || '-') : '-'}>
+                            {(request as AttachmentRequest).propertyType === '集合'
+                              ? ((request as AttachmentRequest).collectiveHousingNameKana || '-')
+                              : '-'}
+                          </div>
                         </td>
                         <td className="px-3 py-2">
+                          <div className="whitespace-nowrap truncate" title={request.address || '-'}>
+                            {request.address || '-'}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
                             {request.status}
                           </span>
                         </td>
-                        <td className="px-3 py-2">{request.requestedAt || '-'}</td>
-                        <td className="px-3 py-2">{(request as AttachmentRequest).submittedAt || '-'}</td>
-                        <td className="px-3 py-2">{(request as AttachmentRequest).approvedAt || '-'}</td>
-                        <td className="px-3 py-2 text-right">
+                        <td className="px-3 py-2 whitespace-nowrap">{request.requestedAt || '-'}</td>
+                        <td className="px-3 py-2 whitespace-nowrap">{(request as AttachmentRequest).submittedAt || '-'}</td>
+                        <td className="px-3 py-2 whitespace-nowrap">{(request as AttachmentRequest).approvedAt || '-'}</td>
+                        <td className="px-3 py-2 text-right whitespace-nowrap">
                           <Button
                             onClick={() => handleOpenProgress(request)}
                             variant="ghost"
@@ -570,7 +592,7 @@ export default function ContractorRequestsPage() {
                     )}
                     {activeTab === 'construction' && (
                       <>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-2 whitespace-nowrap">
                           {(request as ConstructionRequest).propertyType ? (
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${(request as ConstructionRequest).propertyType === '個別'
                                 ? 'bg-blue-100 text-blue-800'
@@ -580,46 +602,56 @@ export default function ContractorRequestsPage() {
                             </span>
                           ) : '-'}
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-2 whitespace-nowrap">
                           {(request as ConstructionRequest).propertyType === '個別'
                             ? ((request as ConstructionRequest).customerCode || '-')
                             : '-'}
                         </td>
                         <td className="px-3 py-2">
-                          {(request as ConstructionRequest).customerName || '-'}
+                          <div className="whitespace-nowrap truncate" title={(request as ConstructionRequest).customerName || '-'}>
+                            {(request as ConstructionRequest).customerName || '-'}
+                          </div>
                         </td>
                         <td className="px-3 py-2 text-gray-400">
-                          {(request as ConstructionRequest).propertyType === '個別'
-                            ? ((request as ConstructionRequest).customerNameKana || '-')
-                            : ((request as ConstructionRequest).collectiveHousingNameKana || '-')}
+                          <div className="whitespace-nowrap truncate" title={(request as ConstructionRequest).propertyType === '個別' ? ((request as ConstructionRequest).customerNameKana || '-') : ((request as ConstructionRequest).collectiveHousingNameKana || '-')}>
+                            {(request as ConstructionRequest).propertyType === '個別'
+                              ? ((request as ConstructionRequest).customerNameKana || '-')
+                              : ((request as ConstructionRequest).collectiveHousingNameKana || '-')}
+                          </div>
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-2 whitespace-nowrap">
                           {(request as ConstructionRequest).propertyType === '集合'
                             ? ((request as ConstructionRequest).collectiveCode || '-')
                             : '-'}
                         </td>
                         <td className="px-3 py-2">
-                          {(request as ConstructionRequest).propertyType === '集合'
-                            ? ((request as ConstructionRequest).collectiveHousingName || '-')
-                            : '-'}
+                          <div className="whitespace-nowrap truncate" title={(request as ConstructionRequest).propertyType === '集合' ? ((request as ConstructionRequest).collectiveHousingName || '-') : '-'}>
+                            {(request as ConstructionRequest).propertyType === '集合'
+                              ? ((request as ConstructionRequest).collectiveHousingName || '-')
+                              : '-'}
+                          </div>
                         </td>
                         <td className="px-3 py-2 text-gray-400">
-                          {(request as ConstructionRequest).propertyType === '集合'
-                            ? ((request as ConstructionRequest).collectiveHousingNameKana || '-')
-                            : '-'}
-                        </td>
-                        <td className="px-3 py-2 max-w-[12rem] truncate" title={request.address}>
-                          {request.address || '-'}
+                          <div className="whitespace-nowrap truncate" title={(request as ConstructionRequest).propertyType === '集合' ? ((request as ConstructionRequest).collectiveHousingNameKana || '-') : '-'}>
+                            {(request as ConstructionRequest).propertyType === '集合'
+                              ? ((request as ConstructionRequest).collectiveHousingNameKana || '-')
+                              : '-'}
+                          </div>
                         </td>
                         <td className="px-3 py-2">
+                          <div className="whitespace-nowrap truncate" title={request.address || '-'}>
+                            {request.address || '-'}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
                             {request.status}
                           </span>
                         </td>
-                        <td className="px-3 py-2">{(request as ConstructionRequest).constructionRequestedDate || '-'}</td>
-                        <td className="px-3 py-2">{(request as ConstructionRequest).constructionDate || '-'}</td>
-                        <td className="px-3 py-2">{(request as ConstructionRequest).constructionCompletedDate || '-'}</td>
-                        <td className="px-3 py-2 text-right">
+                        <td className="px-3 py-2 whitespace-nowrap">{(request as ConstructionRequest).constructionRequestedDate || '-'}</td>
+                        <td className="px-3 py-2 whitespace-nowrap">{(request as ConstructionRequest).constructionDate || '-'}</td>
+                        <td className="px-3 py-2 whitespace-nowrap">{(request as ConstructionRequest).constructionCompletedDate || '-'}</td>
+                        <td className="px-3 py-2 text-right whitespace-nowrap">
                           <Button
                             onClick={() => handleOpenProgress(request)}
                             variant="ghost"

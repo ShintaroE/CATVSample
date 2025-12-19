@@ -8,13 +8,6 @@ interface OrderSearchTableProps {
 }
 
 export default function OrderSearchTable({ orders, onSelect }: OrderSearchTableProps) {
-  // 住所を省略表示する関数
-  const truncateAddress = (address?: string, maxLength = 30) => {
-    if (!address) return '-'
-    if (address.length <= maxLength) return address
-    return address.substring(0, maxLength) + '...'
-  }
-
   if (orders.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
@@ -30,31 +23,31 @@ export default function OrderSearchTable({ orders, onSelect }: OrderSearchTableP
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50 sticky top-0 z-10">
             <tr>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 受注番号
               </th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 顧客名
               </th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 顧客名（カナ）
               </th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 住所
               </th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 工事区分
               </th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 工事種別
               </th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 集合住宅名
               </th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 集合住宅名（カナ）
               </th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 選択
               </th>
             </tr>
@@ -69,14 +62,20 @@ export default function OrderSearchTable({ orders, onSelect }: OrderSearchTableP
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {order.orderNumber}
                 </td>
-                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                  {order.customerName}
+                <td className="px-3 py-2 text-sm text-gray-900">
+                  <div className="whitespace-nowrap truncate" title={order.customerName}>
+                    {order.customerName}
+                  </div>
                 </td>
-                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-400">
-                  {order.customerNameKana || '-'}
+                <td className="px-3 py-2 text-sm text-gray-400">
+                  <div className="whitespace-nowrap truncate" title={order.customerNameKana || '-'}>
+                    {order.customerNameKana || '-'}
+                  </div>
                 </td>
-                <td className="px-3 py-2 text-sm text-gray-900" title={order.address}>
-                  {truncateAddress(order.address)}
+                <td className="px-3 py-2 text-sm text-gray-900">
+                  <div className="whitespace-nowrap truncate" title={order.address || '-'}>
+                    {order.address || '-'}
+                  </div>
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {order.constructionCategory}
@@ -84,11 +83,15 @@ export default function OrderSearchTable({ orders, onSelect }: OrderSearchTableP
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {order.workType}
                 </td>
-                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
-                  {order.collectiveHousingName || '-'}
+                <td className="px-3 py-2 text-sm text-gray-500">
+                  <div className="whitespace-nowrap truncate" title={order.collectiveHousingName || '-'}>
+                    {order.collectiveHousingName || '-'}
+                  </div>
                 </td>
-                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-400">
-                  {order.collectiveHousingNameKana || '-'}
+                <td className="px-3 py-2 text-sm text-gray-400">
+                  <div className="whitespace-nowrap truncate" title={order.collectiveHousingNameKana || '-'}>
+                    {order.collectiveHousingNameKana || '-'}
+                  </div>
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm">
                   <Button

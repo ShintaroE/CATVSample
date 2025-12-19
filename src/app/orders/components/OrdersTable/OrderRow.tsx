@@ -23,8 +23,8 @@ export default function OrderRow({
       <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
         {order.orderNumber}
       </td>
-      {/* 受注先（折り返しOK） */}
-      <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-500">
+      {/* 受注先 */}
+      <td className="hidden lg:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
         {order.orderSource}
       </td>
       {/* 個別/集合 */}
@@ -37,8 +37,8 @@ export default function OrderRow({
           {order.constructionCategory}
         </span>
       </td>
-      {/* 工事種別（折り返しOK） */}
-      <td className="hidden md:table-cell px-4 py-3 text-sm text-gray-500">
+      {/* 工事種別 */}
+      <td className="hidden md:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
         {order.workType}
       </td>
       {/* クロージャ番号 */}
@@ -49,25 +49,33 @@ export default function OrderRow({
       <td className="hidden xl:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
         {order.customerCode}
       </td>
-      {/* 顧客名（折り返しOK、最大幅制限） */}
-      <td className="px-4 py-3 text-sm text-gray-500 max-w-xs">
-        {order.customerName}
+      {/* 顧客名 */}
+      <td className="px-4 py-3 text-sm text-gray-500">
+        <div className="whitespace-nowrap truncate" title={order.customerName}>
+          {order.customerName}
+        </div>
       </td>
-      {/* 顧客名カナ（折り返しOK、最大幅制限） */}
-      <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-400 max-w-xs">
-        {order.customerNameKana}
+      {/* 顧客名カナ */}
+      <td className="hidden lg:table-cell px-4 py-3 text-sm text-gray-400">
+        <div className="whitespace-nowrap truncate" title={order.customerNameKana}>
+          {order.customerNameKana}
+        </div>
       </td>
       {/* 集合住宅コード */}
       <td className="hidden xl:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
         {order.collectiveCode || '—'}
       </td>
-      {/* 集合住宅名（折り返しOK、最大幅制限） */}
-      <td className="hidden xl:table-cell px-4 py-3 text-sm text-gray-500 max-w-xs">
-        {order.collectiveHousingName || '—'}
+      {/* 集合住宅名 */}
+      <td className="hidden xl:table-cell px-4 py-3 text-sm text-gray-500">
+        <div className="whitespace-nowrap truncate" title={order.collectiveHousingName || '—'}>
+          {order.collectiveHousingName || '—'}
+        </div>
       </td>
-      {/* 集合住宅名カナ（折り返しOK、最大幅制限） */}
-      <td className="hidden xl:table-cell px-4 py-3 text-sm text-gray-400 max-w-xs">
-        {order.collectiveHousingNameKana || '—'}
+      {/* 集合住宅名カナ */}
+      <td className="hidden xl:table-cell px-4 py-3 text-sm text-gray-400">
+        <div className="whitespace-nowrap truncate" title={order.collectiveHousingNameKana || '—'}>
+          {order.collectiveHousingNameKana || '—'}
+        </div>
       </td>
       {/* 新規/既存 */}
       <td className="hidden lg:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
