@@ -325,12 +325,14 @@ generateSimplePassword(length = 10): string
 ### CSV Export Pattern (Orders Page)
 Orders page includes comprehensive CSV export functionality with application data aggregation:
 - **Encoding**: UTF-8 with BOM (Excel-compatible, prevents garbled characters)
-- **Format**: 54 columns in horizontal layout
-  - Base order info (21 columns)
+- **Format**: 54 columns total (21 + 1 + 10 + 1 + 10 + 1 + 10)
+  - Base order info (21 columns): 受注番号, 受注元, 個別/集合, 工事種別, 顧客コード, 顧客名, 顧客名（カナ）, 顧客タイプ, 電話番号, 住所, 工事日, クロージャ番号, 集合コード, 集合住宅名, 集合住宅名（カナ）, 現地調査ステータス, 共架・添架ステータス, 工事ステータス, 受注ステータス, キャンセル日, キャンセル理由
+  - Section separator (1 column)
   - Survey requests (10 columns): 申請番号, ステータス, 協力会社, 班名, 調査予定日, 調査完了日, 工事可否判定, 判定報告日時, 依頼日, 進捗履歴最終更新日時
+  - Section separator (1 column)
   - Attachment requests (10 columns): 申請番号, ステータス, 協力会社, 班名, 依頼日, 申請提出日, 許可日, 調査完了日, 申請有無報告日時, 進捗履歴最終更新日時
+  - Section separator (1 column)
   - Construction requests (10 columns): 申請番号, ステータス, 協力会社, 班名, 工事種別, 工事依頼日, 工事予定日, 工事完了日, 工事日設定日時, 進捗履歴最終更新日時
-  - Section separators between each data group
 - **Multiple applications handling**: When an order has multiple applications of the same type, creates separate rows
 - **Filename**: `工事依頼_YYYYMMDD_HHMMSS.csv`
 - **Implementation**:
